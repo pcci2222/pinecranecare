@@ -123,6 +123,15 @@ const STRINGS = {
     blurb_annual: "Best value — save 37%.",
     lServicesNeeded: "Services needed",
     grpSenior: "Senior care", grpChild: "Child & family", grpHome: "Household help", grpExtended: "Extended care",
+    authTitle: "Member account",
+    authSub: "Create a free account so your membership follows you on any device.",
+    signUp: "Create account", signIn: "Sign in",
+    lEmailAddr: "Email", lPassword: "Password (6+ characters)",
+    authToLogin: "Already have an account? Sign in",
+    authToSignup: "New here? Create account",
+    authErr: "Sign-in failed — check your email and password.",
+    authConfirm: "Account created — confirm via the email we sent, then sign in.",
+    signOut: "Sign out", tSignedIn: "Welcome ✓",
     hiredBtn: "✓ I hired this caregiver",
     hireFormLabel: "Your name (shown with your future review)",
     hireConfirm: "Confirm hire",
@@ -239,6 +248,15 @@ const STRINGS = {
     blurb_annual: "最划算 — 省 37%。",
     lServicesNeeded: "需要的服務",
     grpSenior: "長者照護", grpChild: "兒童與家庭", grpHome: "家務協助", grpExtended: "進階照護",
+    authTitle: "會員帳號",
+    authSub: "建立免費帳號，您的會員資格即可在任何裝置上使用。",
+    signUp: "建立帳號", signIn: "登入",
+    lEmailAddr: "電子郵件", lPassword: "密碼（6 位以上）",
+    authToLogin: "已有帳號？登入",
+    authToSignup: "新用戶？建立帳號",
+    authErr: "登入失敗 — 請檢查電子郵件與密碼。",
+    authConfirm: "帳號已建立 — 請點擊確認郵件後再登入。",
+    signOut: "登出", tSignedIn: "歡迎 ✓",
     hiredBtn: "✓ 我已聘用這位照護者",
     hireFormLabel: "您的稱呼（將與您日後的評價一同顯示）",
     hireConfirm: "確認聘用",
@@ -355,6 +373,15 @@ const STRINGS = {
     blurb_annual: "Mejor precio — ahorre 37%.",
     lServicesNeeded: "Servicios necesarios",
     grpSenior: "Cuidado de mayores", grpChild: "Niños y familia", grpHome: "Ayuda del hogar", grpExtended: "Cuidado extendido",
+    authTitle: "Cuenta de miembro",
+    authSub: "Cree una cuenta gratuita para que su membresía funcione en cualquier dispositivo.",
+    signUp: "Crear cuenta", signIn: "Iniciar sesión",
+    lEmailAddr: "Correo electrónico", lPassword: "Contraseña (6+ caracteres)",
+    authToLogin: "¿Ya tiene cuenta? Inicie sesión",
+    authToSignup: "¿Nuevo? Cree una cuenta",
+    authErr: "Error al iniciar sesión — revise correo y contraseña.",
+    authConfirm: "Cuenta creada — confirme con el correo enviado y luego inicie sesión.",
+    signOut: "Cerrar sesión", tSignedIn: "Bienvenido ✓",
     hiredBtn: "✓ Contraté a este cuidador",
     hireFormLabel: "Su nombre (se mostrará con su futura reseña)",
     hireConfirm: "Confirmar contratación",
@@ -433,7 +460,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.9"; // ← bumped on every code update
+const APP_VERSION = "v3.0"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -494,6 +521,45 @@ async function sbUploadPhoto(dataUrl) {
   });
   if (!r.ok) throw new Error("photo upload failed");
   return `${SUPABASE_URL}/storage/v1/object/public/photos/${name}`;
+}
+
+// ---------- Member accounts (Supabase Auth) ----------
+async function authSignup(email, password, name) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, data: { name } }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.msg || d.error_description || "signup failed");
+  return d;
+}
+async function authLogin(email, password) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error_description || d.msg || "login failed");
+  return d;
+}
+async function fetchMember(userId) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/members?user_id=eq.${userId}&select=*`, { headers: sbHeaders });
+    if (!r.ok) return null;
+    const arr = await r.json();
+    return arr[0] || null;
+  } catch (e) { return null; }
+}
+async function upsertMember(row) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/members?on_conflict=user_id`, {
+    method: "POST",
+    headers: { ...sbHeaders, Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify(row),
+  });
+  if (!r.ok) throw new Error("member save failed");
+  return (await r.json())[0];
 }
 
 // Map between app records and database rows
@@ -883,10 +949,10 @@ function RegisterForm({ onSaved, onCancel, initial }) {
 }
 
 // ---------- Directory ----------
-function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire }) {
+function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "" }) {
   const { L, ts } = useLang();
   const [hireOpen, setHireOpen] = useState(false);
-  const [hireName, setHireName] = useState("");
+  const [hireName, setHireName] = useState(hireDefault || "");
   const [hireBusy, setHireBusy] = useState(false);
   const [hiredNow, setHiredNow] = useState(false);
 
@@ -1792,6 +1858,102 @@ function FaqView({ onBack }) {
   );
 }
 
+// ---------- Member sign up / sign in ----------
+function AuthView({ onDone, onBack }) {
+  const { L } = useLang();
+  const [mode, setMode] = useState("signup");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function go() {
+    if (!email.trim() || password.length < 6 || (mode === "signup" && !name.trim())) {
+      setErr(L.authErr);
+      return;
+    }
+    setBusy(true);
+    setErr("");
+    try {
+      let user = null;
+      let token = null;
+      if (mode === "signup") {
+        const d = await authSignup(email.trim(), password, name.trim());
+        user = d.user || d;
+        token = d.access_token || (d.session && d.session.access_token) || null;
+        if (!token) {
+          try {
+            const l = await authLogin(email.trim(), password);
+            user = l.user;
+            token = l.access_token;
+          } catch (e2) {
+            setErr(L.authConfirm);
+            setMode("login");
+            setBusy(false);
+            return;
+          }
+        }
+      } else {
+        const d = await authLogin(email.trim(), password);
+        user = d.user;
+        token = d.access_token;
+      }
+      const acct = { id: user.id, email: user.email, name: (user.user_metadata && user.user_metadata.name) || name.trim() || "" };
+      try { localStorage.setItem("pcc_session", JSON.stringify({ user: acct, access_token: token })); } catch (e) { /* ignore */ }
+      onDone(acct);
+    } catch (e) {
+      setErr(L.authErr);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}`, maxWidth: 420 }}>
+      <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        {L.authTitle}
+      </h2>
+      <p style={{ margin: "0 0 16px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.authSub}</p>
+      {mode === "signup" && (
+        <Field label={L.lName} required>
+          <input style={inputStyle} value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} />
+        </Field>
+      )}
+      <Field label={L.lEmailAddr} required>
+        <input style={inputStyle} type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} placeholder="you@email.com" />
+      </Field>
+      <Field label={L.lPassword} required>
+        <input style={inputStyle} type="password" value={password} onChange={(e) => { setPassword(e.target.value); setErr(""); }} placeholder="••••••" />
+      </Field>
+      {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
+      <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+        <button
+          type="button"
+          onClick={go}
+          disabled={busy}
+          style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: busy ? T.inkSoft : T.primary, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          {busy ? L.saving : mode === "signup" ? L.signUp : L.signIn}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          style={{ padding: "13px 18px", borderRadius: 12, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          {L.cancel}
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={() => { setMode(mode === "signup" ? "login" : "signup"); setErr(""); }}
+        style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+      >
+        {mode === "signup" ? L.authToLogin : L.authToSignup}
+      </button>
+    </div>
+  );
+}
+
 // ---------- Aide self-service profile access ----------
 function AideLoginView({ onFound, onBack }) {
   const { L } = useLang();
@@ -2423,6 +2585,8 @@ export default function App() {
   const [maxAge, setMaxAge] = useState("");
   const [toast, setToast] = useState("");
   const [client, setClient] = useState(null); // { plan, subscribedUntil }
+  const [account, setAccount] = useState(null); // { id, email, name }
+  const [authNext, setAuthNext] = useState(null); // resume action after sign-in
   const subscribed = !!(client && client.subscribedUntil > Date.now());
   const [pendingUnlock, setPendingUnlock] = useState(null);
   const unlockedIds = client?.unlocks || [];
@@ -2442,9 +2606,27 @@ export default function App() {
         setDbError(true);
       }
       setLoading(false);
+      let signedIn = false;
       try {
-        const saved = localStorage.getItem("pcc_client");
-        if (saved) setClient(JSON.parse(saved));
+        const sess = JSON.parse(localStorage.getItem("pcc_session") || "null");
+        if (sess && sess.user && sess.user.id) {
+          signedIn = true;
+          setAccount(sess.user);
+          const m = await fetchMember(sess.user.id);
+          if (m) {
+            setClient({
+              plan: m.plan,
+              subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
+              unlocks: m.unlocks || [],
+            });
+          }
+        }
+      } catch (e) { /* not signed in */ }
+      try {
+        if (!signedIn) {
+          const saved = localStorage.getItem("pcc_client");
+          if (saved) setClient(JSON.parse(saved));
+        }
       } catch (e) { /* no membership yet */ }
       try {
         const savedPro = localStorage.getItem("pcc_aidepro");
@@ -2478,7 +2660,13 @@ export default function App() {
     showToast(L.tJobRem);
   }
 
-  async function activatePlan(plan) {
+  async function activatePlan(plan, acct = account) {
+    if (!acct) {
+      setAuthNext({ type: "plan", plan });
+      setView("auth");
+      window.scrollTo(0, 0);
+      return;
+    }
     const rec = {
       ...(client || {}),
       plan: plan.name,
@@ -2486,12 +2674,33 @@ export default function App() {
       activatedAt: Date.now(),
     };
     try {
+      await upsertMember({
+        user_id: acct.id,
+        email: acct.email,
+        name: acct.name || null,
+        plan: rec.plan,
+        subscribed_until: new Date(rec.subscribedUntil).toISOString(),
+        unlocks: rec.unlocks || [],
+      });
+    } catch (e) { /* keep local copy */ }
+    try {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* still activate in-session */ }
     setClient(rec);
     setPendingUnlock(null);
     setView("directory");
     showToast(L.tMember);
+  }
+
+  function signOut() {
+    try {
+      localStorage.removeItem("pcc_session");
+      localStorage.removeItem("pcc_client");
+      localStorage.removeItem("pcc_aidepro");
+    } catch (e) { /* ignore */ }
+    setAccount(null);
+    setClient(null);
+    setAidePro(null);
   }
 
   async function activateAidePro() {
@@ -2503,9 +2712,25 @@ export default function App() {
     showToast(L.tAidePro);
   }
 
-  async function activateSingleUnlock() {
+  async function activateSingleUnlock(acct = account) {
     if (!pendingUnlock) return;
+    if (!acct) {
+      setAuthNext({ type: "unlock" });
+      setView("auth");
+      window.scrollTo(0, 0);
+      return;
+    }
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
+    try {
+      await upsertMember({
+        user_id: acct.id,
+        email: acct.email,
+        name: acct.name || null,
+        plan: rec.plan || null,
+        subscribed_until: rec.subscribedUntil ? new Date(rec.subscribedUntil).toISOString() : null,
+        unlocks: rec.unlocks,
+      });
+    } catch (e) { /* keep local copy */ }
     try {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* keep in-session */ }
@@ -2613,7 +2838,20 @@ export default function App() {
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
         )}
-        {view === "aidelogin" ? (
+        {view === "auth" ? (
+          <AuthView
+            onBack={() => { setAuthNext(null); setView("plans"); }}
+            onDone={(acct) => {
+              setAccount(acct);
+              const next = authNext;
+              setAuthNext(null);
+              showToast(L.tSignedIn);
+              if (next && next.type === "plan") activatePlan(next.plan, acct);
+              else if (next && next.type === "unlock") activateSingleUnlock(acct);
+              else setView("directory");
+            }}
+          />
+        ) : view === "aidelogin" ? (
           <AideLoginView
             onBack={() => setView("directory")}
             onFound={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
@@ -2795,7 +3033,19 @@ export default function App() {
                   <strong>{L.memberActive}</strong> {new Date(client.subscribedUntil).toLocaleDateString()}
                 </span>
                 <span style={{ flex: 1 }} />
-                <button
+                {account && (
+                  <span style={{ fontSize: 12.5, color: T.inkSoft }}>{account.email}</span>
+                )}
+                {account && (
+                  <button
+                    type="button"
+                    onClick={signOut}
+                    style={{ background: "none", border: "none", color: T.primary, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}
+                  >
+                    {L.signOut}
+                  </button>
+                )}
+                {!account && <button
                   type="button"
                   title="Reset demo membership (testing)"
                   onClick={() => {
@@ -2806,7 +3056,7 @@ export default function App() {
                   style={{ background: "none", border: "none", color: T.inkSoft, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}
                 >
                   reset
-                </button>
+                </button>}
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 14px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 12, marginBottom: 14, flexWrap: "wrap" }}>
@@ -2906,6 +3156,7 @@ export default function App() {
                     onAddReview={addReview}
                     hires={hires.filter((h) => h.caregiver_id === a.id)}
                     onHire={addHire}
+                    hireDefault={account?.name || ""}
                     onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
