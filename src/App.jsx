@@ -59,6 +59,12 @@ const STRINGS = {
     lName: "Full name", lPhone: "Phone", lEmail: "Email", lCity: "City", lZip: "ZIP",
     lAge: "Age", lYrs: "Yrs experience", lRate: "Rate ($/hr)", lLang: "Languages spoken",
     lServices: "Services you offer", lCerts: "Certifications", lAbout: "About you",
+    manageProfile: "Caregiver? Manage my profile ✎",
+    aideLoginTitle: "Manage my profile",
+    aideLoginSub: "Enter the phone number and 4-digit PIN you used when you registered.",
+    aideLoginBtn: "Open my profile",
+    aideLoginErr: "No profile found matching that phone number and PIN.",
+    pendingEdit: "⏳ Your profile is pending verification — families can't see it yet, but you can update it and it will be reviewed.",
     lCertPhoto: "License / certification photo (optional)",
     certPhotoNote: "Used by Pine Crane Care for verification only — never shown publicly.",
     certUpload: "Add license photo",
@@ -160,6 +166,12 @@ const STRINGS = {
     lName: "姓名", lPhone: "電話", lEmail: "電子郵件", lCity: "城市", lZip: "郵遞區號",
     lAge: "年齡", lYrs: "經驗年數", lRate: "時薪（美元）", lLang: "會說的語言",
     lServices: "提供的服務", lCerts: "證照", lAbout: "自我介紹",
+    manageProfile: "我是照護者？管理我的檔案 ✎",
+    aideLoginTitle: "管理我的檔案",
+    aideLoginSub: "請輸入註冊時使用的電話號碼與 4 位數 PIN 碼。",
+    aideLoginBtn: "開啟我的檔案",
+    aideLoginErr: "找不到符合該電話與 PIN 碼的檔案。",
+    pendingEdit: "⏳ 您的檔案正在審核中 — 家庭目前看不到，但您可以更新內容，我們將一併審核。",
     lCertPhoto: "證照照片（選填）",
     certPhotoNote: "僅供松鶴護理驗證使用 — 不會公開顯示。",
     certUpload: "上傳證照照片",
@@ -261,6 +273,12 @@ const STRINGS = {
     lName: "Nombre completo", lPhone: "Teléfono", lEmail: "Correo", lCity: "Ciudad", lZip: "Código postal",
     lAge: "Edad", lYrs: "Años de experiencia", lRate: "Tarifa ($/h)", lLang: "Idiomas",
     lServices: "Servicios que ofrece", lCerts: "Certificaciones", lAbout: "Sobre usted",
+    manageProfile: "¿Cuidador/a? Administrar mi perfil ✎",
+    aideLoginTitle: "Administrar mi perfil",
+    aideLoginSub: "Ingrese el número de teléfono y el PIN de 4 dígitos que usó al registrarse.",
+    aideLoginBtn: "Abrir mi perfil",
+    aideLoginErr: "No se encontró un perfil con ese teléfono y PIN.",
+    pendingEdit: "⏳ Su perfil está pendiente de verificación — las familias aún no lo ven, pero puede actualizarlo.",
     lCertPhoto: "Foto de licencia / certificación (opcional)",
     certPhotoNote: "Solo para verificación de Pine Crane Care — nunca se muestra públicamente.",
     certUpload: "Agregar foto de licencia",
@@ -388,7 +406,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.1"; // ← bumped on every code update
+const APP_VERSION = "v2.3"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -636,6 +654,11 @@ function RegisterForm({ onSaved, onCancel, initial }) {
       <p style={{ margin: "0 0 20px", color: T.inkSoft, fontSize: 15 }}>
         {initial ? L.updSub : L.regSub}
       </p>
+      {initial && initial.approved === false && (
+        <p style={{ margin: "-8px 0 16px", padding: "10px 12px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 10, fontSize: 13.5, color: T.ink, lineHeight: 1.5 }}>
+          {L.pendingEdit}
+        </p>
+      )}
 
       {/* Selfie */}
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
@@ -1683,6 +1706,73 @@ function FaqView({ onBack }) {
   );
 }
 
+// ---------- Aide self-service profile access ----------
+function AideLoginView({ onFound, onBack }) {
+  const { L } = useLang();
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function go() {
+    setBusy(true);
+    setErr("");
+    try {
+      const digits = (v) => (v || "").replace(/\D/g, "");
+      if (!digits(phone) || !/^\d{4}$/.test(pin)) {
+        setErr(L.aideLoginErr);
+        setBusy(false);
+        return;
+      }
+      const all = await sbSelect("caregivers");
+      const rec = all.find((r) => digits(r.phone) === digits(phone) && r.pin === pin);
+      if (rec) onFound(aideFromDb({ ...rec }));
+      else setErr(L.aideLoginErr);
+    } catch (e) {
+      setErr(L.errSave);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}`, maxWidth: 420 }}>
+      <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        {L.aideLoginTitle}
+      </h2>
+      <p style={{ margin: "0 0 16px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.aideLoginSub}</p>
+      <Field label={L.lPhone} required>
+        <input style={inputStyle} type="tel" value={phone} onChange={(e) => { setPhone(e.target.value); setErr(""); }} placeholder="(555) 555-1234" />
+      </Field>
+      <Field label="PIN" required>
+        <input
+          style={{ ...inputStyle, maxWidth: 140, letterSpacing: 4 }}
+          inputMode="numeric" maxLength={4} value={pin}
+          onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setErr(""); }}
+          placeholder="••••"
+        />
+      </Field>
+      {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
+      <div style={{ display: "flex", gap: 10 }}>
+        <button
+          type="button"
+          onClick={go}
+          disabled={busy}
+          style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: busy ? T.inkSoft : T.primary, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          {busy ? L.saving : L.aideLoginBtn}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          style={{ padding: "13px 18px", borderRadius: 12, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          {L.cancel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ---------- Admin panel (platform operator only) ----------
 const ADMIN_PIN = "8888"; // ← CHANGE THIS to your own passcode before deploying
 
@@ -1695,6 +1785,8 @@ function AdminView({ onBack, onDataChanged }) {
   const [ags, setAgs] = useState([]);
   const [msg, setMsg] = useState("");
   const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
+  const [agEditId, setAgEditId] = useState(null);
+  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" };
 
   async function refresh() {
     setMsg("");
@@ -1718,18 +1810,34 @@ function AdminView({ onBack, onDataChanged }) {
   }
   async function addAgency() {
     if (!agForm.name.trim()) { setMsg("Agency name is required."); return; }
+    const payload = {
+      ...agForm,
+      monthly_fee: agForm.monthly_fee ? Number(agForm.monthly_fee) : null,
+      paid_until: agForm.paid_until || null,
+    };
     try {
-      await sbInsert("agencies", {
-        ...agForm,
-        monthly_fee: agForm.monthly_fee ? Number(agForm.monthly_fee) : null,
-        paid_until: agForm.paid_until || null,
-        active: true,
-      });
-      setAgForm({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
+      if (agEditId) {
+        await sbUpdate("agencies", agEditId, payload);
+        setMsg("Agency updated ✓");
+      } else {
+        await sbInsert("agencies", { ...payload, active: true });
+        setMsg("Agency added ✓");
+      }
+      setAgForm(blankAgForm);
+      setAgEditId(null);
       await refresh();
       onDataChanged();
-      setMsg("Agency added ✓");
-    } catch (e) { setMsg("Insert failed — run the agencies insert/update/delete policies SQL."); }
+    } catch (e) { setMsg("Save failed — run the agencies insert/update/delete policies SQL."); }
+  }
+
+  function startAgEdit(a) {
+    setAgEditId(a.id);
+    setAgForm({
+      name: a.name || "", phone: a.phone || "", website: a.website || "", areas: a.areas || "",
+      blurb: a.blurb || "", contact_name: a.contact_name || "", email: a.email || "",
+      monthly_fee: a.monthly_fee != null ? String(a.monthly_fee) : "", paid_until: a.paid_until || "",
+    });
+    setMsg("");
   }
 
   const btn = (bg, color, border) => ({
@@ -1803,7 +1911,7 @@ function AdminView({ onBack, onDataChanged }) {
       ) : (
         <>
           <div style={{ background: T.surface, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${T.line}` }}>
-            <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 8 }}>Add agency ad (after they've paid)</div>
+            <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 8 }}>{agEditId ? "✎ Editing agency — save to apply changes" : "Add agency ad (after they've paid)"}</div>
             <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Agency name *" value={agForm.name} onChange={(e) => setAgForm({ ...agForm, name: e.target.value })} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
               <input style={inputStyle} placeholder="Phone" value={agForm.phone} onChange={(e) => setAgForm({ ...agForm, phone: e.target.value })} />
@@ -1819,7 +1927,12 @@ function AdminView({ onBack, onDataChanged }) {
               <input style={inputStyle} type="date" title="Paid until" value={agForm.paid_until} onChange={(e) => setAgForm({ ...agForm, paid_until: e.target.value })} />
             </div>
             <textarea style={{ ...inputStyle, minHeight: 60, marginBottom: 8 }} placeholder="Short blurb shown to families" value={agForm.blurb} onChange={(e) => setAgForm({ ...agForm, blurb: e.target.value })} />
-            <button type="button" style={btn(T.primary, "#fff")} onClick={addAgency}>Publish agency ad</button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" style={btn(T.primary, "#fff")} onClick={addAgency}>{agEditId ? "Save changes" : "Publish agency ad"}</button>
+              {agEditId && (
+                <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => { setAgEditId(null); setAgForm(blankAgForm); }}>Cancel edit</button>
+              )}
+            </div>
           </div>
           {ags.map((a) => {
             const today = new Date().toISOString().slice(0, 10);
@@ -1843,6 +1956,7 @@ function AdminView({ onBack, onDataChanged }) {
                   {a.monthly_fee ? `$${a.monthly_fee}/mo · ` : ""}{a.paid_until ? `paid until ${a.paid_until}` : "no billing date set"}
                 </div>
               </div>
+              <button type="button" style={btn("#fff", T.primary, `1.5px solid ${T.line}`)} title="Edit agency details" onClick={() => startAgEdit(a)}>✎</button>
               <button type="button" style={btn(T.amber, "#3A2A08")} title="Extend one month (payment received)" onClick={renew}>+1 mo</button>
               <button type="button" style={btn("#fff", a.active ? T.danger : T.primary, `1.5px solid ${T.line}`)}
                 onClick={() => patch("agencies", a.id, { active: !a.active })}>
@@ -2228,7 +2342,12 @@ export default function App() {
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
         )}
-        {view === "admin" ? (
+        {view === "aidelogin" ? (
+          <AideLoginView
+            onBack={() => setView("directory")}
+            onFound={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
+          />
+        ) : view === "admin" ? (
           <AdminView
             onBack={() => setView("directory")}
             onDataChanged={async () => {
@@ -2299,6 +2418,18 @@ export default function App() {
                 </button>
               ))}
             </div>
+
+            {tab === "aides" && (
+              <div style={{ textAlign: "right", marginBottom: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => { setView("aidelogin"); window.scrollTo(0, 0); }}
+                  style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+                >
+                  {L.manageProfile}
+                </button>
+              </div>
+            )}
 
             {tab === "jobs" ? (
               <>
