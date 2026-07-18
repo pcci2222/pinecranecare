@@ -418,7 +418,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.4"; // ← bumped on every code update
+const APP_VERSION = "v2.5"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2150,7 +2150,22 @@ function BackupPanel({ aides, onRestore, onBack }) {
 
 // ---------- Main app ----------
 export default function App() {
-  const [lang, setLang] = useState("en");
+  const [lang, setLangState] = useState(() => {
+    try {
+      const saved = localStorage.getItem("pcc_lang");
+      if (saved && STRINGS[saved]) return saved;
+    } catch (e) { /* storage unavailable */ }
+    try {
+      const nav = (navigator.language || "").toLowerCase();
+      if (nav.startsWith("zh")) return "zh";
+      if (nav.startsWith("es")) return "es";
+    } catch (e) { /* no navigator */ }
+    return "en";
+  });
+  const setLang = (id) => {
+    setLangState(id);
+    try { localStorage.setItem("pcc_lang", id); } catch (e) { /* storage unavailable */ }
+  };
   const L = STRINGS[lang];
   const ts = (s) => (lang === "en" ? s : SERVICE_I18N[s]?.[lang] || s);
   LANG_CURRENT = { lang, L, ts };
