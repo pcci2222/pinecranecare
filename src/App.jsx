@@ -123,6 +123,11 @@ const STRINGS = {
     blurb_annual: "Best value — save 37%.",
     lServicesNeeded: "Services needed",
     grpSenior: "Senior care", grpChild: "Child & family", grpHome: "Household help", grpExtended: "Extended care",
+    hiredBtn: "✓ I hired this caregiver",
+    hireFormLabel: "Your name (shown with your future review)",
+    hireConfirm: "Confirm hire",
+    tHired: "🎉 Congratulations on your match! You can leave a review anytime.",
+    hiredBadge: "✓ Hired via Pine Crane Care",
     reviews: "Reviews", writeReview: "Write a review",
     commentPh: "How was the service? Punctuality, care quality, communication…",
     submitReview: "Submit review", noReviews: "No reviews yet.",
@@ -234,6 +239,11 @@ const STRINGS = {
     blurb_annual: "最划算 — 省 37%。",
     lServicesNeeded: "需要的服務",
     grpSenior: "長者照護", grpChild: "兒童與家庭", grpHome: "家務協助", grpExtended: "進階照護",
+    hiredBtn: "✓ 我已聘用這位照護者",
+    hireFormLabel: "您的稱呼（將與您日後的評價一同顯示）",
+    hireConfirm: "確認聘用",
+    tHired: "🎉 恭喜配對成功！歡迎隨時留下評價。",
+    hiredBadge: "✓ 透過松鶴護理聘用",
     reviews: "評價", writeReview: "撰寫評價",
     commentPh: "服務如何？守時、照護品質、溝通…",
     submitReview: "送出評價", noReviews: "目前還沒有評價。",
@@ -345,6 +355,11 @@ const STRINGS = {
     blurb_annual: "Mejor precio — ahorre 37%.",
     lServicesNeeded: "Servicios necesarios",
     grpSenior: "Cuidado de mayores", grpChild: "Niños y familia", grpHome: "Ayuda del hogar", grpExtended: "Cuidado extendido",
+    hiredBtn: "✓ Contraté a este cuidador",
+    hireFormLabel: "Su nombre (se mostrará con su futura reseña)",
+    hireConfirm: "Confirmar contratación",
+    tHired: "🎉 ¡Felicidades por su elección! Puede dejar una reseña cuando quiera.",
+    hiredBadge: "✓ Contratado vía Pine Crane Care",
     reviews: "Reseñas", writeReview: "Escribir una reseña",
     commentPh: "¿Cómo fue el servicio? Puntualidad, calidad, comunicación…",
     submitReview: "Enviar reseña", noReviews: "Aún no hay reseñas.",
@@ -418,7 +433,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.7"; // ← bumped on every code update
+const APP_VERSION = "v2.8"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -514,6 +529,9 @@ const loadAides = async () => (await sbSelect("caregivers", "&approved=eq.true")
 const loadJobs = async () => (await sbSelect("care_requests")).map(jobFromDb);
 const loadReviews = async () => {
   try { return await sbSelect("reviews"); } catch (e) { return []; }
+};
+const loadHires = async () => {
+  try { return await sbSelect("hires"); } catch (e) { return []; }
 };
 const loadAgencies = async () => {
   try {
@@ -865,8 +883,25 @@ function RegisterForm({ onSaved, onCancel, initial }) {
 }
 
 // ---------- Directory ----------
-function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview }) {
+function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire }) {
   const { L, ts } = useLang();
+  const [hireOpen, setHireOpen] = useState(false);
+  const [hireName, setHireName] = useState("");
+  const [hireBusy, setHireBusy] = useState(false);
+  const [hiredNow, setHiredNow] = useState(false);
+
+  async function doHire() {
+    if (!hireName.trim()) return;
+    setHireBusy(true);
+    try {
+      await onHire(aide.id, hireName.trim());
+      setHiredNow(true);
+      setHireOpen(false);
+      setRevName(hireName.trim());
+      setRevOpen(true);
+    } catch (e) { /* toast shown by parent */ }
+    setHireBusy(false);
+  }
   const [revOpen, setRevOpen] = useState(false);
   const [revRating, setRevRating] = useState(0);
   const [revName, setRevName] = useState("");
@@ -989,6 +1024,31 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
             </div>
           )}
 
+          {/* I hired this caregiver */}
+          {subscribed && !hiredNow && (
+            hireOpen ? (
+              <div style={{ marginTop: 12, padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
+                <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: T.ink, marginBottom: 6 }}>{L.hireFormLabel}</span>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input style={{ ...inputStyle, padding: "9px 12px", flex: "1 1 140px" }} value={hireName} onChange={(e) => setHireName(e.target.value)} placeholder={L.lYourName} />
+                  <button type="button" disabled={hireBusy} onClick={doHire}
+                    style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                    {hireBusy ? L.saving : L.hireConfirm}
+                  </button>
+                  <button type="button" onClick={() => setHireOpen(false)}
+                    style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`, background: "#fff", color: T.inkSoft, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                    {L.cancel}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setHireOpen(true)}
+                style={{ marginTop: 12, width: "100%", padding: "11px", borderRadius: 10, border: `1.5px dashed ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
+                {L.hiredBtn}
+              </button>
+            )
+          )}
+
           {/* Reviews */}
           <div style={{ marginTop: 14, borderTop: `1px solid ${T.line}`, paddingTop: 12 }}>
             <div style={{ fontWeight: 800, fontSize: 15, color: T.ink, marginBottom: 8 }}>
@@ -1002,6 +1062,9 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
                 <div style={{ fontSize: 13.5 }}>
                   <span style={{ color: T.amber, letterSpacing: 1 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
                   {"  "}<strong style={{ color: T.ink }}>{r.reviewer_name}</strong>
+                  {hires.some((h) => h.client_name && r.reviewer_name && h.client_name.trim().toLowerCase() === r.reviewer_name.trim().toLowerCase()) && (
+                    <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: T.primary, border: `1px solid ${T.primary}`, borderRadius: 999, padding: "1px 7px" }}>{L.hiredBadge}</span>
+                  )}
                   {"  "}<span style={{ color: T.inkSoft, fontSize: 12.5 }}>{new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
                 {r.comment && <p style={{ margin: "6px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.45 }}>{r.comment}</p>}
@@ -1812,6 +1875,7 @@ function AdminView({ onBack, onDataChanged }) {
   const [dbPing, setDbPing] = useState(null); // null=checking, number=ms, "error"=down
   const [jobsCount, setJobsCount] = useState(0);
   const [revsCount, setRevsCount] = useState(0);
+  const [hiresCount, setHiresCount] = useState(0);
   const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" };
 
   async function refresh() {
@@ -1824,6 +1888,7 @@ function AdminView({ onBack, onDataChanged }) {
     try { setAgs(await sbSelect("agencies")); } catch (e) { /* table may be empty */ }
     try { setJobsCount((await sbSelect("care_requests")).length); } catch (e) { /* ignore */ }
     try { setRevsCount((await sbSelect("reviews")).length); } catch (e) { /* ignore */ }
+    try { setHiresCount((await sbSelect("hires")).length); } catch (e) { /* ignore */ }
   }
 
   async function ping() {
@@ -2030,6 +2095,7 @@ function AdminView({ onBack, onDataChanged }) {
                     ["Capacity used", `${capPct}% of free tier`, capPct >= 75 ? T.amber : T.primary],
                     ["Care requests", String(jobsCount), T.primary],
                     ["Reviews", String(revsCount), T.primary],
+                    ["Hires reported", String(hiresCount), T.primary],
                     ["Agencies", `${ags.filter((a) => a.active).length} active · ${expiredAgs} expired`, expiredAgs > 0 ? T.amber : T.primary],
                     ["App version", APP_VERSION, T.primary],
                   ].map(([k, v, c]) => (
@@ -2348,6 +2414,7 @@ export default function App() {
   const [dbError, setDbError] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [agencies, setAgencies] = useState([]);
+  const [hires, setHires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
@@ -2369,6 +2436,7 @@ export default function App() {
         setJobs(await loadJobs());
         setReviews(await loadReviews());
         setAgencies(await loadAgencies());
+        setHires(await loadHires());
         setDbError(false);
       } catch (e) {
         setDbError(true);
@@ -2384,6 +2452,12 @@ export default function App() {
       } catch (e) { /* not aide pro */ }
     })();
   }, []);
+
+  async function addHire(caregiverId, name) {
+    const saved = await sbInsert("hires", { caregiver_id: caregiverId, client_name: name });
+    setHires((list) => [saved, ...list]);
+    showToast(L.tHired);
+  }
 
   async function addReview(caregiverId, rev) {
     const saved = await sbInsert("reviews", {
@@ -2817,6 +2891,8 @@ export default function App() {
                     subscribed={subscribed || unlockedIds.includes(a.id)}
                     reviews={reviews.filter((r) => r.caregiver_id === a.id)}
                     onAddReview={addReview}
+                    hires={hires.filter((h) => h.caregiver_id === a.id)}
+                    onHire={addHire}
                     onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
