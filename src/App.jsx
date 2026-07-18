@@ -418,7 +418,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.5"; // ← bumped on every code update
+const APP_VERSION = "v2.7"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -451,6 +451,17 @@ async function sbUpdate(table, id, row) {
   if (!r.ok) throw new Error(`update ${table} failed: ${r.status}`);
   return (await r.json())[0];
 }
+async function sbUpsert(table, rows) {
+  if (!rows || rows.length === 0) return 0;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=id`, {
+    method: "POST",
+    headers: { ...sbHeaders, Prefer: "resolution=merge-duplicates" },
+    body: JSON.stringify(rows),
+  });
+  if (!r.ok) throw new Error(`restore ${table} failed: ${r.status}`);
+  return rows.length;
+}
+
 async function sbDelete(table, id) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: "DELETE",
@@ -1798,6 +1809,9 @@ function AdminView({ onBack, onDataChanged }) {
   const [msg, setMsg] = useState("");
   const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
   const [agEditId, setAgEditId] = useState(null);
+  const [dbPing, setDbPing] = useState(null); // null=checking, number=ms, "error"=down
+  const [jobsCount, setJobsCount] = useState(0);
+  const [revsCount, setRevsCount] = useState(0);
   const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" };
 
   async function refresh() {
@@ -1808,8 +1822,23 @@ function AdminView({ onBack, onDataChanged }) {
       setRows(all);
     } catch (e) { setMsg("Could not load caregivers."); }
     try { setAgs(await sbSelect("agencies")); } catch (e) { /* table may be empty */ }
+    try { setJobsCount((await sbSelect("care_requests")).length); } catch (e) { /* ignore */ }
+    try { setRevsCount((await sbSelect("reviews")).length); } catch (e) { /* ignore */ }
+  }
+
+  async function ping() {
+    setDbPing(null);
+    const t0 = performance.now();
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/caregivers?select=id&limit=1`, { headers: sbHeaders });
+      if (!r.ok) throw new Error();
+      setDbPing(Math.round(performance.now() - t0));
+    } catch (e) {
+      setDbPing("error");
+    }
   }
   useEffect(() => { if (ok) refresh(); }, [ok]);
+  useEffect(() => { if (ok && tab === "status") ping(); }, [ok, tab]);
 
   async function patch(table, id, fields) {
     try { await sbUpdate(table, id, fields); await refresh(); onDataChanged(); }
@@ -1840,6 +1869,60 @@ function AdminView({ onBack, onDataChanged }) {
       await refresh();
       onDataChanged();
     } catch (e) { setMsg("Save failed — run the agencies insert/update/delete policies SQL."); }
+  }
+
+  async function exportAll() {
+    setMsg("Exporting…");
+    try {
+      const grab = async (t) => { try { return await sbSelect(t); } catch (e) { return []; } };
+      const data = {
+        app: "pinecranecare",
+        format: 1,
+        appVersion: APP_VERSION,
+        exportedAt: new Date().toISOString(),
+        tables: {
+          caregivers: await grab("caregivers"),
+          care_requests: await grab("care_requests"),
+          reviews: await grab("reviews"),
+          agencies: await grab("agencies"),
+        },
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pinecranecare-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      const t = data.tables;
+      setMsg(`Backup downloaded ✓ — ${t.caregivers.length} caregivers, ${t.care_requests.length} care requests, ${t.reviews.length} reviews, ${t.agencies.length} agencies`);
+    } catch (e) {
+      setMsg("Export failed — check connection.");
+    }
+  }
+
+  async function importAll(file) {
+    setMsg("Restoring…");
+    try {
+      const data = JSON.parse(await file.text());
+      if (data.app !== "pinecranecare" || !data.tables) {
+        setMsg("That's not a Pine Crane Care backup file.");
+        return;
+      }
+      const t = data.tables;
+      let n = 0;
+      n += await sbUpsert("caregivers", t.caregivers);    // first — reviews reference them
+      n += await sbUpsert("care_requests", t.care_requests);
+      n += await sbUpsert("agencies", t.agencies);
+      n += await sbUpsert("reviews", t.reviews);
+      setMsg(`Restore complete ✓ — ${n} records re-created or updated.`);
+      await refresh();
+      onDataChanged();
+    } catch (e) {
+      setMsg("Restore failed — " + (e.message || "invalid file"));
+    }
   }
 
   function startAgEdit(a) {
@@ -1882,7 +1965,7 @@ function AdminView({ onBack, onDataChanged }) {
         <button type="button" style={btn("#fff", T.ink, `1.5px solid ${T.line}`)} onClick={onBack}>Exit</button>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`]].map(([id, label]) => (
+        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"]].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
             style={btn(tab === id ? T.primary : "#fff", tab === id ? "#fff" : T.ink, `1.5px solid ${tab === id ? T.primary : T.line}`)}>
             {label}
@@ -1920,6 +2003,93 @@ function AdminView({ onBack, onDataChanged }) {
             <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("caregivers", r.id, r.name)}>✕</button>
           </div>
         ))
+      ) : tab === "status" ? (
+        <div>
+          {(() => {
+            const pending = rows.filter((r) => !r.approved).length;
+            const withPhotos = rows.filter((r) => r.photo_url).length;
+            const capPct = Math.round((rows.length / 4000) * 100);
+            const today = new Date().toISOString().slice(0, 10);
+            const expiredAgs = ags.filter((a) => a.paid_until && a.paid_until < today).length;
+            const alerts = [];
+            if (dbPing === "error") alerts.push(["crit", "Database unreachable — check status.supabase.com and whether the project is paused."]);
+            else if (typeof dbPing === "number" && dbPing > 2000) alerts.push(["crit", `Database responding very slowly (${dbPing} ms, threshold 2000 ms).`]);
+            else if (typeof dbPing === "number" && dbPing > 800) alerts.push(["warn", `Database slow (${dbPing} ms, threshold 800 ms) — watch for repeats.`]);
+            if (pending >= 10) alerts.push(["warn", `${pending} caregivers pending review (threshold 10) — approve or remove them.`]);
+            else if (pending > 0) alerts.push(["info", `${pending} caregiver(s) awaiting your review.`]);
+            if (expiredAgs > 0) alerts.push(["warn", `${expiredAgs} agency ad(s) expired — collect payment (+1 mo) or remove.`]);
+            if (capPct >= 75) alerts.push(["warn", `Caregiver count at ${capPct}% of free-tier photo capacity (~4,000) — plan the Supabase Pro upgrade.`]);
+            const colors = { crit: T.danger, warn: T.amber, info: T.primary };
+            return (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                  {[
+                    ["Database", dbPing === "error" ? "DOWN" : dbPing == null ? "checking…" : `OK · ${dbPing} ms`, dbPing === "error" ? T.danger : typeof dbPing === "number" && dbPing > 800 ? T.amber : T.primary],
+                    ["Caregivers", `${rows.length} total · ${pending} pending`, pending >= 10 ? T.amber : T.primary],
+                    ["Photos stored", `${withPhotos} (~${Math.round(withPhotos * 0.2)} MB est.)`, T.primary],
+                    ["Capacity used", `${capPct}% of free tier`, capPct >= 75 ? T.amber : T.primary],
+                    ["Care requests", String(jobsCount), T.primary],
+                    ["Reviews", String(revsCount), T.primary],
+                    ["Agencies", `${ags.filter((a) => a.active).length} active · ${expiredAgs} expired`, expiredAgs > 0 ? T.amber : T.primary],
+                    ["App version", APP_VERSION, T.primary],
+                  ].map(([k, v, c]) => (
+                    <div key={k} style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 12, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 800, color: T.inkSoft, textTransform: "uppercase", letterSpacing: 0.5 }}>{k}</div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: c, marginTop: 2 }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: T.ink, marginBottom: 8 }}>Alerts & actions</div>
+                {alerts.length === 0 ? (
+                  <div style={{ padding: "10px 12px", background: "#EFF6F3", border: `1px solid ${T.primary}`, borderRadius: 10, fontSize: 14, color: T.ink }}>
+                    ✅ All systems normal — no action needed.
+                  </div>
+                ) : (
+                  alerts.map(([lvl, text], i) => (
+                    <div key={i} style={{ padding: "10px 12px", background: lvl === "crit" ? "#FBEAE5" : lvl === "warn" ? "#FCF4E3" : "#EFF6F3", border: `1px solid ${colors[lvl]}`, borderRadius: 10, fontSize: 14, color: T.ink, marginBottom: 8 }}>
+                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", marginRight: 8, background: colors[lvl] }} />
+                      {text}
+                    </div>
+                  ))
+                )}
+                <button type="button" style={{ ...btn("#fff", T.primary, `1.5px solid ${T.primary}`), marginTop: 12 }} onClick={() => { ping(); refresh(); }}>
+                  ↻ Re-check now
+                </button>
+                <p style={{ fontSize: 12.5, color: T.inkSoft, marginTop: 14, lineHeight: 1.5 }}>
+                  This panel checks while you're looking at it. For 24/7 down-time alerts sent to your email,
+                  add a free UptimeRobot monitor for pinecranecare.com (checks every 5 minutes).
+                </p>
+              </>
+            );
+          })()}
+        </div>
+      ) : tab === "backup" ? (
+        <div>
+          <p style={{ fontSize: 14, color: T.inkSoft, lineHeight: 1.6, marginTop: 0 }}>
+            <strong style={{ color: T.ink }}>Export</strong> downloads every record — caregivers, care requests,
+            reviews, and agencies — as a single JSON file. Save it somewhere safe (your computer, email, cloud drive).
+            <br /><br />
+            <strong style={{ color: T.ink }}>Restore</strong> reads that same file back: missing records are
+            re-created and existing ones are updated by ID. Safe to run on a live database.
+            <br /><br />
+            Note: photos live in Supabase Storage — the backup contains their links, not the image files.
+            As long as Storage is intact, a restore brings everything back including photos.
+          </p>
+          <button type="button" style={{ ...btn(T.primary, "#fff"), fontSize: 15, padding: "12px 18px" }} onClick={exportAll}>
+            ⬇ Export all data
+          </button>
+          <div style={{ marginTop: 14 }}>
+            <label style={{ ...btn("#fff", T.primary, `1.5px solid ${T.primary}`), fontSize: 15, padding: "12px 18px", display: "inline-block" }}>
+              ⬆ Restore from backup file
+              <input
+                type="file"
+                accept="application/json,.json"
+                style={{ display: "none" }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) importAll(f); e.target.value = ""; }}
+              />
+            </label>
+          </div>
+        </div>
       ) : (
         <>
           <div style={{ background: T.surface, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${T.line}` }}>
@@ -2697,14 +2867,7 @@ export default function App() {
           >
             {L.fTerms}
           </button>
-          <span style={{ color: T.inkSoft }}>·</span>
-          <button
-            type="button"
-            onClick={() => { setView("backup"); window.scrollTo(0, 0); }}
-            style={{ background: "none", border: "none", color: T.inkSoft, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px" }}
-          >
-            {L.fBackup}
-          </button>
+
           <span style={{ color: T.inkSoft }}>·</span>
           <button
             type="button"
