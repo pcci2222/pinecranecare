@@ -84,15 +84,41 @@ const STRINGS = {
     plSub: "Browsing is always free. A membership unlocks every aide's phone number and email, so you can contact as many aides as you need — whether you're nearby or arranging care for a loved one from another state or country.",
     demoText: "Demo checkout: no real payment is collected in this prototype. In the live version, this button opens Stripe's secure payment page — accepting cards from any country, Apple Pay, Google Pay, Alipay (支付宝), and WeChat Pay (微信支付).",
     activate: "Activate demo membership", popular: "MOST POPULAR", back: "← Back",
+    benefitsTitle: "Every membership includes:",
+    benefit1: "Unlimited caregiver contacts",
+    benefit2: "Free replacement matching if your caregiver becomes unavailable",
+    benefit3: "Post care requests — let caregivers come to you",
+    benefit4: "Write and read verified reviews",
+    suName: "Single Unlock", suPrice: "$12.99", suPer: " one-time",
+    suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
+    featuredBadge: "★ Featured",
+    teaserName: "Verified Caregiver",
+    partnersTitle: "Medicaid & Licensed Agency Partners",
+    partnersSub: "Think your loved one may qualify for Medicaid home care? These licensed agencies can help you check eligibility, apply, and receive covered care.",
+    sponsoredTag: "Sponsored", partnerCall: "Call", partnerSite: "Website",
+    postFeeTitle: "Care request posting fee",
+    postFeeNote: "One-time $9.99 fee per posting. Demo checkout — no real payment is collected in this prototype; the live version uses Stripe's secure payment page.",
+    payPublish: "Pay $9.99 & publish",
+    aideProLocked: "Client contact info is available to Aide Pro members.",
+    aideProBtn: "Become Aide Pro — $14.99/month (demo)",
+    tAidePro: "Aide Pro active — client contacts unlocked ✓",
+    tUnlocked: "Caregiver unlocked ✓",
     plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual",
     blurb_monthly: "Full access, cancel anytime.",
     blurb_quarterly: "Save 17% — most popular.",
     blurb_annual: "Best value — save 37%.",
     lServicesNeeded: "Services needed",
     grpSenior: "Senior care", grpChild: "Child & family", grpHome: "Household help", grpExtended: "Extended care",
+    reviews: "Reviews", writeReview: "Write a review",
+    commentPh: "How was the service? Punctuality, care quality, communication…",
+    submitReview: "Submit review", noReviews: "No reviews yet.",
+    errReview: "Please select a star rating and enter your name.",
+    tReview: "Thank you — your review is posted ✓",
+    faqTitle: "Frequently Asked Questions", faqClientTitle: "For Families", faqAideTitle: "For Caregivers", faqLink: "FAQ", whyMembership: "Why membership?",
     fPrivacy: "Privacy Policy", fTerms: "Terms of Service", fBackup: "Backup (testing)",
     fCopy: "© 2026 Pine Crane Care. Families are responsible for screening and hiring decisions.",
-    tProfileLive: "Your profile is live! 🎉", tProfileUpd: "Profile updated ✓", tProfileRem: "Profile removed.",
+    tProfileLive: "Your profile has been submitted for review — it will appear in the directory once Pine Crane Care verifies it ✓",
+    verifiedBadge: "✓ Verified", tProfileUpd: "Profile updated ✓", tProfileRem: "Profile removed.",
     tJobLive: "Your care request is live! 🎉", tJobUpd: "Care request updated ✓", tJobRem: "Care request removed.",
     tMember: "Membership active — contact info unlocked ✓",
   },
@@ -155,15 +181,41 @@ const STRINGS = {
     plSub: "瀏覽永遠免費。成為會員即可解鎖所有看護的電話與郵件 — 無論您在本地，或在外州、海外為家人安排照護。",
     demoText: "示範結帳：本原型不會收取任何費用。正式版將開啟 Stripe 安全付款頁面 — 支援各國信用卡、Apple Pay、Google Pay、支付寶與微信支付。",
     activate: "啟用示範會員", popular: "最受歡迎", back: "← 返回",
+    benefitsTitle: "所有會員方案皆包含：",
+    benefit1: "無限次聯繫照護者",
+    benefit2: "照護者無法繼續時，免費重新配對",
+    benefit3: "發布照護徵求 — 讓照護者主動聯繫您",
+    benefit4: "撰寫並查看真實評價",
+    suName: "單次解鎖", suPrice: "$12.99", suPer: " 一次性",
+    suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
+    featuredBadge: "★ 精選",
+    teaserName: "已驗證照護者",
+    partnersTitle: "Medicaid 與持牌機構夥伴",
+    partnersSub: "您的家人可能符合 Medicaid 居家照護資格？這些持牌機構可協助您確認資格、提出申請並獲得保險給付的照護。",
+    sponsoredTag: "贊助", partnerCall: "致電", partnerSite: "網站",
+    postFeeTitle: "徵求發布費",
+    postFeeNote: "每則徵求一次性收費 $9.99。示範結帳 — 原型不會實際收費；正式版將使用 Stripe 安全付款頁面。",
+    payPublish: "支付 $9.99 並發布",
+    aideProLocked: "客戶聯絡方式僅限 Aide Pro 會員查看。",
+    aideProBtn: "成為 Aide Pro — 每月 $14.99（示範）",
+    tAidePro: "Aide Pro 已啟用 — 客戶聯絡方式已解鎖 ✓",
+    tUnlocked: "已解鎖照護者 ✓",
     plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳",
     blurb_monthly: "完整功能，隨時取消。",
     blurb_quarterly: "省 17% — 最受歡迎。",
     blurb_annual: "最划算 — 省 37%。",
     lServicesNeeded: "需要的服務",
     grpSenior: "長者照護", grpChild: "兒童與家庭", grpHome: "家務協助", grpExtended: "進階照護",
+    reviews: "評價", writeReview: "撰寫評價",
+    commentPh: "服務如何？守時、照護品質、溝通…",
+    submitReview: "送出評價", noReviews: "目前還沒有評價。",
+    errReview: "請選擇星等並填寫稱呼。",
+    tReview: "感謝您 — 評價已發布 ✓",
+    faqTitle: "常見問題", faqClientTitle: "給家庭（客戶）", faqAideTitle: "給照護者", faqLink: "常見問題", whyMembership: "為何要加入會員？",
     fPrivacy: "隱私政策", fTerms: "服務條款", fBackup: "備份（測試用）",
     fCopy: "© 2026 Pine Crane Care 松鶴護理。家庭須自行負責審核與聘用決定。",
-    tProfileLive: "您的檔案已上線！🎉", tProfileUpd: "檔案已更新 ✓", tProfileRem: "檔案已刪除。",
+    tProfileLive: "您的檔案已送出審核 — 通過驗證後將顯示於名錄中 ✓",
+    verifiedBadge: "✓ 已驗證", tProfileUpd: "檔案已更新 ✓", tProfileRem: "檔案已刪除。",
     tJobLive: "您的徵求已發布！🎉", tJobUpd: "徵求已更新 ✓", tJobRem: "徵求已刪除。",
     tMember: "會員已啟用 — 聯絡方式已解鎖 ✓",
   },
@@ -226,15 +278,41 @@ const STRINGS = {
     plSub: "Navegar siempre es gratis. La membresía desbloquea el teléfono y correo de todos los cuidadores — esté cerca o coordinando el cuidado desde otro estado o país.",
     demoText: "Pago de demostración: este prototipo no cobra nada. En la versión real se abrirá la página segura de Stripe — tarjetas de cualquier país, Apple Pay, Google Pay, Alipay y WeChat Pay.",
     activate: "Activar membresía demo", popular: "MÁS POPULAR", back: "← Volver",
+    benefitsTitle: "Toda membresía incluye:",
+    benefit1: "Contactos ilimitados con cuidadores",
+    benefit2: "Reemplazo gratuito si su cuidador deja de estar disponible",
+    benefit3: "Publique solicitudes — deje que los cuidadores lo contacten",
+    benefit4: "Escriba y lea reseñas verificadas",
+    suName: "Desbloqueo Único", suPrice: "$12.99", suPer: " pago único",
+    suBlurb: "¿No está listo para una membresía? Desbloquee el perfil completo y contacto de este cuidador.",
+    featuredBadge: "★ Destacado",
+    teaserName: "Cuidador Verificado",
+    partnersTitle: "Agencias Licenciadas y Medicaid",
+    partnersSub: "¿Su ser querido podría calificar para cuidado en el hogar por Medicaid? Estas agencias licenciadas pueden ayudarle a verificar la elegibilidad, aplicar y recibir cuidado cubierto.",
+    sponsoredTag: "Patrocinado", partnerCall: "Llamar", partnerSite: "Sitio web",
+    postFeeTitle: "Tarifa por publicar solicitud",
+    postFeeNote: "Pago único de $9.99 por publicación. Pago de demostración — este prototipo no cobra; la versión real usará la página segura de Stripe.",
+    payPublish: "Pagar $9.99 y publicar",
+    aideProLocked: "El contacto del cliente está disponible para miembros Aide Pro.",
+    aideProBtn: "Hazte Aide Pro — $14.99/mes (demo)",
+    tAidePro: "Aide Pro activo — contactos de clientes desbloqueados ✓",
+    tUnlocked: "Cuidador desbloqueado ✓",
     plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual",
     blurb_monthly: "Acceso total, cancele cuando quiera.",
     blurb_quarterly: "Ahorre 17% — el más popular.",
     blurb_annual: "Mejor precio — ahorre 37%.",
     lServicesNeeded: "Servicios necesarios",
     grpSenior: "Cuidado de mayores", grpChild: "Niños y familia", grpHome: "Ayuda del hogar", grpExtended: "Cuidado extendido",
+    reviews: "Reseñas", writeReview: "Escribir una reseña",
+    commentPh: "¿Cómo fue el servicio? Puntualidad, calidad, comunicación…",
+    submitReview: "Enviar reseña", noReviews: "Aún no hay reseñas.",
+    errReview: "Seleccione una calificación e ingrese su nombre.",
+    tReview: "Gracias — su reseña fue publicada ✓",
+    faqTitle: "Preguntas Frecuentes", faqClientTitle: "Para Familias", faqAideTitle: "Para Cuidadores", faqLink: "Preguntas", whyMembership: "¿Por qué la membresía?",
     fPrivacy: "Política de privacidad", fTerms: "Términos de servicio", fBackup: "Copia de seguridad (pruebas)",
     fCopy: "© 2026 Pine Crane Care. Las familias son responsables de verificar y contratar.",
-    tProfileLive: "¡Su perfil está publicado! 🎉", tProfileUpd: "Perfil actualizado ✓", tProfileRem: "Perfil eliminado.",
+    tProfileLive: "Su perfil fue enviado para revisión — aparecerá en el directorio una vez verificado ✓",
+    verifiedBadge: "✓ Verificado", tProfileUpd: "Perfil actualizado ✓", tProfileRem: "Perfil eliminado.",
     tJobLive: "¡Su solicitud está publicada! 🎉", tJobUpd: "Solicitud actualizada ✓", tJobRem: "Solicitud eliminada.",
     tMember: "Membresía activa — contactos desbloqueados ✓",
   },
@@ -306,8 +384,8 @@ const sbHeaders = {
   "Content-Type": "application/json",
 };
 
-async function sbSelect(table) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=created_at.desc`, { headers: sbHeaders });
+async function sbSelect(table, extra = "") {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=created_at.desc${extra}`, { headers: sbHeaders });
   if (!r.ok) throw new Error(`load ${table} failed: ${r.status}`);
   return r.json();
 }
@@ -363,7 +441,7 @@ const aideFromDb = (r) => ({
   name: r.name || "", phone: r.phone || "", email: r.email || "", city: r.city || "", zip: r.zip || "",
   age: strOf(r.age), years: strOf(r.years), rate: strOf(r.rate),
   languages: r.languages || "", bio: r.bio || "",
-  services: r.services || [], certs: r.certs || [], photo: r.photo_url || null, pin: r.pin || "",
+  services: r.services || [], certs: r.certs || [], photo: r.photo_url || null, pin: r.pin || "", approved: !!r.approved, featured: !!r.featured,
 });
 const jobToDb = (j) => ({
   title: j.title, name: j.name, phone: j.phone, email: j.email || null, city: j.city, zip: j.zip || null,
@@ -377,8 +455,14 @@ const jobFromDb = (r) => ({
   services: r.services || [], details: r.details || "", pin: r.pin || "",
 });
 
-const loadAides = async () => (await sbSelect("caregivers")).map(aideFromDb);
+const loadAides = async () => (await sbSelect("caregivers", "&approved=eq.true")).map(aideFromDb).sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
 const loadJobs = async () => (await sbSelect("care_requests")).map(jobFromDb);
+const loadReviews = async () => {
+  try { return await sbSelect("reviews"); } catch (e) { return []; }
+};
+const loadAgencies = async () => {
+  try { return (await sbSelect("agencies", "&active=eq.true")); } catch (e) { return []; }
+};
 
 
 // ---------- Small UI pieces ----------
@@ -673,8 +757,28 @@ function RegisterForm({ onSaved, onCancel, initial }) {
 }
 
 // ---------- Directory ----------
-function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub }) {
+function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview }) {
   const { L, ts } = useLang();
+  const [revOpen, setRevOpen] = useState(false);
+  const [revRating, setRevRating] = useState(0);
+  const [revName, setRevName] = useState("");
+  const [revComment, setRevComment] = useState("");
+  const [revError, setRevError] = useState("");
+  const [revBusy, setRevBusy] = useState(false);
+  const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
+
+  async function submitReview() {
+    if (!revRating || !revName.trim()) { setRevError(L.errReview); return; }
+    setRevBusy(true);
+    setRevError("");
+    try {
+      await onAddReview(aide.id, { name: revName.trim(), rating: revRating, comment: revComment.trim() });
+      setRevOpen(false); setRevRating(0); setRevComment("");
+    } catch (e) {
+      setRevError(L.errSave);
+    }
+    setRevBusy(false);
+  }
   const [expanded, setExpanded] = useState(false);
   const [pinAction, setPinAction] = useState(null); // null | "edit" | "delete"
   const [pinValue, setPinValue] = useState("");
@@ -717,7 +821,12 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub }) {
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: 18, color: T.ink }}>{aide.name}</div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: T.ink }}>
+            {subscribed ? aide.name : L.teaserName}
+            {aide.featured && <span style={{ color: "#3A2A08", background: T.amber, fontWeight: 800, fontSize: 11.5, marginLeft: 8, padding: "2px 8px", borderRadius: 999, verticalAlign: "middle" }}>{L.featuredBadge}</span>}
+            <span style={{ color: "#fff", background: T.primary, fontWeight: 800, fontSize: 11.5, marginLeft: 8, padding: "2px 8px", borderRadius: 999, verticalAlign: "middle" }}>{L.verifiedBadge}</span>
+            {avg && <span style={{ color: T.amber, fontWeight: 800, fontSize: 14.5, marginLeft: 8 }}>★ {avg} ({reviews.length})</span>}
+          </div>
           <div style={{ fontSize: 14, color: T.inkSoft }}>
             {aide.city}{aide.age ? ` · ${L.ageLbl} ${aide.age}` : ""}{aide.years ? ` · ${aide.years} ${L.yrsExp}` : ""}{aide.rate ? ` · $${aide.rate}/hr` : ""}
           </div>
@@ -771,6 +880,56 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub }) {
               </button>
             </div>
           )}
+
+          {/* Reviews */}
+          <div style={{ marginTop: 14, borderTop: `1px solid ${T.line}`, paddingTop: 12 }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: T.ink, marginBottom: 8 }}>
+              {L.reviews}{avg && <span style={{ color: T.amber, marginLeft: 8 }}>★ {avg} · {reviews.length}</span>}
+            </div>
+            {reviews.length === 0 && (
+              <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>{L.noReviews}</p>
+            )}
+            {reviews.map((r) => (
+              <div key={r.id} style={{ padding: "10px 12px", background: T.surface, borderRadius: 10, marginBottom: 8 }}>
+                <div style={{ fontSize: 13.5 }}>
+                  <span style={{ color: T.amber, letterSpacing: 1 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                  {"  "}<strong style={{ color: T.ink }}>{r.reviewer_name}</strong>
+                  {"  "}<span style={{ color: T.inkSoft, fontSize: 12.5 }}>{new Date(r.created_at).toLocaleDateString()}</span>
+                </div>
+                {r.comment && <p style={{ margin: "6px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.45 }}>{r.comment}</p>}
+              </div>
+            ))}
+            {revOpen && subscribed ? (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button key={n} type="button" onClick={() => { setRevRating(n); setRevError(""); }}
+                      style={{ background: "none", border: "none", fontSize: 28, cursor: "pointer", color: n <= revRating ? T.amber : T.line, padding: "0 2px" }}>
+                      ★
+                    </button>
+                  ))}
+                </div>
+                <input style={{ ...inputStyle, marginBottom: 8 }} placeholder={L.lYourName} value={revName} onChange={(e) => setRevName(e.target.value)} />
+                <textarea style={{ ...inputStyle, minHeight: 70, resize: "vertical", marginBottom: 8 }} placeholder={L.commentPh} value={revComment} onChange={(e) => setRevComment(e.target.value)} />
+                {revError && <p style={{ color: T.danger, fontSize: 13.5, fontWeight: 600, margin: "0 0 8px" }}>{revError}</p>}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" disabled={revBusy} onClick={submitReview}
+                    style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
+                    {revBusy ? L.saving : L.submitReview}
+                  </button>
+                  <button type="button" onClick={() => setRevOpen(false)}
+                    style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${T.line}`, background: "#fff", color: T.inkSoft, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                    {L.cancel}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onRequireSub())}
+                style={{ marginTop: 4, padding: "10px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                {subscribed ? L.writeReview : "🔒 " + L.writeReview}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -861,6 +1020,8 @@ const HERO_PHOTOS = [
   "https://images.pexels.com/photos/34328480/pexels-photo-34328480.jpeg?auto=compress&cs=tinysrgb&h=400",
   // Aide with a senior adult in a wheelchair:
   "https://images.pexels.com/photos/16364306/pexels-photo-16364306.jpeg?auto=compress&cs=tinysrgb&h=400",
+  // Caregiver with an infant (chosen by Jason — Pexels, free license):
+  "https://images.pexels.com/photos/23174628/pexels-photo-23174628.jpeg?auto=compress&cs=tinysrgb&h=400",
 ];
 
 function HeroVisual() {
@@ -869,7 +1030,7 @@ function HeroVisual() {
   if (photos.length === 0) return <HeroIllustration />;
   return (
     <div style={{ display: "flex", gap: 6 }}>
-      {HERO_PHOTOS.slice(0, 2).map((url, i) =>
+      {HERO_PHOTOS.slice(0, 3).map((url, i) =>
         failed[i] ? null : (
           <img
             key={url}
@@ -969,6 +1130,7 @@ function HeroIllustration() {
 // ---------- Care requests (client job postings) ----------
 function JobForm({ onSaved, onCancel, initial }) {
   const { L, ts } = useLang();
+  const [payStep, setPayStep] = useState(false);
   const [form, setForm] = useState(
     initial || {
       title: "", name: "", phone: "", email: "", city: "", zip: "",
@@ -991,6 +1153,11 @@ function JobForm({ onSaved, onCancel, initial }) {
     }
     if (!/^\d{4}$/.test(form.pin || "")) {
       setError(L.errPin);
+      return;
+    }
+    if (!initial && !payStep) {
+      setPayStep(true);
+      setError("");
       return;
     }
     setSaving(true);
@@ -1083,6 +1250,15 @@ function JobForm({ onSaved, onCancel, initial }) {
         />
       </Field>
 
+      {payStep && !initial && (
+        <div style={{ border: `2px solid ${T.amber}`, borderRadius: 14, padding: 14, marginBottom: 14, background: "#FFFDF7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+            <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink }}>{L.postFeeTitle}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>$9.99</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.postFeeNote}</p>
+        </div>
+      )}
       {error && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: 10 }}>
@@ -1096,7 +1272,7 @@ function JobForm({ onSaved, onCancel, initial }) {
             fontSize: 17, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
           }}
         >
-          {saving ? L.saving : initial ? L.save : L.publishJob}
+          {saving ? L.saving : initial ? L.save : payStep ? L.payPublish : L.publishJob}
         </button>
         <button
           type="button"
@@ -1117,7 +1293,7 @@ function JobForm({ onSaved, onCancel, initial }) {
   );
 }
 
-function JobCard({ job, onDelete, onEdit }) {
+function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup }) {
   const { L, ts } = useLang();
   const [expanded, setExpanded] = useState(false);
   const [pinAction, setPinAction] = useState(null);
@@ -1164,11 +1340,29 @@ function JobCard({ job, onDelete, onEdit }) {
       {expanded && (
         <div style={{ marginTop: 12, fontSize: 14.5, color: T.ink }}>
           {job.details && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{job.details}</p>}
-          <p style={{ margin: 0 }}>
-            <strong>{L.contactPerson} {job.name}:</strong>{" "}
-            <a href={"tel:" + job.phone} style={{ color: T.primary, fontWeight: 700 }}>{job.phone}</a>
-            {job.email ? <> · <a href={"mailto:" + job.email} style={{ color: T.primary }}>{job.email}</a></> : null}
-          </p>
+          {aidePro ? (
+            <p style={{ margin: 0 }}>
+              <strong>{L.contactPerson} {job.name}:</strong>{" "}
+              <a href={"tel:" + job.phone} style={{ color: T.primary, fontWeight: 700 }}>{job.phone}</a>
+              {job.email ? <> · <a href={"mailto:" + job.email} style={{ color: T.primary }}>{job.email}</a></> : null}
+            </p>
+          ) : (
+            <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
+              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
+                🔒 <strong>{L.contactPerson} {job.name}: (•••) •••-••••</strong> — {L.aideProLocked}
+              </p>
+              <button
+                type="button"
+                onClick={onAideProSignup}
+                style={{
+                  padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary,
+                  color: "#fff", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {L.aideProBtn}
+              </button>
+            </div>
+          )}
         </div>
       )}
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -1227,7 +1421,7 @@ const PLANS = [
   { id: "annual", name: "Annual", price: "$149.99", per: "/year", months: 12, blurb: "Best value — save 37%." },
 ];
 
-function PlansView({ onActivate, onBack }) {
+function PlansView({ onActivate, onBack, singleUnlock, onSingleUnlock }) {
   const { L } = useLang();
   const [selected, setSelected] = useState(null);
   return (
@@ -1249,6 +1443,33 @@ function PlansView({ onActivate, onBack }) {
       <p style={{ margin: "0 0 20px", fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>
         {L.plSub}
       </p>
+
+      <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 16px", marginBottom: 18 }}>
+        <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 6 }}>{L.benefitsTitle}</div>
+        {[L.benefit1, L.benefit2, L.benefit3, L.benefit4].map((b) => (
+          <div key={b} style={{ fontSize: 14, color: T.inkSoft, marginBottom: 4 }}>✓ {b}</div>
+        ))}
+      </div>
+
+      {singleUnlock && (
+        <div style={{ border: `2px solid ${T.amber}`, borderRadius: 14, padding: 16, marginBottom: 14, background: "#FFFDF7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{L.suName}</span>
+            <span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>{L.suPrice}</span>
+              <span style={{ fontSize: 13, color: T.inkSoft }}>{L.suPer}</span>
+            </span>
+          </div>
+          <div style={{ fontSize: 13.5, color: T.inkSoft, marginTop: 4, marginBottom: 10 }}>{L.suBlurb}</div>
+          <button
+            type="button"
+            onClick={onSingleUnlock}
+            style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 15.5, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            {L.suName} ✓
+          </button>
+        </div>
+      )}
 
       <div style={{ display: "grid", gap: 12 }}>
         {PLANS.map((p) => (
@@ -1305,6 +1526,101 @@ function PlansView({ onActivate, onBack }) {
   );
 }
 
+
+// ---------- FAQ content (EN / 中文 / Español) ----------
+const FAQ = {
+  en: {
+    client: [
+      ["Is browsing free?", "Yes. Anyone can search and browse every verified caregiver profile for free. A membership unlocks full profiles and direct contact information (phone and email) for every caregiver on the platform."],
+      ["Why keep my membership after I've hired someone?", "Because care needs change. Active members get replacement matching at no extra charge if your caregiver becomes unavailable — illness, schedule changes, or moving on. You can also post urgent backup requests and contact unlimited caregivers as needs evolve, whether that's more hours, respite relief, or recovery care after a hospital stay. Your membership is your safety net, not just a one-time search."],
+      ["Are caregivers verified?", "Every caregiver listed has been reviewed by Pine Crane Care before appearing in the directory — that's what the ✓ Verified badge means. We still encourage families to interview candidates and check references; our platform gives you the tools and reviews to do it well."],
+      ["Who sets the pay rate?", "You and the caregiver agree on the rate directly. There is no agency markup in the middle — caregivers typically earn more than agency wages while families often pay less than agency billing rates."],
+      ["I live out of state or overseas — can I arrange care for my parents?", "Absolutely — this is one of the things Pine Crane Care was built for. Search by the ZIP code where your loved one lives, review verified profiles in English, 中文, or Español, and contact caregivers from anywhere in the world."],
+      ["What if the caregiver doesn't work out?", "With an active membership, just come back — contact new caregivers or post a care request at no additional charge. Members never start from zero. This ongoing protection is the biggest reason families keep their membership active."],
+    ],
+    aide: [
+      ["Does it cost money to join as a caregiver?", "No. Creating your profile is free, and it stays free to be listed once verified."],
+      ["How do I get clients?", "Two ways: families searching your area find your verified profile, and you can browse the Care Requests board and contact families directly about the jobs they've posted."],
+      ["Why keep my profile active after I find work?", "Because every job ends eventually — schedules change, families relocate, care needs shift. An active profile with good reviews means your next client finds you before your current job ends, so you avoid gaps in income. Think of your profile as your ongoing storefront, not a one-time ad."],
+      ["How do reviews help me earn more?", "Caregivers with strong reviews get contacted first and can confidently ask for higher rates. Every family you serve well builds a reputation that lives permanently on your profile — it's the most valuable asset you build here."],
+      ["Do I keep all my earnings?", "Yes. Families pay you directly at the rate you agreed. Pine Crane Care never takes a cut of your hourly pay."],
+      ["What does the Verified badge mean for me?", "Verification tells families your identity and stated credentials have been reviewed — verified caregivers get significantly more contact from families. Keep your certifications up to date on your profile to make the most of it."],
+    ],
+  },
+  zh: {
+    client: [
+      ["瀏覽是免費的嗎？", "是的。任何人都可以免費搜尋及瀏覽所有經驗證的照護者檔案。成為會員後，即可解鎖完整檔案與每位照護者的直接聯絡方式（電話與電子郵件）。"],
+      ["已經請到人了，為什麼還要續會員？", "因為照護需求會變化。會員在照護者因生病、時間衝突或離職而無法繼續時，可免費重新配對。您也可以發布緊急替補需求，並隨需求變化（增加時數、喘息照護、術後照護）聯繫任何照護者。會員資格是您的安全網，不只是一次性的搜尋。"],
+      ["照護者有經過驗證嗎？", "名錄中的每位照護者都經過松鶴護理審核後才會顯示 — 這就是 ✓ 已驗證標章的意義。我們仍建議家庭親自面談並查核推薦人；平台提供評價與工具協助您做好把關。"],
+      ["時薪由誰決定？", "由您與照護者直接商定，中間沒有仲介抽成 — 照護者通常比仲介工資賺得多，而家庭往往比仲介收費付得少。"],
+      ["我住在外州或海外，可以為父母安排照護嗎？", "當然可以 — 這正是松鶴護理的核心服務之一。輸入家人居住地的郵遞區號搜尋，以中文、英文或西班牙文瀏覽經驗證的檔案，從世界任何地方聯繫照護者。"],
+      ["如果照護者不合適怎麼辦？", "只要會員資格有效，隨時回來即可 — 免費聯繫新的照護者或發布徵求。會員永遠不必從零開始，這份持續保障正是家庭續會的最大原因。"],
+    ],
+    aide: [
+      ["註冊成為照護者要收費嗎？", "不用。建立檔案完全免費，通過驗證後刊登也免費。"],
+      ["我要怎麼找到客戶？", "兩個管道：您所在地區的家庭搜尋時會看到您的驗證檔案；您也可以瀏覽「徵求看護」版面，直接聯繫發布需求的家庭。"],
+      ["找到工作後，為什麼還要保持檔案有效？", "因為每份工作終會結束 — 時間表變動、家庭搬遷、照護需求改變。保持檔案活躍並累積好評，下一位客戶會在目前工作結束前找到您，避免收入中斷。把檔案當作您長期經營的店面，而不是一次性的廣告。"],
+      ["評價如何幫助我賺更多？", "評價優良的照護者會最先被聯繫，也能有底氣開出較高時薪。每服務好一個家庭，都會在您的檔案上累積永久的口碑 — 這是您在平台上最有價值的資產。"],
+      ["我的收入需要被抽成嗎？", "不需要。家庭依雙方議定的時薪直接付款給您，松鶴護理不從您的時薪中抽取任何費用。"],
+      ["「已驗證」標章對我有什麼意義？", "驗證代表您的身分與所列資格已經過審核 — 通過驗證的照護者獲得家庭聯繫的機會顯著更多。請保持檔案上的證照資訊最新，發揮最大效益。"],
+    ],
+  },
+  es: {
+    client: [
+      ["¿Navegar es gratis?", "Sí. Cualquiera puede buscar y ver todos los perfiles verificados gratis. La membresía desbloquea los perfiles completos y la información de contacto directa (teléfono y correo) de cada cuidador."],
+      ["¿Por qué mantener mi membresía después de contratar?", "Porque las necesidades de cuidado cambian. Los miembros activos obtienen un nuevo emparejamiento sin costo adicional si su cuidador deja de estar disponible. También puede publicar solicitudes urgentes de reemplazo y contactar cuidadores ilimitados a medida que cambian las necesidades. Su membresía es su red de seguridad, no solo una búsqueda única."],
+      ["¿Los cuidadores están verificados?", "Cada cuidador listado fue revisado por Pine Crane Care antes de aparecer — eso significa la insignia ✓ Verificado. Aun así recomendamos entrevistar y pedir referencias; la plataforma le da las herramientas y reseñas para hacerlo bien."],
+      ["¿Quién establece la tarifa?", "Usted y el cuidador la acuerdan directamente. No hay margen de agencia — los cuidadores suelen ganar más y las familias suelen pagar menos que con una agencia."],
+      ["Vivo en otro estado o país — ¿puedo organizar el cuidado de mis padres?", "Por supuesto — la plataforma fue creada para eso. Busque por el código postal donde vive su ser querido, revise perfiles verificados en español, inglés o chino, y contacte cuidadores desde cualquier parte del mundo."],
+      ["¿Y si el cuidador no funciona?", "Con membresía activa, simplemente regrese — contacte nuevos cuidadores o publique una solicitud sin cargo adicional. Los miembros nunca empiezan de cero. Esta protección continua es la mayor razón para mantener la membresía."],
+    ],
+    aide: [
+      ["¿Cuesta dinero registrarse como cuidador?", "No. Crear su perfil es gratis, y estar listado tras la verificación también."],
+      ["¿Cómo consigo clientes?", "De dos formas: las familias de su zona encuentran su perfil verificado al buscar, y usted puede revisar las Solicitudes y contactar directamente a las familias."],
+      ["¿Por qué mantener mi perfil activo después de encontrar trabajo?", "Porque todo trabajo termina — cambian los horarios, las familias se mudan, las necesidades evolucionan. Un perfil activo con buenas reseñas significa que su próximo cliente lo encuentra antes de que termine el actual, evitando periodos sin ingresos."],
+      ["¿Cómo me ayudan las reseñas a ganar más?", "Los cuidadores con buenas reseñas son contactados primero y pueden pedir tarifas más altas. Cada familia bien atendida construye una reputación permanente en su perfil — su activo más valioso aquí."],
+      ["¿Me quedo con todo lo que gano?", "Sí. Las familias le pagan directamente la tarifa acordada. Pine Crane Care nunca toma un porcentaje de su pago por hora."],
+      ["¿Qué significa la insignia Verificado para mí?", "La verificación indica que su identidad y credenciales fueron revisadas — los cuidadores verificados reciben mucho más contacto de las familias. Mantenga sus certificaciones al día para aprovecharla al máximo."],
+    ],
+  },
+};
+
+function FaqView({ onBack }) {
+  const { lang, L } = useLang();
+  const faq = FAQ[lang] || FAQ.en;
+  const section = (title, items) => (
+    <div style={{ marginBottom: 24 }}>
+      <h3 style={{ margin: "0 0 10px", fontSize: 19, color: T.primary, fontFamily: "Georgia, 'Times New Roman', serif" }}>{title}</h3>
+      {items.map(([q, a]) => (
+        <details key={q} style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 14px", marginBottom: 8 }}>
+          <summary style={{ fontWeight: 700, fontSize: 15, color: T.ink, cursor: "pointer" }}>{q}</summary>
+          <p style={{ margin: "10px 0 0", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.6 }}>{a}</p>
+        </details>
+      ))}
+    </div>
+  );
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}` }}>
+      <button
+        type="button"
+        onClick={onBack}
+        style={{
+          marginBottom: 16, padding: "8px 14px", borderRadius: 999,
+          border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
+          fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        }}
+      >
+        {L.back}
+      </button>
+      <h2 style={{ margin: "0 0 16px", fontSize: 26, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        {L.faqTitle}
+      </h2>
+      {section(L.faqClientTitle, faq.client)}
+      {section(L.faqAideTitle, faq.aide)}
+    </div>
+  );
+}
+
 // ---------- Legal pages ----------
 const LEGAL = {
   privacy: {
@@ -1322,15 +1638,19 @@ const LEGAL = {
   },
   terms: {
     title: "Terms of Service",
-    updated: "Last updated: July 16, 2026",
+    updated: "Last updated: July 18, 2026",
     sections: [
-      ["What Pine Crane Care is", "Pine Crane Care is a directory that helps families find independent home aides. We are not an employer, staffing agency, or home care agency. Aides listed here are independent individuals, not our employees or contractors."],
-      ["No screening guarantee", "We do not verify the identity, background, certifications, or qualifications of aides listed in the directory. Families are solely responsible for interviewing, screening, running background checks on, and hiring any aide they contact through this site."],
-      ["Aide responsibilities", "By creating a profile, you confirm that the information you provide is truthful and accurate, that you are legally permitted to work, and that you will keep your profile up to date."],
-      ["Hiring arrangements", "Any employment or service arrangement, including wages, schedules, taxes, and insurance, is strictly between the family and the aide. Pine Crane Care is not a party to those arrangements and is not responsible for the conduct of any user."],
-      ["Acceptable use", "You may not post false information, impersonate others, harass users, or use the directory for any unlawful purpose. We may remove profiles that violate these terms."],
-      ["Limitation of liability", "Pine Crane Care provides the directory \u201cas is\u201d without warranties of any kind. To the fullest extent permitted by law, we are not liable for any damages arising from your use of the site or from any arrangement made between users."],
-      ["Changes", "We may update these terms from time to time. Continued use of the site after changes means you accept the updated terms."],
+      ["What Pine Crane Care is", "Pine Crane Care Inc operates a referral platform and directory that helps families find independent caregivers for home care needs, including senior care, child care, and household support. We are not an employer, staffing agency, home care agency, or healthcare provider. Caregivers listed on the platform are independent individuals, not our employees, contractors, or agents. We do not assign, supervise, schedule, or direct any caregiver's work."],
+      ["Verification and its limits", "Caregiver profiles are reviewed by Pine Crane Care before appearing in the directory, and the \u201cVerified\u201d badge indicates that we have reviewed the identity and stated credentials the caregiver provided. Verification is a good-faith review, not a guarantee of any person's qualifications, character, or future conduct. Families remain solely responsible for interviewing candidates, checking references, obtaining any background checks they consider necessary, and making their own hiring decisions."],
+      ["Memberships and payments", "Certain features, including access to caregivers' full profiles and contact information, require a paid membership or a one-time single unlock. Fees are displayed before purchase. Memberships run for the period purchased and, when auto-renewal is offered and enabled, renew until cancelled; cancellation stops future renewals and takes effect at the end of the current period. Except where required by law, fees are non-refundable once access has been provided. Prices may change with notice; changes apply to future purchases and renewals only."],
+      ["Replacement matching", "During an active membership, members may contact additional caregivers and post care requests at no additional platform charge, including when a previous caregiver becomes unavailable. This benefit is continued access to the platform's matching tools; it is not a guarantee that any particular caregiver, or any caregiver at all, will be available, suitable, or willing to accept an engagement."],
+      ["Caregiver responsibilities", "By creating a profile, you confirm that all information you provide is truthful and accurate, that you are legally permitted to work in the United States, that certifications you list are genuine and current, and that you will keep your profile up to date. Misrepresentation is grounds for removal from the platform."],
+      ["Featured listings", "Caregivers may pay for featured placement in search results. Featured status is a paid promotional position and is labeled as such; it does not reflect a ranking of quality by Pine Crane Care."],
+      ["Reviews", "Reviews must reflect the reviewer's genuine, first-hand experience. We may remove reviews that are false, abusive, unrelated to caregiving services, or that violate these terms, but we do not undertake to monitor all content and are not responsible for user-submitted content. Caregivers and clients may not offer or accept anything of value in exchange for reviews."],
+      ["Hiring arrangements", "Any employment or service arrangement — including wages, schedules, duties, taxes, withholding, workers' compensation, and insurance — is strictly between the family and the caregiver. Families who hire a caregiver directly may become household employers with legal and tax obligations; consult a qualified professional. Pine Crane Care is not a party to any such arrangement and is not responsible for the acts or omissions of any user."],
+      ["Acceptable use", "You may not post false information, impersonate others, harass or discriminate against users, scrape or resell platform data, circumvent payment features, or use the platform for any unlawful purpose. We may suspend or remove accounts, profiles, posts, or reviews that violate these terms."],
+      ["Disclaimer and limitation of liability", "The platform is provided \u201cas is\u201d and \u201cas available\u201d without warranties of any kind, express or implied. To the fullest extent permitted by law, Pine Crane Care Inc is not liable for any indirect, incidental, special, consequential, or punitive damages, or for any damages arising from your use of the platform or from any arrangement, interaction, or dispute between users. Where liability cannot be excluded, our total liability is limited to the amounts you paid to us in the twelve months before the claim arose."],
+      ["Changes to these terms", "We may update these terms from time to time. We will post the updated terms with a new \u201cLast updated\u201d date, and continued use of the platform after changes take effect means you accept the updated terms."],
       ["Contact", "Questions about these terms? Contact us at support@pinecranecare.com."],
     ],
   },
@@ -1478,6 +1798,8 @@ export default function App() {
   const [aides, setAides] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [dbError, setDbError] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
@@ -1487,12 +1809,18 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [client, setClient] = useState(null); // { plan, subscribedUntil }
   const subscribed = !!(client && client.subscribedUntil > Date.now());
+  const [pendingUnlock, setPendingUnlock] = useState(null);
+  const unlockedIds = client?.unlocks || [];
+  const [aidePro, setAidePro] = useState(null);
+  const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
 
   useEffect(() => {
     (async () => {
       try {
         setAides(await loadAides());
         setJobs(await loadJobs());
+        setReviews(await loadReviews());
+        setAgencies(await loadAgencies());
         setDbError(false);
       } catch (e) {
         setDbError(true);
@@ -1502,8 +1830,23 @@ export default function App() {
         const saved = await window.storage.get("client:me", false);
         if (saved?.value) setClient(JSON.parse(saved.value));
       } catch (e) { /* no membership yet */ }
+      try {
+        const savedPro = await window.storage.get("aidepro:me", false);
+        if (savedPro?.value) setAidePro(JSON.parse(savedPro.value));
+      } catch (e) { /* not aide pro */ }
     })();
   }, []);
+
+  async function addReview(caregiverId, rev) {
+    const saved = await sbInsert("reviews", {
+      caregiver_id: caregiverId,
+      reviewer_name: rev.name,
+      rating: rev.rating,
+      comment: rev.comment || null,
+    });
+    setReviews((list) => [saved, ...list]);
+    showToast(L.tReview);
+  }
 
   async function handleDeleteJob(job) {
     try {
@@ -1515,6 +1858,7 @@ export default function App() {
 
   async function activatePlan(plan) {
     const rec = {
+      ...(client || {}),
       plan: plan.name,
       subscribedUntil: Date.now() + plan.months * 30 * 24 * 3600 * 1000,
       activatedAt: Date.now(),
@@ -1523,8 +1867,30 @@ export default function App() {
       await window.storage.set("client:me", JSON.stringify(rec), false);
     } catch (e) { /* still activate in-session */ }
     setClient(rec);
+    setPendingUnlock(null);
     setView("directory");
     showToast(L.tMember);
+  }
+
+  async function activateAidePro() {
+    const rec = { proUntil: Date.now() + 30 * 24 * 3600 * 1000, activatedAt: Date.now() };
+    try {
+      await window.storage.set("aidepro:me", JSON.stringify(rec), false);
+    } catch (e) { /* keep in-session */ }
+    setAidePro(rec);
+    showToast(L.tAidePro);
+  }
+
+  async function activateSingleUnlock() {
+    if (!pendingUnlock) return;
+    const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
+    try {
+      await window.storage.set("client:me", JSON.stringify(rec), false);
+    } catch (e) { /* keep in-session */ }
+    setClient(rec);
+    setPendingUnlock(null);
+    setView("directory");
+    showToast(L.tUnlocked);
   }
 
   function showToast(msg) {
@@ -1625,7 +1991,9 @@ export default function App() {
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
         )}
-        {view === "privacy" || view === "terms" ? (
+        {view === "faq" ? (
+          <FaqView onBack={() => setView("directory")} />
+        ) : view === "privacy" || view === "terms" ? (
           <LegalPage kind={view} onBack={() => setView("directory")} />
         ) : view === "backup" ? (
           <BackupPanel
@@ -1652,12 +2020,14 @@ export default function App() {
             onCancel={() => { setJobEditing(null); setView("directory"); }}
           />
         ) : view === "plans" ? (
-          <PlansView onActivate={activatePlan} onBack={() => setView("directory")} />
+          <PlansView onActivate={activatePlan} onBack={() => { setPendingUnlock(null); setView("directory"); }} singleUnlock={!!pendingUnlock} onSingleUnlock={activateSingleUnlock} />
         ) : view === "register" ? (
           <RegisterForm
             initial={editing}
             onSaved={(rec) => {
-              setAides((list) => [rec, ...list.filter((a) => a.id !== rec.id)]);
+              if (editing) {
+                setAides((list) => list.map((a) => (a.id === rec.id ? rec : a)));
+              }
               setEditing(null);
               setView("directory");
               showToast(editing ? L.tProfileUpd : L.tProfileLive);
@@ -1723,6 +2093,8 @@ export default function App() {
                       <JobCard
                         key={j.id}
                         job={j}
+                        aidePro={isAidePro}
+                        onAideProSignup={activateAidePro}
                         onDelete={handleDeleteJob}
                         onEdit={(rec) => { setJobEditing(rec); setView("postjob"); window.scrollTo(0, 0); }}
                       />
@@ -1743,11 +2115,18 @@ export default function App() {
             ) : (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 14px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 12, marginBottom: 14, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 14, color: T.ink }}>
-                  {L.browseFree} <strong>{L.membersContact}</strong>
+                  {L.browseFree} <strong>{L.membersContact}</strong>{" "}
+                  <button
+                    type="button"
+                    onClick={() => { setView("faq"); window.scrollTo(0, 0); }}
+                    style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+                  >
+                    {L.whyMembership}
+                  </button>
                 </span>
                 <button
                   type="button"
-                  onClick={() => { setView("plans"); window.scrollTo(0, 0); }}
+                  onClick={() => { setPendingUnlock(null); setView("plans"); window.scrollTo(0, 0); }}
                   style={{
                     padding: "9px 16px", borderRadius: 999, border: "none", background: T.amber,
                     color: "#3A2A08", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
@@ -1826,13 +2205,49 @@ export default function App() {
                   <AideCard
                     key={a.id}
                     aide={a}
-                    subscribed={subscribed}
-                    onRequireSub={() => { setView("plans"); window.scrollTo(0, 0); }}
+                    subscribed={subscribed || unlockedIds.includes(a.id)}
+                    reviews={reviews.filter((r) => r.caregiver_id === a.id)}
+                    onAddReview={addReview}
+                    onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
                   />
                 ))}
               </>
+            )}
+
+            {/* Agency Partners (sponsored) */}
+            {agencies.length > 0 && (
+              <div style={{ marginTop: 24, borderTop: `1px solid ${T.line}`, paddingTop: 18 }}>
+                <h3 style={{ margin: "0 0 4px", fontSize: 18, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                  {L.partnersTitle}
+                </h3>
+                <p style={{ margin: "0 0 12px", fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.partnersSub}</p>
+                {agencies.map((ag) => (
+                  <div key={ag.id} style={{ background: "#F3F7F5", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontWeight: 800, fontSize: 16, color: T.ink }}>{ag.name}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: T.inkSoft, border: `1px solid ${T.line}`, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                        {L.sponsoredTag}
+                      </span>
+                    </div>
+                    {ag.areas && <div style={{ fontSize: 13, color: T.inkSoft, marginTop: 2 }}>{ag.areas}</div>}
+                    {ag.blurb && <p style={{ margin: "8px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.5 }}>{ag.blurb}</p>}
+                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                      {ag.phone && (
+                        <a href={"tel:" + ag.phone} style={{ padding: "9px 16px", borderRadius: 10, background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                          {L.partnerCall} {ag.phone}
+                        </a>
+                      )}
+                      {ag.website && (
+                        <a href={ag.website} target="_blank" rel="noopener noreferrer" style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, color: T.primary, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                          {L.partnerSite}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             </>
             )}
@@ -1843,6 +2258,14 @@ export default function App() {
       {/* Footer */}
       <footer style={{ borderTop: `1px solid ${T.line}`, padding: "20px 16px 28px", textAlign: "center" }}>
         <div style={{ fontSize: 14 }}>
+          <button
+            type="button"
+            onClick={() => { setView("faq"); window.scrollTo(0, 0); }}
+            style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px" }}
+          >
+            {L.faqLink}
+          </button>
+          <span style={{ color: T.inkSoft }}>·</span>
           <button
             type="button"
             onClick={() => { setView("privacy"); window.scrollTo(0, 0); }}
