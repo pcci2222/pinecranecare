@@ -59,6 +59,10 @@ const STRINGS = {
     lName: "Full name", lPhone: "Phone", lEmail: "Email", lCity: "City", lZip: "ZIP",
     lAge: "Age", lYrs: "Yrs experience", lRate: "Rate ($/hr)", lLang: "Languages spoken",
     lServices: "Services you offer", lCerts: "Certifications", lAbout: "About you",
+    lCertPhoto: "License / certification photo (optional)",
+    certPhotoNote: "Used by Pine Crane Care for verification only — never shown publicly.",
+    certUpload: "Add license photo",
+    certRetake: "Replace photo",
     lPin: "4-digit PIN (needed to edit or remove your profile later)",
     lPinJob: "4-digit PIN (needed to edit or remove your post later)",
     publish: "Publish my profile", save: "Save changes", saving: "Saving…",
@@ -156,6 +160,10 @@ const STRINGS = {
     lName: "姓名", lPhone: "電話", lEmail: "電子郵件", lCity: "城市", lZip: "郵遞區號",
     lAge: "年齡", lYrs: "經驗年數", lRate: "時薪（美元）", lLang: "會說的語言",
     lServices: "提供的服務", lCerts: "證照", lAbout: "自我介紹",
+    lCertPhoto: "證照照片（選填）",
+    certPhotoNote: "僅供松鶴護理驗證使用 — 不會公開顯示。",
+    certUpload: "上傳證照照片",
+    certRetake: "重新上傳",
     lPin: "4 位數 PIN 碼（日後編輯或刪除檔案時需要）",
     lPinJob: "4 位數 PIN 碼（日後編輯或刪除貼文時需要）",
     publish: "發布我的檔案", save: "儲存變更", saving: "儲存中…",
@@ -253,6 +261,10 @@ const STRINGS = {
     lName: "Nombre completo", lPhone: "Teléfono", lEmail: "Correo", lCity: "Ciudad", lZip: "Código postal",
     lAge: "Edad", lYrs: "Años de experiencia", lRate: "Tarifa ($/h)", lLang: "Idiomas",
     lServices: "Servicios que ofrece", lCerts: "Certificaciones", lAbout: "Sobre usted",
+    lCertPhoto: "Foto de licencia / certificación (opcional)",
+    certPhotoNote: "Solo para verificación de Pine Crane Care — nunca se muestra públicamente.",
+    certUpload: "Agregar foto de licencia",
+    certRetake: "Reemplazar foto",
     lPin: "PIN de 4 dígitos (para editar o eliminar su perfil después)",
     lPinJob: "PIN de 4 dígitos (para editar o eliminar su publicación después)",
     publish: "Publicar mi perfil", save: "Guardar cambios", saving: "Guardando…",
@@ -376,7 +388,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.0"; // ← bumped on every code update
+const APP_VERSION = "v2.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -436,14 +448,14 @@ const aideToDb = (a) => ({
   name: a.name, phone: a.phone, email: a.email || null, city: a.city, zip: a.zip || null,
   age: numOrNull(a.age), years: numOrNull(a.years), rate: numOrNull(a.rate),
   languages: a.languages || null, bio: a.bio || null,
-  services: a.services || [], certs: a.certs || [], photo_url: a.photo || null, pin: a.pin || null,
+  services: a.services || [], certs: a.certs || [], photo_url: a.photo || null, cert_photo_url: a.certPhoto || null, pin: a.pin || null,
 });
 const aideFromDb = (r) => ({
   id: r.id, createdAt: new Date(r.created_at).getTime(),
   name: r.name || "", phone: r.phone || "", email: r.email || "", city: r.city || "", zip: r.zip || "",
   age: strOf(r.age), years: strOf(r.years), rate: strOf(r.rate),
   languages: r.languages || "", bio: r.bio || "",
-  services: r.services || [], certs: r.certs || [], photo: r.photo_url || null, pin: r.pin || "", approved: !!r.approved, featured: !!r.featured,
+  services: r.services || [], certs: r.certs || [], photo: r.photo_url || null, certPhoto: r.cert_photo_url || null, pin: r.pin || "", approved: !!r.approved, featured: !!r.featured,
 });
 const jobToDb = (j) => ({
   title: j.title, name: j.name, phone: j.phone, email: j.email || null, city: j.city, zip: j.zip || null,
@@ -536,6 +548,7 @@ function RegisterForm({ onSaved, onCancel, initial }) {
       services: [],
       certs: [],
       photo: null,
+      certPhoto: null,
       pin: "",
     }
   );
@@ -543,6 +556,7 @@ function RegisterForm({ onSaved, onCancel, initial }) {
   const [error, setError] = useState("");
   const [photoBusy, setPhotoBusy] = useState(false);
   const fileRef = useRef(null);
+  const certFileRef = useRef(null);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggle = (k, item) =>
@@ -559,6 +573,20 @@ function RegisterForm({ onSaved, onCancel, initial }) {
     try {
       const dataUrl = await compressImage(file);
       set("photo", dataUrl);
+    } catch (err) {
+      setError("Could not read that photo. Please try again.");
+    }
+    setPhotoBusy(false);
+  }
+
+  async function handleCertPhoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoBusy(true);
+    setError("");
+    try {
+      const dataUrl = await compressImage(file, 900); // higher resolution so the license text stays readable
+      set("certPhoto", dataUrl);
     } catch (err) {
       setError("Could not read that photo. Please try again.");
     }
@@ -585,7 +613,11 @@ function RegisterForm({ onSaved, onCancel, initial }) {
       if (photoUrl && photoUrl.startsWith("data:")) {
         try { photoUrl = await sbUploadPhoto(photoUrl); } catch (e) { /* keep inline photo as fallback */ }
       }
-      const row = aideToDb({ ...form, photo: photoUrl });
+      let certUrl = form.certPhoto;
+      if (certUrl && certUrl.startsWith("data:")) {
+        try { certUrl = await sbUploadPhoto(certUrl); } catch (e) { /* keep inline as fallback */ }
+      }
+      const row = aideToDb({ ...form, photo: photoUrl, certPhoto: certUrl });
       const saved = initial?.id
         ? await sbUpdate("caregivers", initial.id, row)
         : await sbInsert("caregivers", row);
@@ -703,6 +735,30 @@ function RegisterForm({ onSaved, onCancel, initial }) {
           {CERTS.map((c) => (
             <Chip key={c} label={ts(c)} active={form.certs.includes(c)} onClick={() => toggle("certs", c)} />
           ))}
+        </div>
+      </Field>
+
+      <Field label={L.lCertPhoto}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 110, height: 74, borderRadius: 10, flexShrink: 0, background: T.surface, border: `2px dashed ${form.certPhoto ? T.primary : T.line}`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {form.certPhoto ? (
+              <img src={form.certPhoto} alt="License" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: 26 }}>📄</span>
+            )}
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => certFileRef.current?.click()}
+              disabled={photoBusy}
+              style={{ padding: "9px 14px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              {form.certPhoto ? L.certRetake : L.certUpload}
+            </button>
+            <p style={{ margin: "6px 0 0", fontSize: 12.5, color: T.inkSoft }}>{L.certPhotoNote}</p>
+            <input ref={certFileRef} type="file" accept="image/*" capture="environment" onChange={handleCertPhoto} style={{ display: "none" }} />
+          </div>
         </div>
       </Field>
 
@@ -1728,6 +1784,9 @@ function AdminView({ onBack, onDataChanged }) {
               </div>
               <div style={{ fontSize: 12.5, color: T.inkSoft }}>
                 {r.city} {r.zip} · {new Date(r.created_at).toLocaleDateString()} · {r.approved ? "✓ approved" : "⏳ PENDING"}
+                {r.cert_photo_url && (
+                  <> · <a href={r.cert_photo_url} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontWeight: 700 }}>📄 View license</a></>
+                )}
               </div>
             </div>
             <button type="button" style={btn(r.approved ? "#fff" : T.primary, r.approved ? T.danger : "#fff", r.approved ? `1.5px solid ${T.line}` : "none")}
