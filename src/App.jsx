@@ -433,7 +433,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.8"; // ← bumped on every code update
+const APP_VERSION = "v2.9"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2443,12 +2443,12 @@ export default function App() {
       }
       setLoading(false);
       try {
-        const saved = await window.storage.get("client:me", false);
-        if (saved?.value) setClient(JSON.parse(saved.value));
+        const saved = localStorage.getItem("pcc_client");
+        if (saved) setClient(JSON.parse(saved));
       } catch (e) { /* no membership yet */ }
       try {
-        const savedPro = await window.storage.get("aidepro:me", false);
-        if (savedPro?.value) setAidePro(JSON.parse(savedPro.value));
+        const savedPro = localStorage.getItem("pcc_aidepro");
+        if (savedPro) setAidePro(JSON.parse(savedPro));
       } catch (e) { /* not aide pro */ }
     })();
   }, []);
@@ -2486,7 +2486,7 @@ export default function App() {
       activatedAt: Date.now(),
     };
     try {
-      await window.storage.set("client:me", JSON.stringify(rec), false);
+      localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* still activate in-session */ }
     setClient(rec);
     setPendingUnlock(null);
@@ -2497,7 +2497,7 @@ export default function App() {
   async function activateAidePro() {
     const rec = { proUntil: Date.now() + 30 * 24 * 3600 * 1000, activatedAt: Date.now() };
     try {
-      await window.storage.set("aidepro:me", JSON.stringify(rec), false);
+      localStorage.setItem("pcc_aidepro", JSON.stringify(rec));
     } catch (e) { /* keep in-session */ }
     setAidePro(rec);
     showToast(L.tAidePro);
@@ -2507,7 +2507,7 @@ export default function App() {
     if (!pendingUnlock) return;
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
     try {
-      await window.storage.set("client:me", JSON.stringify(rec), false);
+      localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* keep in-session */ }
     setClient(rec);
     setPendingUnlock(null);
@@ -2794,6 +2794,19 @@ export default function App() {
                 <span style={{ fontSize: 14, color: T.ink }}>
                   <strong>{L.memberActive}</strong> {new Date(client.subscribedUntil).toLocaleDateString()}
                 </span>
+                <span style={{ flex: 1 }} />
+                <button
+                  type="button"
+                  title="Reset demo membership (testing)"
+                  onClick={() => {
+                    try { localStorage.removeItem("pcc_client"); localStorage.removeItem("pcc_aidepro"); } catch (e) { /* ignore */ }
+                    setClient(null);
+                    setAidePro(null);
+                  }}
+                  style={{ background: "none", border: "none", color: T.inkSoft, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}
+                >
+                  reset
+                </button>
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "10px 14px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 12, marginBottom: 14, flexWrap: "wrap" }}>
