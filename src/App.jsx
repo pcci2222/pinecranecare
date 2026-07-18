@@ -461,7 +461,11 @@ const loadReviews = async () => {
   try { return await sbSelect("reviews"); } catch (e) { return []; }
 };
 const loadAgencies = async () => {
-  try { return (await sbSelect("agencies", "&active=eq.true")); } catch (e) { return []; }
+  try {
+    const rows = await sbSelect("agencies", "&active=eq.true");
+    const today = new Date().toISOString().slice(0, 10);
+    return rows.filter((a) => !a.paid_until || a.paid_until >= today);
+  } catch (e) { return []; }
 };
 
 
@@ -1621,6 +1625,178 @@ function FaqView({ onBack }) {
   );
 }
 
+// ---------- Admin panel (platform operator only) ----------
+const ADMIN_PIN = "8888"; // ← CHANGE THIS to your own passcode before deploying
+
+function AdminView({ onBack, onDataChanged }) {
+  const [ok, setOk] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinErr, setPinErr] = useState("");
+  const [tab, setTab] = useState("caregivers");
+  const [rows, setRows] = useState([]);
+  const [ags, setAgs] = useState([]);
+  const [msg, setMsg] = useState("");
+  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
+
+  async function refresh() {
+    setMsg("");
+    try {
+      const all = await sbSelect("caregivers");
+      all.sort((a, b) => (a.approved === b.approved ? 0 : a.approved ? 1 : -1));
+      setRows(all);
+    } catch (e) { setMsg("Could not load caregivers."); }
+    try { setAgs(await sbSelect("agencies")); } catch (e) { /* table may be empty */ }
+  }
+  useEffect(() => { if (ok) refresh(); }, [ok]);
+
+  async function patch(table, id, fields) {
+    try { await sbUpdate(table, id, fields); await refresh(); onDataChanged(); }
+    catch (e) { setMsg("Update failed — check the agencies policies SQL was run."); }
+  }
+  async function remove(table, id, label) {
+    if (!window.confirm(`Delete ${label}? This cannot be undone.`)) return;
+    try { await sbDelete(table, id); await refresh(); onDataChanged(); }
+    catch (e) { setMsg("Delete failed."); }
+  }
+  async function addAgency() {
+    if (!agForm.name.trim()) { setMsg("Agency name is required."); return; }
+    try {
+      await sbInsert("agencies", {
+        ...agForm,
+        monthly_fee: agForm.monthly_fee ? Number(agForm.monthly_fee) : null,
+        paid_until: agForm.paid_until || null,
+        active: true,
+      });
+      setAgForm({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
+      await refresh();
+      onDataChanged();
+      setMsg("Agency added ✓");
+    } catch (e) { setMsg("Insert failed — run the agencies insert/update/delete policies SQL."); }
+  }
+
+  const btn = (bg, color, border) => ({
+    padding: "7px 12px", borderRadius: 8, border: border || "none", background: bg, color,
+    fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+  });
+
+  if (!ok) {
+    return (
+      <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}`, maxWidth: 360 }}>
+        <h2 style={{ margin: "0 0 12px", fontSize: 22, color: T.ink, fontFamily: "Georgia, serif" }}>Admin access</h2>
+        <input
+          style={{ ...inputStyle, marginBottom: 10, letterSpacing: 4, maxWidth: 180 }}
+          type="password" inputMode="numeric" placeholder="••••" value={pin}
+          onChange={(e) => { setPin(e.target.value); setPinErr(""); }}
+        />
+        {pinErr && <p style={{ color: T.danger, fontSize: 13.5, fontWeight: 600, margin: "0 0 10px" }}>{pinErr}</p>}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" style={btn(T.primary, "#fff")} onClick={() => (pin === ADMIN_PIN ? setOk(true) : setPinErr("Wrong passcode."))}>Enter</button>
+          <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={onBack}>Back</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "20px 16px", border: `1px solid ${T.line}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontSize: 22, color: T.ink, fontFamily: "Georgia, serif" }}>Admin</h2>
+        <button type="button" style={btn("#fff", T.ink, `1.5px solid ${T.line}`)} onClick={onBack}>Exit</button>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`]].map(([id, label]) => (
+          <button key={id} type="button" onClick={() => setTab(id)}
+            style={btn(tab === id ? T.primary : "#fff", tab === id ? "#fff" : T.ink, `1.5px solid ${tab === id ? T.primary : T.line}`)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {msg && <p style={{ fontSize: 13.5, fontWeight: 600, color: T.primary, margin: "0 0 10px" }}>{msg}</p>}
+
+      {tab === "caregivers" ? (
+        rows.length === 0 ? <p style={{ color: T.inkSoft }}>No caregiver records.</p> :
+        rows.map((r) => (
+          <div key={r.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: r.approved ? "transparent" : "#FCF4E3", borderRadius: 8, marginBottom: 4 }}>
+            <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: T.surface, flexShrink: 0 }}>
+              {r.photo_url && <img src={r.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 14.5, color: T.ink }}>
+                {r.name} {r.featured && <span style={{ color: T.amber }}>★</span>}
+              </div>
+              <div style={{ fontSize: 12.5, color: T.inkSoft }}>
+                {r.city} {r.zip} · {new Date(r.created_at).toLocaleDateString()} · {r.approved ? "✓ approved" : "⏳ PENDING"}
+              </div>
+            </div>
+            <button type="button" style={btn(r.approved ? "#fff" : T.primary, r.approved ? T.danger : "#fff", r.approved ? `1.5px solid ${T.line}` : "none")}
+              onClick={() => patch("caregivers", r.id, { approved: !r.approved })}>
+              {r.approved ? "Revoke" : "Approve"}
+            </button>
+            <button type="button" style={btn("#fff", r.featured ? T.amber : T.inkSoft, `1.5px solid ${T.line}`)} title="Toggle featured"
+              onClick={() => patch("caregivers", r.id, { featured: !r.featured })}>
+              ★
+            </button>
+            <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("caregivers", r.id, r.name)}>✕</button>
+          </div>
+        ))
+      ) : (
+        <>
+          <div style={{ background: T.surface, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${T.line}` }}>
+            <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 8 }}>Add agency ad (after they've paid)</div>
+            <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Agency name *" value={agForm.name} onChange={(e) => setAgForm({ ...agForm, name: e.target.value })} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <input style={inputStyle} placeholder="Phone" value={agForm.phone} onChange={(e) => setAgForm({ ...agForm, phone: e.target.value })} />
+              <input style={inputStyle} placeholder="Website (https://…)" value={agForm.website} onChange={(e) => setAgForm({ ...agForm, website: e.target.value })} />
+            </div>
+            <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Service areas (e.g. Queens, Brooklyn)" value={agForm.areas} onChange={(e) => setAgForm({ ...agForm, areas: e.target.value })} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <input style={inputStyle} placeholder="Contact person" value={agForm.contact_name} onChange={(e) => setAgForm({ ...agForm, contact_name: e.target.value })} />
+              <input style={inputStyle} type="email" placeholder="Billing email" value={agForm.email} onChange={(e) => setAgForm({ ...agForm, email: e.target.value })} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <input style={inputStyle} inputMode="numeric" placeholder="Monthly fee ($)" value={agForm.monthly_fee} onChange={(e) => setAgForm({ ...agForm, monthly_fee: e.target.value })} />
+              <input style={inputStyle} type="date" title="Paid until" value={agForm.paid_until} onChange={(e) => setAgForm({ ...agForm, paid_until: e.target.value })} />
+            </div>
+            <textarea style={{ ...inputStyle, minHeight: 60, marginBottom: 8 }} placeholder="Short blurb shown to families" value={agForm.blurb} onChange={(e) => setAgForm({ ...agForm, blurb: e.target.value })} />
+            <button type="button" style={btn(T.primary, "#fff")} onClick={addAgency}>Publish agency ad</button>
+          </div>
+          {ags.map((a) => {
+            const today = new Date().toISOString().slice(0, 10);
+            const expired = a.paid_until && a.paid_until < today;
+            const renew = () => {
+              const base = a.paid_until && a.paid_until >= today ? new Date(a.paid_until + "T00:00:00") : new Date();
+              base.setMonth(base.getMonth() + 1);
+              patch("agencies", a.id, { paid_until: base.toISOString().slice(0, 10) });
+            };
+            return (
+            <div key={a.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: expired ? "#FBEAE5" : "transparent", borderRadius: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 14.5, color: T.ink }}>
+                  {a.name} {!a.active && <span style={{ color: T.danger, fontSize: 12 }}>(paused)</span>}
+                  {expired && <span style={{ color: T.danger, fontSize: 12, fontWeight: 800 }}> · EXPIRED — ad hidden</span>}
+                </div>
+                <div style={{ fontSize: 12.5, color: T.inkSoft }}>
+                  {a.areas} · {a.phone}{a.contact_name ? ` · ${a.contact_name}` : ""}{a.email ? ` · ${a.email}` : ""}
+                </div>
+                <div style={{ fontSize: 12.5, color: expired ? T.danger : T.inkSoft, fontWeight: 600 }}>
+                  {a.monthly_fee ? `$${a.monthly_fee}/mo · ` : ""}{a.paid_until ? `paid until ${a.paid_until}` : "no billing date set"}
+                </div>
+              </div>
+              <button type="button" style={btn(T.amber, "#3A2A08")} title="Extend one month (payment received)" onClick={renew}>+1 mo</button>
+              <button type="button" style={btn("#fff", a.active ? T.danger : T.primary, `1.5px solid ${T.line}`)}
+                onClick={() => patch("agencies", a.id, { active: !a.active })}>
+                {a.active ? "Pause" : "Activate"}
+              </button>
+              <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("agencies", a.id, a.name)}>✕</button>
+            </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ---------- Legal pages ----------
 const LEGAL = {
   privacy: {
@@ -1991,7 +2167,14 @@ export default function App() {
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
         )}
-        {view === "faq" ? (
+        {view === "admin" ? (
+          <AdminView
+            onBack={() => setView("directory")}
+            onDataChanged={async () => {
+              try { setAides(await loadAides()); setAgencies(await loadAgencies()); } catch (e) { /* ignore */ }
+            }}
+          />
+        ) : view === "faq" ? (
           <FaqView onBack={() => setView("directory")} />
         ) : view === "privacy" || view === "terms" ? (
           <LegalPage kind={view} onBack={() => setView("directory")} />
@@ -2288,6 +2471,14 @@ export default function App() {
             style={{ background: "none", border: "none", color: T.inkSoft, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px" }}
           >
             {L.fBackup}
+          </button>
+          <span style={{ color: T.inkSoft }}>·</span>
+          <button
+            type="button"
+            onClick={() => { setView("admin"); window.scrollTo(0, 0); }}
+            style={{ background: "none", border: "none", color: T.inkSoft, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px" }}
+          >
+            Admin
           </button>
         </div>
         <p style={{ margin: "8px 0 0", fontSize: 12.5, color: T.inkSoft }}>
