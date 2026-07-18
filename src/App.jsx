@@ -376,6 +376,8 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
+const APP_VERSION = "v2.0"; // ← bumped on every code update
+
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
 const sbHeaders = {
@@ -2482,7 +2484,7 @@ export default function App() {
           </button>
         </div>
         <p style={{ margin: "8px 0 0", fontSize: 12.5, color: T.inkSoft }}>
-          {L.fCopy}
+          {L.fCopy} · {APP_VERSION}
         </p>
       </footer>
 
