@@ -103,6 +103,10 @@ const STRINGS = {
     suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
     featuredBadge: "★ Featured",
     teaserName: "Verified Caregiver",
+    tabAgencies: "🏛️ Agencies",
+    noAgencies: "No agency partners are listed yet.",
+    advertiseLine: "Licensed home care agency? Advertise on Pine Crane Care — contact support@pinecranecare.com.",
+    medicaidTeaser: "Think you may qualify for Medicaid home care? See licensed agencies",
     partnersTitle: "Medicaid & Licensed Agency Partners",
     partnersSub: "Think your loved one may qualify for Medicaid home care? These licensed agencies can help you check eligibility, apply, and receive covered care.",
     sponsoredTag: "Sponsored", partnerCall: "Call", partnerSite: "Website",
@@ -210,6 +214,10 @@ const STRINGS = {
     suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
     featuredBadge: "★ 精選",
     teaserName: "已驗證照護者",
+    tabAgencies: "🏛️ 照護機構",
+    noAgencies: "目前尚無機構夥伴。",
+    advertiseLine: "您是持牌居家照護機構？歡迎在松鶴護理刊登廣告 — 請聯繫 support@pinecranecare.com。",
+    medicaidTeaser: "家人可能符合 Medicaid 資格？查看持牌機構",
     partnersTitle: "Medicaid 與持牌機構夥伴",
     partnersSub: "您的家人可能符合 Medicaid 居家照護資格？這些持牌機構可協助您確認資格、提出申請並獲得保險給付的照護。",
     sponsoredTag: "贊助", partnerCall: "致電", partnerSite: "網站",
@@ -317,6 +325,10 @@ const STRINGS = {
     suBlurb: "¿No está listo para una membresía? Desbloquee el perfil completo y contacto de este cuidador.",
     featuredBadge: "★ Destacado",
     teaserName: "Cuidador Verificado",
+    tabAgencies: "🏛️ Agencias",
+    noAgencies: "Aún no hay agencias asociadas.",
+    advertiseLine: "¿Agencia licenciada de cuidado en el hogar? Anúnciese en Pine Crane Care — contacte support@pinecranecare.com.",
+    medicaidTeaser: "¿Podría calificar para Medicaid? Vea agencias licenciadas",
     partnersTitle: "Agencias Licenciadas y Medicaid",
     partnersSub: "¿Su ser querido podría calificar para cuidado en el hogar por Medicaid? Estas agencias licenciadas pueden ayudarle a verificar la elegibilidad, aplicar y recibir cuidado cubierto.",
     sponsoredTag: "Patrocinado", partnerCall: "Llamar", partnerSite: "Sitio web",
@@ -406,7 +418,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v2.3"; // ← bumped on every code update
+const APP_VERSION = "v2.4"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2401,14 +2413,14 @@ export default function App() {
           <>
             {/* Tabs: find an aide / care requests */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-              {[["aides", L.tabAides], ["jobs", L.tabJobs]].map(([id, label]) => (
+              {[["aides", L.tabAides], ["jobs", L.tabJobs], ["agencies", L.tabAgencies]].map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setTab(id)}
                   style={{
-                    flex: 1, padding: "12px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
-                    fontSize: 15, fontWeight: 800,
+                    flex: 1, padding: "11px 4px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+                    fontSize: 14, fontWeight: 800,
                     border: `2px solid ${tab === id ? T.primary : T.line}`,
                     background: tab === id ? T.primary : "#fff",
                     color: tab === id ? "#fff" : T.ink,
@@ -2476,6 +2488,43 @@ export default function App() {
                     ))}
                   </>
                 )}
+              </>
+            ) : tab === "agencies" ? (
+              <>
+                <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink }}>
+                  {L.partnersTitle}
+                </h2>
+                <p style={{ margin: "0 0 14px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.partnersSub}</p>
+                {agencies.length === 0 ? (
+                  <div style={{ textAlign: "center", marginTop: 40 }}>
+                    <div style={{ fontSize: 44 }}>🏛️</div>
+                    <p style={{ color: T.inkSoft, fontSize: 15, margin: "10px 0 0" }}>{L.noAgencies}</p>
+                  </div>
+                ) : agencies.map((ag) => (
+                  <div key={ag.id} style={{ background: "#F3F7F5", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontWeight: 800, fontSize: 16, color: T.ink }}>{ag.name}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: T.inkSoft, border: `1px solid ${T.line}`, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                        {L.sponsoredTag}
+                      </span>
+                    </div>
+                    {ag.areas && <div style={{ fontSize: 13, color: T.inkSoft, marginTop: 2 }}>{ag.areas}</div>}
+                    {ag.blurb && <p style={{ margin: "8px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.5 }}>{ag.blurb}</p>}
+                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                      {ag.phone && (
+                        <a href={"tel:" + ag.phone} style={{ padding: "9px 16px", borderRadius: 10, background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                          {L.partnerCall} {ag.phone}
+                        </a>
+                      )}
+                      {ag.website && (
+                        <a href={ag.website} target="_blank" rel="noopener noreferrer" style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, color: T.primary, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                          {L.partnerSite}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{L.advertiseLine}</p>
               </>
             ) : (
             <>
@@ -2591,38 +2640,15 @@ export default function App() {
               </>
             )}
 
-            {/* Agency Partners (sponsored) */}
+            {/* Medicaid teaser → agencies tab */}
             {agencies.length > 0 && (
-              <div style={{ marginTop: 24, borderTop: `1px solid ${T.line}`, paddingTop: 18 }}>
-                <h3 style={{ margin: "0 0 4px", fontSize: 18, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
-                  {L.partnersTitle}
-                </h3>
-                <p style={{ margin: "0 0 12px", fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.partnersSub}</p>
-                {agencies.map((ag) => (
-                  <div key={ag.id} style={{ background: "#F3F7F5", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                      <span style={{ fontWeight: 800, fontSize: 16, color: T.ink }}>{ag.name}</span>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: T.inkSoft, border: `1px solid ${T.line}`, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>
-                        {L.sponsoredTag}
-                      </span>
-                    </div>
-                    {ag.areas && <div style={{ fontSize: 13, color: T.inkSoft, marginTop: 2 }}>{ag.areas}</div>}
-                    {ag.blurb && <p style={{ margin: "8px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.5 }}>{ag.blurb}</p>}
-                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                      {ag.phone && (
-                        <a href={"tel:" + ag.phone} style={{ padding: "9px 16px", borderRadius: 10, background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                          {L.partnerCall} {ag.phone}
-                        </a>
-                      )}
-                      {ag.website && (
-                        <a href={ag.website} target="_blank" rel="noopener noreferrer" style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, color: T.primary, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                          {L.partnerSite}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => { setTab("agencies"); window.scrollTo(0, 0); }}
+                style={{ width: "100%", marginTop: 18, padding: "13px", borderRadius: 12, border: `1.5px solid ${T.primary}`, background: "#F3F7F5", color: T.primary, fontWeight: 700, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {L.medicaidTeaser} →
+              </button>
             )}
             </>
             )}
