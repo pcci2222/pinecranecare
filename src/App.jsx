@@ -26,7 +26,7 @@ const CERTS = ["HHA", "CNA", "CPR / First Aid", "Dementia care training"];
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
-    tagline: "松鶴延年 · Trusted home care for every need, near you",
+    tagline: "家政通 · Trusted home care for every need, near you",
     heroTitle: "Caring hands for daily life",
     heroText: "From senior companionship, meals, and mobility support to child care and after-school help — find a trusted caregiver for your loved ones, whatever their daily needs.",
     join: "+ Join as an aide",
@@ -66,7 +66,7 @@ const STRINGS = {
     aideLoginErr: "No profile found matching that phone number and PIN.",
     pendingEdit: "⏳ Your profile is pending verification — families can't see it yet, but you can update it and it will be reviewed.",
     lCertPhoto: "License / certification photo (optional)",
-    certPhotoNote: "Used by Pine Crane Care for verification only — never shown publicly.",
+    certPhotoNote: "Used by KaJing Care for verification only — never shown publicly.",
     certUpload: "Add license photo",
     certRetake: "Replace photo",
     lPin: "4-digit PIN (needed to edit or remove your profile later)",
@@ -105,7 +105,7 @@ const STRINGS = {
     teaserName: "Verified Caregiver",
     tabAgencies: "🏛️ Agencies",
     noAgencies: "No agency partners are listed yet.",
-    advertiseLine: "Licensed home care agency? Advertise on Pine Crane Care — contact support@pinecranecare.com.",
+    advertiseLine: "Licensed home care agency? Advertise on KaJing Care — contact support@pinecranecare.com.",
     medicaidTeaser: "Think you may qualify for Medicaid home care? See licensed agencies",
     partnersTitle: "Medicaid & Licensed Agency Partners",
     partnersSub: "Think your loved one may qualify for Medicaid home care? These licensed agencies can help you check eligibility, apply, and receive covered care.",
@@ -136,7 +136,7 @@ const STRINGS = {
     hireFormLabel: "Your name (shown with your future review)",
     hireConfirm: "Confirm hire",
     tHired: "🎉 Congratulations on your match! You can leave a review anytime.",
-    hiredBadge: "✓ Hired via Pine Crane Care",
+    hiredBadge: "✓ Hired via KaJing Care",
     reviews: "Reviews", writeReview: "Write a review",
     commentPh: "How was the service? Punctuality, care quality, communication…",
     submitReview: "Submit review", noReviews: "No reviews yet.",
@@ -144,14 +144,14 @@ const STRINGS = {
     tReview: "Thank you — your review is posted ✓",
     faqTitle: "Frequently Asked Questions", faqClientTitle: "For Families", faqAideTitle: "For Caregivers", faqLink: "FAQ", whyMembership: "Why membership?",
     fPrivacy: "Privacy Policy", fTerms: "Terms of Service", fBackup: "Backup (testing)",
-    fCopy: "© 2026 Pine Crane Care. Families are responsible for screening and hiring decisions.",
-    tProfileLive: "Your profile has been submitted for review — it will appear in the directory once Pine Crane Care verifies it ✓",
+    fCopy: "© 2026 KaJing Care 家政通. Families are responsible for screening and hiring decisions.",
+    tProfileLive: "Your profile has been submitted for review — it will appear in the directory once KaJing Care verifies it ✓",
     verifiedBadge: "✓ Verified", tProfileUpd: "Profile updated ✓", tProfileRem: "Profile removed.",
     tJobLive: "Your care request is live! 🎉", tJobUpd: "Care request updated ✓", tJobRem: "Care request removed.",
     tMember: "Membership active — contact info unlocked ✓",
   },
   zh: {
-    tagline: "松鶴延年 · 全方位可信賴的居家照護",
+    tagline: "家政通 · 全方位可信賴的居家照護",
     heroTitle: "用心照護，安享日常",
     heroText: "從長者陪伴、備餐、行動輔助，到兒童照護與課後看顧 — 為您的家人找到值得信賴的照護者。",
     join: "+ 看護註冊",
@@ -191,7 +191,7 @@ const STRINGS = {
     aideLoginErr: "找不到符合該電話與 PIN 碼的檔案。",
     pendingEdit: "⏳ 您的檔案正在審核中 — 家庭目前看不到，但您可以更新內容，我們將一併審核。",
     lCertPhoto: "證照照片（選填）",
-    certPhotoNote: "僅供松鶴護理驗證使用 — 不會公開顯示。",
+    certPhotoNote: "僅供家政通驗證使用 — 不會公開顯示。",
     certUpload: "上傳證照照片",
     certRetake: "重新上傳",
     lPin: "4 位數 PIN 碼（日後編輯或刪除檔案時需要）",
@@ -230,7 +230,7 @@ const STRINGS = {
     teaserName: "已驗證照護者",
     tabAgencies: "🏛️ 照護機構",
     noAgencies: "目前尚無機構夥伴。",
-    advertiseLine: "您是持牌居家照護機構？歡迎在松鶴護理刊登廣告 — 請聯繫 support@pinecranecare.com。",
+    advertiseLine: "您是持牌居家照護機構？歡迎在家政通刊登廣告 — 請聯繫 support@pinecranecare.com。",
     medicaidTeaser: "家人可能符合 Medicaid 資格？查看持牌機構",
     partnersTitle: "Medicaid 與持牌機構夥伴",
     partnersSub: "您的家人可能符合 Medicaid 居家照護資格？這些持牌機構可協助您確認資格、提出申請並獲得保險給付的照護。",
@@ -261,7 +261,7 @@ const STRINGS = {
     hireFormLabel: "您的稱呼（將與您日後的評價一同顯示）",
     hireConfirm: "確認聘用",
     tHired: "🎉 恭喜配對成功！歡迎隨時留下評價。",
-    hiredBadge: "✓ 透過松鶴護理聘用",
+    hiredBadge: "✓ 透過家政通聘用",
     reviews: "評價", writeReview: "撰寫評價",
     commentPh: "服務如何？守時、照護品質、溝通…",
     submitReview: "送出評價", noReviews: "目前還沒有評價。",
@@ -269,14 +269,14 @@ const STRINGS = {
     tReview: "感謝您 — 評價已發布 ✓",
     faqTitle: "常見問題", faqClientTitle: "給家庭（客戶）", faqAideTitle: "給照護者", faqLink: "常見問題", whyMembership: "為何要加入會員？",
     fPrivacy: "隱私政策", fTerms: "服務條款", fBackup: "備份（測試用）",
-    fCopy: "© 2026 Pine Crane Care 松鶴護理。家庭須自行負責審核與聘用決定。",
+    fCopy: "© 2026 KaJing Care 家政通。家庭須自行負責審核與聘用決定。",
     tProfileLive: "您的檔案已送出審核 — 通過驗證後將顯示於名錄中 ✓",
     verifiedBadge: "✓ 已驗證", tProfileUpd: "檔案已更新 ✓", tProfileRem: "檔案已刪除。",
     tJobLive: "您的徵求已發布！🎉", tJobUpd: "徵求已更新 ✓", tJobRem: "徵求已刪除。",
     tMember: "會員已啟用 — 聯絡方式已解鎖 ✓",
   },
   es: {
-    tagline: "松鶴延年 · Cuidado a domicilio de confianza para toda necesidad",
+    tagline: "家政通 · Cuidado a domicilio de confianza para toda necesidad",
     heroTitle: "Manos que cuidan la vida diaria",
     heroText: "Desde compañía para mayores y apoyo de movilidad hasta cuidado infantil y ayuda después de clases — encuentre un cuidador de confianza para su familia.",
     join: "+ Soy cuidador/a",
@@ -316,7 +316,7 @@ const STRINGS = {
     aideLoginErr: "No se encontró un perfil con ese teléfono y PIN.",
     pendingEdit: "⏳ Su perfil está pendiente de verificación — las familias aún no lo ven, pero puede actualizarlo.",
     lCertPhoto: "Foto de licencia / certificación (opcional)",
-    certPhotoNote: "Solo para verificación de Pine Crane Care — nunca se muestra públicamente.",
+    certPhotoNote: "Solo para verificación de KaJing Care — nunca se muestra públicamente.",
     certUpload: "Agregar foto de licencia",
     certRetake: "Reemplazar foto",
     lPin: "PIN de 4 dígitos (para editar o eliminar su perfil después)",
@@ -355,7 +355,7 @@ const STRINGS = {
     teaserName: "Cuidador Verificado",
     tabAgencies: "🏛️ Agencias",
     noAgencies: "Aún no hay agencias asociadas.",
-    advertiseLine: "¿Agencia licenciada de cuidado en el hogar? Anúnciese en Pine Crane Care — contacte support@pinecranecare.com.",
+    advertiseLine: "¿Agencia licenciada de cuidado en el hogar? Anúnciese en KaJing Care — contacte support@pinecranecare.com.",
     medicaidTeaser: "¿Podría calificar para Medicaid? Vea agencias licenciadas",
     partnersTitle: "Agencias Licenciadas y Medicaid",
     partnersSub: "¿Su ser querido podría calificar para cuidado en el hogar por Medicaid? Estas agencias licenciadas pueden ayudarle a verificar la elegibilidad, aplicar y recibir cuidado cubierto.",
@@ -386,7 +386,7 @@ const STRINGS = {
     hireFormLabel: "Su nombre (se mostrará con su futura reseña)",
     hireConfirm: "Confirmar contratación",
     tHired: "🎉 ¡Felicidades por su elección! Puede dejar una reseña cuando quiera.",
-    hiredBadge: "✓ Contratado vía Pine Crane Care",
+    hiredBadge: "✓ Contratado vía KaJing Care",
     reviews: "Reseñas", writeReview: "Escribir una reseña",
     commentPh: "¿Cómo fue el servicio? Puntualidad, calidad, comunicación…",
     submitReview: "Enviar reseña", noReviews: "Aún no hay reseñas.",
@@ -394,7 +394,7 @@ const STRINGS = {
     tReview: "Gracias — su reseña fue publicada ✓",
     faqTitle: "Preguntas Frecuentes", faqClientTitle: "Para Familias", faqAideTitle: "Para Cuidadores", faqLink: "Preguntas", whyMembership: "¿Por qué la membresía?",
     fPrivacy: "Política de privacidad", fTerms: "Términos de servicio", fBackup: "Copia de seguridad (pruebas)",
-    fCopy: "© 2026 Pine Crane Care. Las familias son responsables de verificar y contratar.",
+    fCopy: "© 2026 KaJing Care 家政通. Las familias son responsables de verificar y contratar.",
     tProfileLive: "Su perfil fue enviado para revisión — aparecerá en el directorio una vez verificado ✓",
     verifiedBadge: "✓ Verificado", tProfileUpd: "Perfil actualizado ✓", tProfileRem: "Perfil eliminado.",
     tJobLive: "¡Su solicitud está publicada! 🎉", tJobUpd: "Solicitud actualizada ✓", tJobRem: "Solicitud eliminada.",
@@ -460,7 +460,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.0"; // ← bumped on every code update
+const APP_VERSION = "v3.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1770,9 +1770,9 @@ const FAQ = {
     client: [
       ["Is browsing free?", "Yes. Anyone can search and browse every verified caregiver profile for free. A membership unlocks full profiles and direct contact information (phone and email) for every caregiver on the platform."],
       ["Why keep my membership after I've hired someone?", "Because care needs change. Active members get replacement matching at no extra charge if your caregiver becomes unavailable — illness, schedule changes, or moving on. You can also post urgent backup requests and contact unlimited caregivers as needs evolve, whether that's more hours, respite relief, or recovery care after a hospital stay. Your membership is your safety net, not just a one-time search."],
-      ["Are caregivers verified?", "Every caregiver listed has been reviewed by Pine Crane Care before appearing in the directory — that's what the ✓ Verified badge means. We still encourage families to interview candidates and check references; our platform gives you the tools and reviews to do it well."],
+      ["Are caregivers verified?", "Every caregiver listed has been reviewed by KaJing Care before appearing in the directory — that's what the ✓ Verified badge means. We still encourage families to interview candidates and check references; our platform gives you the tools and reviews to do it well."],
       ["Who sets the pay rate?", "You and the caregiver agree on the rate directly. There is no agency markup in the middle — caregivers typically earn more than agency wages while families often pay less than agency billing rates."],
-      ["I live out of state or overseas — can I arrange care for my parents?", "Absolutely — this is one of the things Pine Crane Care was built for. Search by the ZIP code where your loved one lives, review verified profiles in English, 中文, or Español, and contact caregivers from anywhere in the world."],
+      ["I live out of state or overseas — can I arrange care for my parents?", "Absolutely — this is one of the things KaJing Care was built for. Search by the ZIP code where your loved one lives, review verified profiles in English, 中文, or Español, and contact caregivers from anywhere in the world."],
       ["What if the caregiver doesn't work out?", "With an active membership, just come back — contact new caregivers or post a care request at no additional charge. Members never start from zero. This ongoing protection is the biggest reason families keep their membership active."],
     ],
     aide: [
@@ -1780,7 +1780,7 @@ const FAQ = {
       ["How do I get clients?", "Two ways: families searching your area find your verified profile, and you can browse the Care Requests board and contact families directly about the jobs they've posted."],
       ["Why keep my profile active after I find work?", "Because every job ends eventually — schedules change, families relocate, care needs shift. An active profile with good reviews means your next client finds you before your current job ends, so you avoid gaps in income. Think of your profile as your ongoing storefront, not a one-time ad."],
       ["How do reviews help me earn more?", "Caregivers with strong reviews get contacted first and can confidently ask for higher rates. Every family you serve well builds a reputation that lives permanently on your profile — it's the most valuable asset you build here."],
-      ["Do I keep all my earnings?", "Yes. Families pay you directly at the rate you agreed. Pine Crane Care never takes a cut of your hourly pay."],
+      ["Do I keep all my earnings?", "Yes. Families pay you directly at the rate you agreed. KaJing Care never takes a cut of your hourly pay."],
       ["What does the Verified badge mean for me?", "Verification tells families your identity and stated credentials have been reviewed — verified caregivers get significantly more contact from families. Keep your certifications up to date on your profile to make the most of it."],
     ],
   },
@@ -1788,9 +1788,9 @@ const FAQ = {
     client: [
       ["瀏覽是免費的嗎？", "是的。任何人都可以免費搜尋及瀏覽所有經驗證的照護者檔案。成為會員後，即可解鎖完整檔案與每位照護者的直接聯絡方式（電話與電子郵件）。"],
       ["已經請到人了，為什麼還要續會員？", "因為照護需求會變化。會員在照護者因生病、時間衝突或離職而無法繼續時，可免費重新配對。您也可以發布緊急替補需求，並隨需求變化（增加時數、喘息照護、術後照護）聯繫任何照護者。會員資格是您的安全網，不只是一次性的搜尋。"],
-      ["照護者有經過驗證嗎？", "名錄中的每位照護者都經過松鶴護理審核後才會顯示 — 這就是 ✓ 已驗證標章的意義。我們仍建議家庭親自面談並查核推薦人；平台提供評價與工具協助您做好把關。"],
+      ["照護者有經過驗證嗎？", "名錄中的每位照護者都經過家政通審核後才會顯示 — 這就是 ✓ 已驗證標章的意義。我們仍建議家庭親自面談並查核推薦人；平台提供評價與工具協助您做好把關。"],
       ["時薪由誰決定？", "由您與照護者直接商定，中間沒有仲介抽成 — 照護者通常比仲介工資賺得多，而家庭往往比仲介收費付得少。"],
-      ["我住在外州或海外，可以為父母安排照護嗎？", "當然可以 — 這正是松鶴護理的核心服務之一。輸入家人居住地的郵遞區號搜尋，以中文、英文或西班牙文瀏覽經驗證的檔案，從世界任何地方聯繫照護者。"],
+      ["我住在外州或海外，可以為父母安排照護嗎？", "當然可以 — 這正是家政通的核心服務之一。輸入家人居住地的郵遞區號搜尋，以中文、英文或西班牙文瀏覽經驗證的檔案，從世界任何地方聯繫照護者。"],
       ["如果照護者不合適怎麼辦？", "只要會員資格有效，隨時回來即可 — 免費聯繫新的照護者或發布徵求。會員永遠不必從零開始，這份持續保障正是家庭續會的最大原因。"],
     ],
     aide: [
@@ -1798,7 +1798,7 @@ const FAQ = {
       ["我要怎麼找到客戶？", "兩個管道：您所在地區的家庭搜尋時會看到您的驗證檔案；您也可以瀏覽「徵求看護」版面，直接聯繫發布需求的家庭。"],
       ["找到工作後，為什麼還要保持檔案有效？", "因為每份工作終會結束 — 時間表變動、家庭搬遷、照護需求改變。保持檔案活躍並累積好評，下一位客戶會在目前工作結束前找到您，避免收入中斷。把檔案當作您長期經營的店面，而不是一次性的廣告。"],
       ["評價如何幫助我賺更多？", "評價優良的照護者會最先被聯繫，也能有底氣開出較高時薪。每服務好一個家庭，都會在您的檔案上累積永久的口碑 — 這是您在平台上最有價值的資產。"],
-      ["我的收入需要被抽成嗎？", "不需要。家庭依雙方議定的時薪直接付款給您，松鶴護理不從您的時薪中抽取任何費用。"],
+      ["我的收入需要被抽成嗎？", "不需要。家庭依雙方議定的時薪直接付款給您，家政通不從您的時薪中抽取任何費用。"],
       ["「已驗證」標章對我有什麼意義？", "驗證代表您的身分與所列資格已經過審核 — 通過驗證的照護者獲得家庭聯繫的機會顯著更多。請保持檔案上的證照資訊最新，發揮最大效益。"],
     ],
   },
@@ -1806,7 +1806,7 @@ const FAQ = {
     client: [
       ["¿Navegar es gratis?", "Sí. Cualquiera puede buscar y ver todos los perfiles verificados gratis. La membresía desbloquea los perfiles completos y la información de contacto directa (teléfono y correo) de cada cuidador."],
       ["¿Por qué mantener mi membresía después de contratar?", "Porque las necesidades de cuidado cambian. Los miembros activos obtienen un nuevo emparejamiento sin costo adicional si su cuidador deja de estar disponible. También puede publicar solicitudes urgentes de reemplazo y contactar cuidadores ilimitados a medida que cambian las necesidades. Su membresía es su red de seguridad, no solo una búsqueda única."],
-      ["¿Los cuidadores están verificados?", "Cada cuidador listado fue revisado por Pine Crane Care antes de aparecer — eso significa la insignia ✓ Verificado. Aun así recomendamos entrevistar y pedir referencias; la plataforma le da las herramientas y reseñas para hacerlo bien."],
+      ["¿Los cuidadores están verificados?", "Cada cuidador listado fue revisado por KaJing Care antes de aparecer — eso significa la insignia ✓ Verificado. Aun así recomendamos entrevistar y pedir referencias; la plataforma le da las herramientas y reseñas para hacerlo bien."],
       ["¿Quién establece la tarifa?", "Usted y el cuidador la acuerdan directamente. No hay margen de agencia — los cuidadores suelen ganar más y las familias suelen pagar menos que con una agencia."],
       ["Vivo en otro estado o país — ¿puedo organizar el cuidado de mis padres?", "Por supuesto — la plataforma fue creada para eso. Busque por el código postal donde vive su ser querido, revise perfiles verificados en español, inglés o chino, y contacte cuidadores desde cualquier parte del mundo."],
       ["¿Y si el cuidador no funciona?", "Con membresía activa, simplemente regrese — contacte nuevos cuidadores o publique una solicitud sin cargo adicional. Los miembros nunca empiezan de cero. Esta protección continua es la mayor razón para mantener la membresía."],
@@ -1816,7 +1816,7 @@ const FAQ = {
       ["¿Cómo consigo clientes?", "De dos formas: las familias de su zona encuentran su perfil verificado al buscar, y usted puede revisar las Solicitudes y contactar directamente a las familias."],
       ["¿Por qué mantener mi perfil activo después de encontrar trabajo?", "Porque todo trabajo termina — cambian los horarios, las familias se mudan, las necesidades evolucionan. Un perfil activo con buenas reseñas significa que su próximo cliente lo encuentra antes de que termine el actual, evitando periodos sin ingresos."],
       ["¿Cómo me ayudan las reseñas a ganar más?", "Los cuidadores con buenas reseñas son contactados primero y pueden pedir tarifas más altas. Cada familia bien atendida construye una reputación permanente en su perfil — su activo más valioso aquí."],
-      ["¿Me quedo con todo lo que gano?", "Sí. Las familias le pagan directamente la tarifa acordada. Pine Crane Care nunca toma un porcentaje de su pago por hora."],
+      ["¿Me quedo con todo lo que gano?", "Sí. Las familias le pagan directamente la tarifa acordada. KaJing Care nunca toma un porcentaje de su pago por hora."],
       ["¿Qué significa la insignia Verificado para mí?", "La verificación indica que su identidad y credenciales fueron revisadas — los cuidadores verificados reciben mucho más contacto de las familias. Mantenga sus certificaciones al día para aprovecharla al máximo."],
     ],
   },
@@ -2135,7 +2135,7 @@ function AdminView({ onBack, onDataChanged }) {
     try {
       const data = JSON.parse(await file.text());
       if (data.app !== "pinecranecare" || !data.tables) {
-        setMsg("That's not a Pine Crane Care backup file.");
+        setMsg("That's not a KaJing Care backup file.");
         return;
       }
       const t = data.tables;
@@ -2389,11 +2389,11 @@ const LEGAL = {
     updated: "Last updated: July 16, 2026",
     sections: [
       ["Information we collect", "When you create an aide profile, we collect the information you provide: your name, photo, phone number, email, city and ZIP code, age, years of experience, hourly rate, languages, services, certifications, and bio. Visitors searching the directory do not need an account and we do not collect their personal information."],
-      ["How your information is used", "Aide profile information is displayed publicly in the Pine Crane Care directory so that families seeking care can find and contact you. That is the sole purpose of the directory. We do not sell your personal information."],
+      ["How your information is used", "Aide profile information is displayed publicly in the KaJing Care directory so that families seeking care can find and contact you. That is the sole purpose of the directory. We do not sell your personal information."],
       ["Your choices", "You may edit or remove your profile at any time. When you remove your profile, it is no longer shown in the directory. To request removal assistance, contact us using the information below."],
       ["Photos", "Your profile photo is stored and displayed with your profile. Do not upload photos of other people without their permission."],
       ["Data security", "We take reasonable measures to protect the information stored in the directory. However, information you choose to publish in your profile is public by design — do not include information you do not want visible to others (such as your home address)."],
-      ["Children", "Pine Crane Care is intended for adults. We do not knowingly collect information from anyone under 18."],
+      ["Children", "KaJing Care is intended for adults. We do not knowingly collect information from anyone under 18."],
       ["Contact", "Questions about this policy? Contact us at privacy@pinecranecare.com."],
     ],
   },
@@ -2401,16 +2401,16 @@ const LEGAL = {
     title: "Terms of Service",
     updated: "Last updated: July 18, 2026",
     sections: [
-      ["What Pine Crane Care is", "Pine Crane Care Inc operates a referral platform and directory that helps families find independent caregivers for home care needs, including senior care, child care, and household support. We are not an employer, staffing agency, home care agency, or healthcare provider. Caregivers listed on the platform are independent individuals, not our employees, contractors, or agents. We do not assign, supervise, schedule, or direct any caregiver's work."],
-      ["Verification and its limits", "Caregiver profiles are reviewed by Pine Crane Care before appearing in the directory, and the \u201cVerified\u201d badge indicates that we have reviewed the identity and stated credentials the caregiver provided. Verification is a good-faith review, not a guarantee of any person's qualifications, character, or future conduct. Families remain solely responsible for interviewing candidates, checking references, obtaining any background checks they consider necessary, and making their own hiring decisions."],
+      ["What KaJing Care is", "KaJing Care Inc operates a referral platform and directory that helps families find independent caregivers for home care needs, including senior care, child care, and household support. We are not an employer, staffing agency, home care agency, or healthcare provider. Caregivers listed on the platform are independent individuals, not our employees, contractors, or agents. We do not assign, supervise, schedule, or direct any caregiver's work."],
+      ["Verification and its limits", "Caregiver profiles are reviewed by KaJing Care before appearing in the directory, and the \u201cVerified\u201d badge indicates that we have reviewed the identity and stated credentials the caregiver provided. Verification is a good-faith review, not a guarantee of any person's qualifications, character, or future conduct. Families remain solely responsible for interviewing candidates, checking references, obtaining any background checks they consider necessary, and making their own hiring decisions."],
       ["Memberships and payments", "Certain features, including access to caregivers' full profiles and contact information, require a paid membership or a one-time single unlock. Fees are displayed before purchase. Memberships run for the period purchased and, when auto-renewal is offered and enabled, renew until cancelled; cancellation stops future renewals and takes effect at the end of the current period. Except where required by law, fees are non-refundable once access has been provided. Prices may change with notice; changes apply to future purchases and renewals only."],
       ["Replacement matching", "During an active membership, members may contact additional caregivers and post care requests at no additional platform charge, including when a previous caregiver becomes unavailable. This benefit is continued access to the platform's matching tools; it is not a guarantee that any particular caregiver, or any caregiver at all, will be available, suitable, or willing to accept an engagement."],
       ["Caregiver responsibilities", "By creating a profile, you confirm that all information you provide is truthful and accurate, that you are legally permitted to work in the United States, that certifications you list are genuine and current, and that you will keep your profile up to date. Misrepresentation is grounds for removal from the platform."],
-      ["Featured listings", "Caregivers may pay for featured placement in search results. Featured status is a paid promotional position and is labeled as such; it does not reflect a ranking of quality by Pine Crane Care."],
+      ["Featured listings", "Caregivers may pay for featured placement in search results. Featured status is a paid promotional position and is labeled as such; it does not reflect a ranking of quality by KaJing Care."],
       ["Reviews", "Reviews must reflect the reviewer's genuine, first-hand experience. We may remove reviews that are false, abusive, unrelated to caregiving services, or that violate these terms, but we do not undertake to monitor all content and are not responsible for user-submitted content. Caregivers and clients may not offer or accept anything of value in exchange for reviews."],
-      ["Hiring arrangements", "Any employment or service arrangement — including wages, schedules, duties, taxes, withholding, workers' compensation, and insurance — is strictly between the family and the caregiver. Families who hire a caregiver directly may become household employers with legal and tax obligations; consult a qualified professional. Pine Crane Care is not a party to any such arrangement and is not responsible for the acts or omissions of any user."],
+      ["Hiring arrangements", "Any employment or service arrangement — including wages, schedules, duties, taxes, withholding, workers' compensation, and insurance — is strictly between the family and the caregiver. Families who hire a caregiver directly may become household employers with legal and tax obligations; consult a qualified professional. KaJing Care is not a party to any such arrangement and is not responsible for the acts or omissions of any user."],
       ["Acceptable use", "You may not post false information, impersonate others, harass or discriminate against users, scrape or resell platform data, circumvent payment features, or use the platform for any unlawful purpose. We may suspend or remove accounts, profiles, posts, or reviews that violate these terms."],
-      ["Disclaimer and limitation of liability", "The platform is provided \u201cas is\u201d and \u201cas available\u201d without warranties of any kind, express or implied. To the fullest extent permitted by law, Pine Crane Care Inc is not liable for any indirect, incidental, special, consequential, or punitive damages, or for any damages arising from your use of the platform or from any arrangement, interaction, or dispute between users. Where liability cannot be excluded, our total liability is limited to the amounts you paid to us in the twelve months before the claim arose."],
+      ["Disclaimer and limitation of liability", "The platform is provided \u201cas is\u201d and \u201cas available\u201d without warranties of any kind, express or implied. To the fullest extent permitted by law, KaJing Care Inc is not liable for any indirect, incidental, special, consequential, or punitive damages, or for any damages arising from your use of the platform or from any arrangement, interaction, or dispute between users. Where liability cannot be excluded, our total liability is limited to the amounts you paid to us in the twelve months before the claim arose."],
       ["Changes to these terms", "We may update these terms from time to time. We will post the updated terms with a new \u201cLast updated\u201d date, and continued use of the platform after changes take effect means you accept the updated terms."],
       ["Contact", "Questions about these terms? Contact us at support@pinecranecare.com."],
     ],
@@ -2794,7 +2794,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, color: "#fff", fontWeight: 700, letterSpacing: 0.2 }}>
-                Pine <span style={{ color: T.amber }}>Crane</span> Care
+                Ka<span style={{ color: T.amber }}>Jing</span> Care
               </div>
               <div style={{ fontSize: 13.5, color: "#C9DAD4" }}>{L.tagline}</div>
             </div>
@@ -2833,7 +2833,7 @@ export default function App() {
       <main style={{ maxWidth: 640, margin: "0 auto", padding: "20px 16px 48px" }}>
         {dbError && (
           <div style={{ padding: "12px 16px", background: "#FBEAE5", border: `1.5px solid ${T.danger}`, borderRadius: 12, marginBottom: 14, fontSize: 14, color: T.ink }}>
-            ⚠️ <strong>Could not reach the Pine Crane database.</strong> If you're seeing this inside the
+            ⚠️ <strong>Could not reach the KaJing Care database.</strong> If you're seeing this inside the
             Claude preview, the sandbox may be blocking outside connections — the same code will work
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
