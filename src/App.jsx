@@ -511,6 +511,89 @@ async function sbDelete(table, id) {
   });
   if (!r.ok) throw new Error(`delete ${table} failed: ${r.status}`);
 }
+
+// ---------- Analytics tracking (fire-and-forget mouse-trap events) ----------
+// Anonymous browser session ID — stable across visits, no personal data
+function getSessionId() {
+  let sid = localStorage.getItem("kjc_sid");
+  if (!sid) {
+    sid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem("kjc_sid", sid);
+  }
+  return sid;
+}
+
+// Mouse trap 1: search submitted. Returns search_query_id for chaining.
+async function trackSearch({ zip, service, maxRate, ageFrom, ageTo, resultsCount, lang, memberSession }) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
+      method: "POST",
+      headers: { ...sbHeaders, Prefer: "return=representation" },
+      body: JSON.stringify({
+        session_id:     getSessionId(),
+        actor_type:     memberSession ? "member" : "guest",
+        actor_id:       memberSession?.id || null,
+        zip_filter:     zip || null,
+        service_filter: service || null,
+        max_rate:       maxRate ? Number(maxRate) : null,
+        age_from:       ageFrom ? Number(ageFrom) : null,
+        age_to:         ageTo ? Number(ageTo) : null,
+        results_count:  resultsCount || 0,
+        lang:           lang || "en",
+      }),
+    });
+    if (r.ok) {
+      const rows = await r.json();
+      return rows[0]?.id || null;
+    }
+  } catch (_) { /* tracking must never break the UI */ }
+  return null;
+}
+
+// Mouse trap 2: "View profile & contact" clicked (card expanded).
+// Returns profile_view_id for chaining to contact reveal.
+async function trackProfileView({ caregiverId, caregiverName, searchQueryId, memberSession }) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profile_views`, {
+      method: "POST",
+      headers: { ...sbHeaders, Prefer: "return=representation" },
+      body: JSON.stringify({
+        session_id:      getSessionId(),
+        actor_type:      memberSession ? "member" : "guest",
+        actor_id:        memberSession?.id || null,
+        caregiver_id:    caregiverId,
+        caregiver_name:  caregiverName,
+        search_query_id: searchQueryId || null,
+      }),
+    });
+    if (r.ok) {
+      const rows = await r.json();
+      return rows[0]?.id || null;
+    }
+  } catch (_) {}
+  return null;
+}
+
+// Mouse trap 3: "Unlock contact info" clicked — fires BEFORE contact is shown.
+async function trackContactReveal({ caregiverId, caregiverName, profileViewId, searchQueryId, wasSubscribed, memberSession }) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/contact_reveals`, {
+      method: "POST",
+      headers: sbHeaders,
+      body: JSON.stringify({
+        session_id:      getSessionId(),
+        actor_type:      memberSession ? "member" : "guest",
+        actor_id:        memberSession?.id || null,
+        caregiver_id:    caregiverId,
+        caregiver_name:  caregiverName,
+        profile_view_id: profileViewId || null,
+        search_query_id: searchQueryId || null,
+        was_subscribed:  !!wasSubscribed,
+      }),
+    });
+  } catch (_) {}
+}
+
 async function sbUploadPhoto(dataUrl) {
   const blob = await (await fetch(dataUrl)).blob();
   const name = `p${Date.now()}${Math.random().toString(36).slice(2, 8)}.jpg`;
@@ -949,7 +1032,7 @@ function RegisterForm({ onSaved, onCancel, initial }) {
 }
 
 // ---------- Directory ----------
-function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "" }) {
+function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
   const { L, ts } = useLang();
   const [hireOpen, setHireOpen] = useState(false);
   const [hireName, setHireName] = useState(hireDefault || "");
@@ -974,6 +1057,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
   const [revComment, setRevComment] = useState("");
   const [revError, setRevError] = useState("");
   const [revBusy, setRevBusy] = useState(false);
+  const [currentViewId, setCurrentViewId] = useState(null);   // tracking: profile_view id
   const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
 
   async function submitReview() {
@@ -1079,7 +1163,17 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
               </p>
               <button
                 type="button"
-                onClick={onRequireSub}
+                onClick={async () => {
+                  await trackContactReveal({
+                    caregiverId:   aide.id,
+                    caregiverName: aide.name,
+                    profileViewId: currentViewId,
+                    searchQueryId,
+                    wasSubscribed: false,
+                    memberSession,
+                  });
+                  onRequireSub();
+                }}
                 style={{
                   padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber,
                   color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
@@ -1173,7 +1267,41 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
         <button
           type="button"
-          onClick={() => (subscribed ? setExpanded(!expanded) : onRequireSub())}
+          onClick={async () => {
+            if (!subscribed) {
+              // Guest: fire contact_reveal (they're being sent to plans page)
+              await trackContactReveal({
+                caregiverId:   aide.id,
+                caregiverName: aide.name,
+                profileViewId: currentViewId,
+                searchQueryId,
+                wasSubscribed: false,
+                memberSession,
+              });
+              onRequireSub();
+              return;
+            }
+            if (!expanded) {
+              // Member expanding the card — fire profile_view mouse trap
+              const pvId = await trackProfileView({
+                caregiverId:   aide.id,
+                caregiverName: aide.name,
+                searchQueryId,
+                memberSession,
+              });
+              setCurrentViewId(pvId);
+              // Contact is now visible, so also record the reveal for members
+              await trackContactReveal({
+                caregiverId:   aide.id,
+                caregiverName: aide.name,
+                profileViewId: pvId,
+                searchQueryId,
+                wasSubscribed: true,
+                memberSession,
+              });
+            }
+            setExpanded(!expanded);
+          }}
           style={{
             flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${T.primary}`,
             background: expanded ? T.primary : "#fff", color: expanded ? "#fff" : T.primary,
@@ -2592,6 +2720,7 @@ export default function App() {
   const unlockedIds = client?.unlocks || [];
   const [aidePro, setAidePro] = useState(null);
   const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
+  const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
     (async () => {
@@ -2767,6 +2896,27 @@ export default function App() {
     const matchMaxAge = !maxAge || (a.age !== "" && !isNaN(age) && age <= Number(maxAge));
     return matchQ && matchS && matchRate && matchMinAge && matchMaxAge;
   });
+
+  // Tracking: log each search (debounced 800ms so we don't log every keystroke)
+  useEffect(() => {
+    // Only track once the user has typed a ZIP/city OR set a filter
+    if (!search.trim() && !serviceFilter && !maxRate && !minAge && !maxAge) return;
+    const t = setTimeout(async () => {
+      const sqId = await trackSearch({
+        zip:           search.trim() || null,
+        service:       serviceFilter || null,
+        maxRate:       maxRate || null,
+        ageFrom:       minAge || null,
+        ageTo:         maxAge || null,
+        resultsCount:  filtered.length,
+        lang:          LANG_CURRENT.lang,
+        memberSession: account,
+      });
+      setLastSearchId(sqId);
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, serviceFilter, maxRate, minAge, maxAge]);
 
   return (
     <div style={{ minHeight: "100vh", background: T.surface, fontFamily: "'Avenir Next', 'Segoe UI', system-ui, sans-serif", color: T.ink }}>
@@ -3160,6 +3310,8 @@ export default function App() {
                     onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
+                    searchQueryId={lastSearchId}
+                    memberSession={account}
                   />
                 ))}
               </>
