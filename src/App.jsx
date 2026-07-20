@@ -166,6 +166,9 @@ const STRINGS = {
     phoneAuthFinish: "Finish",
     signInBtn: "Sign in",
     agencyReports: "Agency reports",
+    agencyLocked: "Verified home-care agency",
+    agencyLockedSub: "Contact info visible to members and Aide Pro users.",
+    agencyUnlockBtn: "🔒 Unlock agency contact",
     agencyDashTitle: "Agency Reports",
     agencyDashSub: "Real activity from families looking for care — the last 30 days.",
     hotAides: "Hot aides — last 30 days",
@@ -334,6 +337,9 @@ const STRINGS = {
     phoneAuthFinish: "完成",
     signInBtn: "登入",
     agencyReports: "機構報告",
+    agencyLocked: "已認證居家照護機構",
+    agencyLockedSub: "會員與家政員 Pro 可查看聯絡方式。",
+    agencyUnlockBtn: "🔒 解鎖機構聯絡資訊",
     agencyDashTitle: "機構報告",
     agencyDashSub: "尋找照護的家庭 — 過去 30 天的真實活動數據。",
     hotAides: "熱門家政員 — 過去 30 天",
@@ -502,6 +508,9 @@ const STRINGS = {
     phoneAuthFinish: "Finalizar",
     signInBtn: "Iniciar sesión",
     agencyReports: "Informes de agencia",
+    agencyLocked: "Agencia de cuidado verificada",
+    agencyLockedSub: "Información de contacto visible para miembros y usuarios Aide Pro.",
+    agencyUnlockBtn: "🔒 Desbloquear contacto de agencia",
     agencyDashTitle: "Informes de agencia",
     agencyDashSub: "Actividad real de familias buscando cuidado — últimos 30 días.",
     hotAides: "Cuidadores populares — últimos 30 días",
@@ -610,7 +619,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8.2"; // ← bumped on every code update
+const APP_VERSION = "v3.8.3"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -4053,30 +4062,50 @@ export default function App() {
                     <div style={{ fontSize: 44 }}>🏛️</div>
                     <p style={{ color: T.inkSoft, fontSize: 15, margin: "10px 0 0" }}>{L.noAgencies}</p>
                   </div>
-                ) : agencies.map((ag) => (
+                ) : agencies.map((ag) => {
+                  const canSee = subscribed || isAidePro;
+                  return (
                   <div key={ag.id} style={{ background: "#F3F7F5", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                      <span style={{ fontWeight: 800, fontSize: 16, color: T.ink }}>{ag.name}</span>
+                      <span style={{ fontWeight: 800, fontSize: 16, color: T.ink }}>
+                        {canSee ? ag.name : `🔒 ${L.agencyLocked}`}
+                      </span>
                       <span style={{ fontSize: 11, fontWeight: 800, color: T.inkSoft, border: `1px solid ${T.line}`, borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap" }}>
                         {L.sponsoredTag}
                       </span>
                     </div>
                     {ag.areas && <div style={{ fontSize: 13, color: T.inkSoft, marginTop: 2 }}>{ag.areas}</div>}
                     {ag.blurb && <p style={{ margin: "8px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.5 }}>{ag.blurb}</p>}
-                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                      {ag.phone && (
-                        <a href={"tel:" + ag.phone} style={{ padding: "9px 16px", borderRadius: 10, background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                          {L.partnerCall} {ag.phone}
-                        </a>
-                      )}
-                      {ag.website && (
-                        <a href={ag.website} target="_blank" rel="noopener noreferrer" style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, color: T.primary, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-                          {L.partnerSite}
-                        </a>
+                    <div style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      {canSee ? (
+                        <>
+                          {ag.phone && (
+                            <a href={"tel:" + ag.phone} style={{ padding: "9px 16px", borderRadius: 10, background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                              {L.partnerCall} {ag.phone}
+                            </a>
+                          )}
+                          {ag.website && (
+                            <a href={ag.website} target="_blank" rel="noopener noreferrer" style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, color: T.primary, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                              {L.partnerSite}
+                            </a>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 10, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 13, color: T.ink }}>{L.agencyLockedSub}</span>
+                          <button
+                            type="button"
+                            onClick={() => { setView("plans"); window.scrollTo(0, 0); }}
+                            style={{ padding: "8px 14px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}
+                          >
+                            {L.agencyUnlockBtn}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
                 <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{L.advertiseLine}</p>
               </>
             ) : (
