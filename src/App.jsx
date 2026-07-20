@@ -607,7 +607,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.7.2"; // ← bumped on every code update
+const APP_VERSION = "v3.7.3"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1004,7 +1004,8 @@ const aideToDb = (a) => ({
   name: a.name, phone: a.phone, email: a.email || null, city: a.city, zip: a.zip || null,
   age: numOrNull(a.age), years: numOrNull(a.years), rate: numOrNull(a.rate),
   languages: a.languages || null, bio: a.bio || null,
-  services: a.services || [], certs: a.certs || [], photo_url: a.photo || null, cert_photo_url: a.certPhoto || null, pin: a.pin || null,
+  services: a.services || [], certs: a.certs || [], photo_url: a.photo || null, cert_photo_url: a.certPhoto || null,
+  ...(a.pin ? { pin: a.pin } : {}),
 });
 const aideFromDb = (r) => ({
   id: r.id, createdAt: new Date(r.created_at).getTime(),
@@ -1090,7 +1091,7 @@ function Chip({ label, active, onClick }) {
 }
 
 // ---------- Registration form ----------
-function RegisterForm({ onSaved, onCancel, initial }) {
+function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
   const { L, ts } = useLang();
   const [form, setForm] = useState(
     initial || {
@@ -1161,7 +1162,7 @@ function RegisterForm({ onSaved, onCancel, initial }) {
       setError(L.errPhoto);
       return;
     }
-    if (!/^\d{4}$/.test(form.pin || "")) {
+    if (!hidePin && !/^\d{4}$/.test(form.pin || "")) {
       setError(L.errPin);
       return;
     }
@@ -1353,16 +1354,18 @@ function RegisterForm({ onSaved, onCancel, initial }) {
         />
       </Field>
 
-      <Field label={L.lPin} required>
-        <input
-          style={{ ...inputStyle, maxWidth: 160, letterSpacing: 4 }}
-          inputMode="numeric"
-          maxLength={4}
-          value={form.pin || ""}
-          onChange={(e) => set("pin", e.target.value.replace(/\D/g, ""))}
-          placeholder="••••"
-        />
-      </Field>
+      {!hidePin && (
+        <Field label={L.lPin} required>
+          <input
+            style={{ ...inputStyle, maxWidth: 160, letterSpacing: 4 }}
+            inputMode="numeric"
+            maxLength={4}
+            value={form.pin || ""}
+            onChange={(e) => set("pin", e.target.value.replace(/\D/g, ""))}
+            placeholder="••••"
+          />
+        </Field>
+      )}
 
       {error && (
         <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>
@@ -3883,6 +3886,7 @@ export default function App() {
         ) : view === "register" ? (
           <RegisterForm
             initial={editing}
+            hidePin={account?.role === "aide"}
             onSaved={(rec) => {
               if (editing) {
                 setAides((list) => list.map((a) => (a.id === rec.id ? rec : a)));
