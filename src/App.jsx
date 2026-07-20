@@ -539,7 +539,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.5"; // ← bumped on every code update
+const APP_VERSION = "v3.5.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3195,13 +3195,19 @@ export default function App() {
     try {
       await upsertMember({
         user_id: acct.id,
-        email: acct.email,
+        email: acct.email || null,
+        phone: acct.phone || null,
         name: acct.name || null,
         plan: rec.plan,
         subscribed_until: new Date(rec.subscribedUntil).toISOString(),
         unlocks: rec.unlocks || [],
       });
-    } catch (e) { /* keep local copy */ }
+    } catch (e) {
+      // Surface member-save failures so we notice them (v3.5.1)
+      showToast("Save failed — please try again");
+      console.error("upsertMember failed:", e);
+      return;
+    }
     try {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* still activate in-session */ }
@@ -3243,13 +3249,18 @@ export default function App() {
     try {
       await upsertMember({
         user_id: acct.id,
-        email: acct.email,
+        email: acct.email || null,
+        phone: acct.phone || null,
         name: acct.name || null,
         plan: rec.plan || null,
         subscribed_until: rec.subscribedUntil ? new Date(rec.subscribedUntil).toISOString() : null,
         unlocks: rec.unlocks,
       });
-    } catch (e) { /* keep local copy */ }
+    } catch (e) {
+      showToast("Save failed — please try again");
+      console.error("upsertMember failed:", e);
+      return;
+    }
     try {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* keep in-session */ }
