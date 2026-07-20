@@ -536,7 +536,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.4.1"; // ← bumped on every code update
+const APP_VERSION = "v3.4.2"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3156,7 +3156,7 @@ export default function App() {
   async function activatePlan(plan, acct = account) {
     if (!acct) {
       setAuthNext({ type: "plan", plan });
-      setView("auth");
+      setView("signin");
       window.scrollTo(0, 0);
       return;
     }
@@ -3209,7 +3209,7 @@ export default function App() {
     if (!pendingUnlock) return;
     if (!acct) {
       setAuthNext({ type: "unlock" });
-      setView("auth");
+      setView("signin");
       window.scrollTo(0, 0);
       return;
     }
@@ -3389,7 +3389,7 @@ export default function App() {
           />
         ) : view === "signin" ? (
           <PhoneAuthView
-            onBack={() => setView("directory")}
+            onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
               setAccount(acct);
               // Restore any member subscription record for this account
@@ -3404,13 +3404,24 @@ export default function App() {
                 }
               } catch (e) { /* not a subscriber yet — that's fine */ }
               showToast(L.tSignedIn);
-              // Route by role — for v3.3 we keep it simple
+              // If they were mid-way through activating a plan/unlock, continue it
+              const next = authNext;
+              setAuthNext(null);
+              if (next && next.type === "plan") {
+                activatePlan(next.plan, acct);
+                return;
+              }
+              if (next && next.type === "unlock") {
+                activateSingleUnlock(acct);
+                return;
+              }
+              // Otherwise route by role
               if (acct.role === "aide") {
-                setView("aidelogin");   // aides land on the aide profile flow (v3.4 will unify)
+                setView("aidelogin");
               } else if (acct.role === "admin") {
-                setView("admin");        // admins land on admin panel (v3.4 will remove PIN)
+                setView("admin");
               } else {
-                setView("directory");    // members + agencies land on directory for now
+                setView("directory");
               }
             }}
           />
