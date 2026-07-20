@@ -159,6 +159,22 @@ const STRINGS = {
     roleAgency: "Home-care agency",
     phoneAuthFinish: "Finish",
     signInBtn: "Sign in",
+    agencyReports: "Agency reports",
+    agencyDashTitle: "Agency Reports",
+    agencyDashSub: "Real activity from families looking for care — the last 30 days.",
+    hotAides: "Hot aides — last 30 days",
+    hotAidesSub: "Which caregivers families are viewing and contacting most.",
+    marketDemand: "Where care is being searched",
+    marketDemandSub: "Top ZIP codes families are searching from.",
+    tblRank: "#", tblAide: "Aide", tblLocation: "Location",
+    tblViews: "Views", tblContacts: "Contacts", tblRate: "Contact rate",
+    tblZip: "ZIP", tblSearches: "Searches", tblResults: "Avg results",
+    reportEmpty: "No activity in the last 30 days yet.",
+    upgradeCta: "🔒 Unlock the full report — see all top aides and every search",
+    upgradeBtn: "Upgrade to full report",
+    demoSeedBtn: "Seed demo events",
+    demoSeedDone: "Demo events created:",
+    demoSeedFail: "Seeding failed — check console.",
     hiredBtn: "✓ I hired this caregiver",
     hireFormLabel: "Your name (shown with your future review)",
     hireConfirm: "Confirm hire",
@@ -310,6 +326,22 @@ const STRINGS = {
     roleAgency: "居家照護機構",
     phoneAuthFinish: "完成",
     signInBtn: "登入",
+    agencyReports: "機構報告",
+    agencyDashTitle: "機構報告",
+    agencyDashSub: "尋找照護的家庭 — 過去 30 天的真實活動數據。",
+    hotAides: "熱門家政員 — 過去 30 天",
+    hotAidesSub: "家庭最常瀏覽和聯繫的照護者。",
+    marketDemand: "尋找照護的區域",
+    marketDemandSub: "家庭搜尋最多的 ZIP 郵區。",
+    tblRank: "排名", tblAide: "家政員", tblLocation: "地區",
+    tblViews: "瀏覽", tblContacts: "聯繫", tblRate: "聯繫率",
+    tblZip: "郵區", tblSearches: "搜尋次數", tblResults: "平均結果",
+    reportEmpty: "過去 30 天暫無活動數據。",
+    upgradeCta: "🔒 解鎖完整報告 — 查看所有熱門家政員與搜尋數據",
+    upgradeBtn: "升級查看完整報告",
+    demoSeedBtn: "產生示範資料",
+    demoSeedDone: "已新增示範事件數：",
+    demoSeedFail: "產生失敗 — 請查看主控台。",
     hiredBtn: "✓ 我已聘用這位照護者",
     hireFormLabel: "您的稱呼（將與您日後的評價一同顯示）",
     hireConfirm: "確認聘用",
@@ -461,6 +493,22 @@ const STRINGS = {
     roleAgency: "Agencia de cuidado en el hogar",
     phoneAuthFinish: "Finalizar",
     signInBtn: "Iniciar sesión",
+    agencyReports: "Informes de agencia",
+    agencyDashTitle: "Informes de agencia",
+    agencyDashSub: "Actividad real de familias buscando cuidado — últimos 30 días.",
+    hotAides: "Cuidadores populares — últimos 30 días",
+    hotAidesSub: "Qué cuidadores están viendo y contactando más las familias.",
+    marketDemand: "Dónde se busca cuidado",
+    marketDemandSub: "Códigos postales con más búsquedas.",
+    tblRank: "#", tblAide: "Cuidador", tblLocation: "Ubicación",
+    tblViews: "Vistas", tblContacts: "Contactos", tblRate: "Tasa de contacto",
+    tblZip: "CP", tblSearches: "Búsquedas", tblResults: "Resultados prom.",
+    reportEmpty: "Sin actividad en los últimos 30 días.",
+    upgradeCta: "🔒 Desbloquee el informe completo",
+    upgradeBtn: "Actualizar a informe completo",
+    demoSeedBtn: "Cargar datos de demo",
+    demoSeedDone: "Eventos de demo creados:",
+    demoSeedFail: "Falló la carga — revise la consola.",
     hiredBtn: "✓ Contraté a este cuidador",
     hireFormLabel: "Su nombre (se mostrará con su futura reseña)",
     hireConfirm: "Confirmar contratación",
@@ -539,7 +587,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.5.4"; // ← bumped on every code update
+const APP_VERSION = "v3.6"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -819,6 +867,43 @@ async function authLogin(email, password) {
   if (!r.ok) throw new Error(d.error_description || d.msg || "login failed");
   return d;
 }
+// ---------- Analytics fetchers (v3.6) — Agency dashboard ----------
+async function fetchAideLeaderboard(limit = 20, days = 30) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_aide_leaderboard`, {
+      method: "POST",
+      headers: { ...sbHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_limit: limit, p_days: days }),
+    });
+    if (!r.ok) { console.warn("[KJC] leaderboard failed:", r.status); return []; }
+    return (await r.json()) || [];
+  } catch (e) { console.warn("[KJC] leaderboard error:", e); return []; }
+}
+
+async function fetchSearchDemand(limit = 20, days = 30) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_search_demand`, {
+      method: "POST",
+      headers: { ...sbHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_limit: limit, p_days: days }),
+    });
+    if (!r.ok) { console.warn("[KJC] demand failed:", r.status); return []; }
+    return (await r.json()) || [];
+  } catch (e) { console.warn("[KJC] demand error:", e); return []; }
+}
+
+async function seedDemoEvents() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/seed_demo_events`, {
+      method: "POST",
+      headers: { ...sbHeaders, "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(t || "seed failed"); }
+    return await r.json();
+  } catch (e) { throw e; }
+}
+
 async function fetchMember(userId) {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_member`, {
@@ -2481,6 +2566,136 @@ function PhoneAuthView({ onDone, onBack }) {
   );
 }
 
+// ---------- Agency dashboard (v3.6) — leaderboard + demand report ----------
+function AgencyDashboardView({ account, subscribed, onUpgrade, onBack }) {
+  const { L } = useLang();
+  const [aides, setAides] = useState([]);
+  const [demand, setDemand] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      // Free tier sees top 5 aides + top 3 ZIPs; paid tier sees full 20/20
+      const aideLimit = subscribed ? 20 : 5;
+      const demandLimit = subscribed ? 20 : 3;
+      const [a, d] = await Promise.all([
+        fetchAideLeaderboard(aideLimit, 30),
+        fetchSearchDemand(demandLimit, 30),
+      ]);
+      setAides(a);
+      setDemand(d);
+      setLoading(false);
+    })();
+  }, [subscribed]);
+
+  const card = { background: "#fff", borderRadius: 14, border: `1px solid ${T.line}`, padding: 20, marginBottom: 16 };
+  const th = { textAlign: "left", padding: "10px 8px", fontSize: 13, fontWeight: 700, color: T.inkSoft, borderBottom: `1px solid ${T.line}`, textTransform: "uppercase", letterSpacing: 0.4 };
+  const td = { padding: "12px 8px", fontSize: 14.5, color: T.ink, borderBottom: `1px solid ${T.line}` };
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      <button type="button" onClick={onBack}
+        style={{ padding: "8px 14px", borderRadius: 10, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 14, cursor: "pointer", fontFamily: "inherit", marginBottom: 14 }}>
+        ← Back
+      </button>
+
+      <h1 style={{ margin: "0 0 6px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, color: T.ink }}>
+        {L.agencyDashTitle}
+      </h1>
+      <p style={{ margin: "0 0 20px", fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>{L.agencyDashSub}</p>
+
+      {/* Hot aides */}
+      <div style={card}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 19, color: T.ink, fontFamily: "Georgia, serif" }}>{L.hotAides}</h2>
+        <p style={{ margin: "0 0 14px", fontSize: 13.5, color: T.inkSoft }}>{L.hotAidesSub}</p>
+        {loading ? (
+          <p style={{ fontSize: 14, color: T.inkSoft, padding: "12px 0" }}>Loading…</p>
+        ) : aides.length === 0 ? (
+          <p style={{ fontSize: 14, color: T.inkSoft, padding: "12px 0" }}>{L.reportEmpty}</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr>
+                  <th style={{ ...th, width: 40 }}>{L.tblRank}</th>
+                  <th style={th}>{L.tblAide}</th>
+                  <th style={th}>{L.tblLocation}</th>
+                  <th style={{ ...th, textAlign: "right" }}>{L.tblViews}</th>
+                  <th style={{ ...th, textAlign: "right" }}>{L.tblContacts}</th>
+                  <th style={{ ...th, textAlign: "right" }}>{L.tblRate}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aides.map((a) => (
+                  <tr key={a.caregiver_id}>
+                    <td style={{ ...td, color: T.inkSoft, fontWeight: 700 }}>{a.rank}</td>
+                    <td style={{ ...td, fontWeight: 700 }}>{a.caregiver_name || `#${a.caregiver_id}`}</td>
+                    <td style={{ ...td, color: T.inkSoft }}>{a.city || "—"}</td>
+                    <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{a.views}</td>
+                    <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums", color: T.primary, fontWeight: 700 }}>{a.contacts}</td>
+                    <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{a.contact_rate}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Search demand */}
+      <div style={card}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 19, color: T.ink, fontFamily: "Georgia, serif" }}>{L.marketDemand}</h2>
+        <p style={{ margin: "0 0 14px", fontSize: 13.5, color: T.inkSoft }}>{L.marketDemandSub}</p>
+        {loading ? (
+          <p style={{ fontSize: 14, color: T.inkSoft, padding: "12px 0" }}>Loading…</p>
+        ) : demand.length === 0 ? (
+          <p style={{ fontSize: 14, color: T.inkSoft, padding: "12px 0" }}>{L.reportEmpty}</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr>
+                  <th style={th}>{L.tblZip}</th>
+                  <th style={{ ...th, textAlign: "right" }}>{L.tblSearches}</th>
+                  <th style={{ ...th, textAlign: "right" }}>{L.tblResults}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {demand.map((d, i) => (
+                  <tr key={i}>
+                    <td style={{ ...td, fontWeight: 700 }}>{d.zip_or_city}</td>
+                    <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{d.search_count}</td>
+                    <td style={{ ...td, textAlign: "right", color: T.inkSoft }}>{d.avg_results}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Upgrade CTA for free tier */}
+      {!subscribed && (
+        <div style={{
+          padding: 20, background: "#FFF9E6", border: `2px solid ${T.amber}`, borderRadius: 14,
+          marginTop: 8, textAlign: "center",
+        }}>
+          <p style={{ margin: "0 0 12px", fontSize: 15, color: T.ink, fontWeight: 600 }}>{L.upgradeCta}</p>
+          <button type="button" onClick={onUpgrade}
+            style={{
+              padding: "12px 22px", borderRadius: 10, border: "none",
+              background: T.amber, color: "#3A2A08", fontSize: 15, fontWeight: 800,
+              cursor: "pointer", fontFamily: "inherit",
+            }}>
+            {L.upgradeBtn}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---------- Aide self-service profile access ----------
 function AideLoginView({ onFound, onBack }) {
   const { L } = useLang();
@@ -2718,8 +2933,8 @@ function AdminView({ onBack, onDataChanged }) {
         <h2 style={{ margin: 0, fontSize: 22, color: T.ink, fontFamily: "Georgia, serif" }}>Admin</h2>
         <button type="button" style={btn("#fff", T.ink, `1.5px solid ${T.line}`)} onClick={onBack}>Exit</button>
       </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"]].map(([id, label]) => (
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"], ["demo", "🌱 Demo"]].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
             style={btn(tab === id ? T.primary : "#fff", tab === id ? "#fff" : T.ink, `1.5px solid ${tab === id ? T.primary : T.line}`)}>
             {label}
@@ -2817,6 +3032,30 @@ function AdminView({ onBack, onDataChanged }) {
               </>
             );
           })()}
+        </div>
+      ) : tab === "demo" ? (
+        <div>
+          <p style={{ fontSize: 14, color: T.inkSoft, lineHeight: 1.6, marginTop: 0 }}>
+            <strong style={{ color: T.ink }}>Seed demo events</strong> populates the analytics tables
+            with realistic-looking activity — profile views, contact reveals, and searches spread across
+            the last 30 days. Use this so the Agency Reports dashboard looks alive during your road show.
+            <br /><br />
+            Safe to run multiple times; each click adds more data.
+          </p>
+          <button type="button"
+            style={{ ...btn(T.primary, "#fff"), fontSize: 15, padding: "12px 18px" }}
+            onClick={async () => {
+              try {
+                setMsg("Seeding…");
+                const n = await seedDemoEvents();
+                setMsg(`${L.demoSeedDone} ${n}`);
+              } catch (e) {
+                setMsg(L.demoSeedFail);
+                console.error("seed error:", e);
+              }
+            }}>
+            🌱 {L.demoSeedBtn}
+          </button>
         </div>
       ) : tab === "backup" ? (
         <div>
@@ -3339,6 +3578,15 @@ export default function App() {
             {account ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: "auto", color: "#C9DAD4", fontSize: 13 }}>
                 <span>👤 {account.name || account.email || account.phone}</span>
+                {account.role === "agency" && (
+                  <button type="button" onClick={() => { setView("agency-dashboard"); window.scrollTo(0, 0); }}
+                    style={{
+                      padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                      border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                    }}>
+                    📊 {L.agencyReports}
+                  </button>
+                )}
                 <button type="button" onClick={signOut}
                   style={{
                     padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
@@ -3465,6 +3713,8 @@ export default function App() {
               // Otherwise route by role
               if (acct.role === "aide") {
                 setView("aidelogin");
+              } else if (acct.role === "agency") {
+                setView("agency-dashboard");
               } else if (acct.role === "admin") {
                 setView("admin");
               } else {
@@ -3476,6 +3726,13 @@ export default function App() {
           <AideLoginView
             onBack={() => setView("directory")}
             onFound={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
+          />
+        ) : view === "agency-dashboard" ? (
+          <AgencyDashboardView
+            account={account}
+            subscribed={subscribed}
+            onBack={() => setView("directory")}
+            onUpgrade={() => { setView("plans"); window.scrollTo(0, 0); }}
           />
         ) : view === "admin" ? (
           <AdminView
