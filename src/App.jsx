@@ -539,7 +539,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.5.3"; // ← bumped on every code update
+const APP_VERSION = "v3.5.4"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -820,21 +820,17 @@ async function authLogin(email, password) {
   return d;
 }
 async function fetchMember(userId) {
-  console.log("[KJC] fetchMember called with user_id:", userId);
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_member`, {
       method: "POST",
       headers: { ...sbHeaders, "Content-Type": "application/json" },
       body: JSON.stringify({ p_user_id: userId }),
     });
-    console.log("[KJC] fetchMember response status:", r.status);
     if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      console.warn("[KJC] fetchMember RPC failed:", r.status, t);
+      console.warn("[KJC] fetchMember failed:", r.status);
       return null;
     }
     const arr = await r.json();
-    console.log("[KJC] fetchMember returned array of length:", arr.length, arr);
     return arr[0] || null;
   } catch (e) {
     console.warn("[KJC] fetchMember error:", e);
@@ -3442,26 +3438,18 @@ export default function App() {
           <PhoneAuthView
             onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
-              console.log("[KJC] Signed in, acct:", acct);
               setAccount(acct);
               // Restore any member subscription record for this account
               try {
                 const m = await fetchMember(acct.id);
-                console.log("[KJC] Member row from fetchMember:", m);
                 if (m) {
-                  const subUntil = m.subscribed_until ? Date.parse(m.subscribed_until) : 0;
-                  console.log("[KJC] Setting client. subscribed_until:", m.subscribed_until, "→ parsed:", subUntil, "Date.now():", Date.now(), "subscribed:", subUntil > Date.now());
                   setClient({
                     plan: m.plan,
-                    subscribedUntil: subUntil,
+                    subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
                     unlocks: m.unlocks || [],
                   });
-                } else {
-                  console.warn("[KJC] fetchMember returned null — user has no member row");
                 }
-              } catch (e) {
-                console.warn("[KJC] fetchMember threw:", e);
-              }
+              } catch (e) { /* not a subscriber yet — that's fine */ }
               showToast(L.tSignedIn);
               // If they were mid-way through activating a plan/unlock, continue it
               const next = authNext;
