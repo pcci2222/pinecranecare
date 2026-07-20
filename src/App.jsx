@@ -536,7 +536,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.4"; // ← bumped on every code update
+const APP_VERSION = "v3.4.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -751,7 +751,7 @@ async function signupWithPin(phone, pin, name, role) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Sign up failed");
   const row = Array.isArray(d) ? d[0] : d;
-  return { id: row.user_id, role: row.role, name: row.display_name || name || "", phone: row.phone };
+  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || name || "", phone: row.out_phone };
 }
 
 async function signinWithPin(phone, pin) {
@@ -763,7 +763,7 @@ async function signinWithPin(phone, pin) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Wrong phone or PIN");
   const row = Array.isArray(d) ? d[0] : d;
-  return { id: row.user_id, role: row.role, name: row.display_name || "", phone: row.phone };
+  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || "", phone: row.out_phone };
 }
 
 // Fetch this user's role/name from user_profiles
