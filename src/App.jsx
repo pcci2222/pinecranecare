@@ -610,7 +610,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8.1"; // ← bumped on every code update
+const APP_VERSION = "v3.8.2"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3602,6 +3602,18 @@ export default function App() {
     setAccount(null);
     setClient(null);
     setAidePro(null);
+    // v3.8.2: also clear directory filters and per-session tracking so a new
+    // sign-in doesn't inherit the previous user's search/context
+    setSearch("");
+    setServiceFilter("");
+    setMaxRate("");
+    setMinAge("");
+    setMaxAge("");
+    setLastSearchId(null);
+    setEditing(null);
+    setPendingUnlock(null);
+    setAuthNext(null);
+    setTab("aides");
   }
 
   async function activateAidePro() {
@@ -3832,6 +3844,13 @@ export default function App() {
             onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
               setAccount(acct);
+              // v3.8.2: clear any leftover filters/search from a prior session
+              setSearch("");
+              setServiceFilter("");
+              setMaxRate("");
+              setMinAge("");
+              setMaxAge("");
+              setLastSearchId(null);
               // Restore any member subscription record for this account
               try {
                 const m = await fetchMember(acct.id);
