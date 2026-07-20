@@ -81,6 +81,7 @@ const STRINGS = {
     noteShared: "Note: profiles in this demo are visible to everyone using this app.",
     errReq: "Name, phone, and city are required.",
     errPhoto: "Please add a profile photo — families want to see who they're hiring.",
+    errZip: "Please enter your 5-digit ZIP code — families search by ZIP to find aides nearby.",
     errPin: "Please set a 4-digit PIN so you can edit later.",
     errSave: "Could not save. Please try again.",
     errJobReq: "Title, your name, phone, and city are required.",
@@ -249,6 +250,7 @@ const STRINGS = {
     noteShared: "注意：此示範版的檔案對所有使用者可見。",
     errReq: "姓名、電話與城市為必填。",
     errPhoto: "請上傳照片 — 家庭希望看到看護的樣子。",
+    errZip: "請輸入 5 位數郵遞區號 — 家庭以郵遞區號搜尋附近的看護。",
     errPin: "請設定 4 位數 PIN 碼，以便日後編輯。",
     errSave: "儲存失敗，請再試一次。",
     errJobReq: "標題、稱呼、電話與城市為必填。",
@@ -416,6 +418,7 @@ const STRINGS = {
     noteShared: "Nota: en esta demo los perfiles son visibles para todos.",
     errReq: "Nombre, teléfono y ciudad son obligatorios.",
     errPhoto: "Agregue una foto — las familias quieren ver a quién contratan.",
+    errZip: "Ingrese su código postal de 5 dígitos — las familias buscan por CP para encontrar cuidadores cerca.",
     errPin: "Establezca un PIN de 4 dígitos para poder editar después.",
     errSave: "No se pudo guardar. Intente de nuevo.",
     errJobReq: "Título, nombre, teléfono y ciudad son obligatorios.",
@@ -607,7 +610,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8"; // ← bumped on every code update
+const APP_VERSION = "v3.8.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1172,6 +1175,10 @@ function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
       setError(L.errReq);
       return;
     }
+    if (!/^\d{5}$/.test((form.zip || "").trim())) {
+      setError(L.errZip);
+      return;
+    }
     if (!form.photo) {
       setError(L.errPhoto);
       return;
@@ -1275,8 +1282,8 @@ function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
         <Field label={L.lCity} required>
           <input style={inputStyle} value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="Ashburn, VA" />
         </Field>
-        <Field label={L.lZip}>
-          <input style={inputStyle} inputMode="numeric" value={form.zip} onChange={(e) => set("zip", e.target.value)} placeholder="20147" />
+        <Field label={L.lZip} required>
+          <input style={inputStyle} inputMode="numeric" maxLength={5} value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, ""))} placeholder="20147" />
         </Field>
       </div>
 
