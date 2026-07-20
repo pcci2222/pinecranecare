@@ -607,7 +607,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.7.3"; // ← bumped on every code update
+const APP_VERSION = "v3.8"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -922,6 +922,20 @@ async function seedDemoEvents() {
     if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(t || "seed failed"); }
     return await r.json();
   } catch (e) { throw e; }
+}
+
+// v3.8 — count of caregivers awaiting admin approval (SECURITY DEFINER RPC)
+async function fetchPendingCount() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_pending_count`, {
+      method: "POST",
+      headers: { ...sbHeaders, "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (!r.ok) return 0;
+    const n = await r.json();
+    return typeof n === "number" ? n : 0;
+  } catch (e) { return 0; }
 }
 
 // v3.7 — look up an existing caregiver record by phone (for aide sign-in routing)
@@ -3443,6 +3457,7 @@ export default function App() {
   const unlockedIds = client?.unlocks || [];
   const [aidePro, setAidePro] = useState(null);
   const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
+  const [pendingCount, setPendingCount] = useState(0); // v3.8: caregivers awaiting approval
   const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
@@ -3486,6 +3501,26 @@ export default function App() {
         if (savedPro) setAidePro(JSON.parse(savedPro));
       } catch (e) { /* not aide pro */ }
     })();
+  }, []);
+
+  // v3.8 — poll pending caregiver approvals: on mount, when tab becomes visible, and every 60s
+  useEffect(() => {
+    let stopped = false;
+    const refresh = async () => {
+      const n = await fetchPendingCount();
+      if (!stopped) setPendingCount(n);
+    };
+    refresh();
+    const onVis = () => { if (document.visibilityState === "visible") refresh(); };
+    const iv = setInterval(refresh, 60000);
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", refresh);
+    return () => {
+      stopped = true;
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   async function addHire(caregiverId, name) {
@@ -3850,7 +3885,11 @@ export default function App() {
           <AdminView
             onBack={() => setView("directory")}
             onDataChanged={async () => {
-              try { setAides(await loadAides()); setAgencies(await loadAgencies()); } catch (e) { /* ignore */ }
+              try {
+                setAides(await loadAides());
+                setAgencies(await loadAgencies());
+                setPendingCount(await fetchPendingCount());
+              } catch (e) { /* ignore */ }
             }}
           />
         ) : view === "faq" ? (
@@ -4205,9 +4244,22 @@ export default function App() {
           <button
             type="button"
             onClick={() => { setView("admin"); window.scrollTo(0, 0); }}
-            style={{ background: "none", border: "none", color: T.inkSoft, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px" }}
+            style={{ background: "none", border: "none", color: T.inkSoft, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: "4px 8px", display: "inline-flex", alignItems: "center", gap: 6 }}
           >
             Admin
+            {pendingCount > 0 && (
+              <span
+                title={`${pendingCount} caregiver${pendingCount === 1 ? "" : "s"} awaiting review`}
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  minWidth: 20, height: 20, padding: "0 6px",
+                  borderRadius: 999, background: T.danger, color: "#fff",
+                  fontSize: 11.5, fontWeight: 800, lineHeight: 1,
+                }}
+              >
+                {pendingCount}
+              </span>
+            )}
           </button>
         </div>
         <p style={{ margin: "8px 0 0", fontSize: 12.5, color: T.inkSoft }}>
