@@ -23,6 +23,11 @@ const SERVICES = SERVICE_GROUPS.flatMap(([, items]) => items);
 
 const CERTS = ["HHA", "CNA", "CPR / First Aid", "Dementia care training"];
 
+const LANGUAGES = [
+  "English", "Mandarin", "Cantonese", "Fujianese", "Taishanese", "Shanghainese",
+  "Spanish", "Korean", "Russian", "Polish", "Haitian Creole", "Tagalog", "Vietnamese", "Bengali",
+];
+
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
@@ -551,6 +556,21 @@ const SERVICE_I18N = {
   "Respite care": { zh: "喘息照護", es: "Cuidado de relevo" },
   "CPR / First Aid": { zh: "心肺復甦／急救", es: "RCP / Primeros auxilios" },
   "Dementia care training": { zh: "失智照護訓練", es: "Formación en demencia" },
+  // Languages (v3.7.2)
+  "English":         { zh: "英語",         es: "Inglés" },
+  "Mandarin":        { zh: "普通話",       es: "Mandarín" },
+  "Cantonese":       { zh: "廣東話",       es: "Cantonés" },
+  "Fujianese":       { zh: "福建話",       es: "Fujianés" },
+  "Taishanese":      { zh: "台山話",       es: "Taishanés" },
+  "Shanghainese":    { zh: "上海話",       es: "Shanghainés" },
+  "Spanish":         { zh: "西班牙語",     es: "Español" },
+  "Korean":          { zh: "韓語",         es: "Coreano" },
+  "Russian":         { zh: "俄語",         es: "Ruso" },
+  "Polish":          { zh: "波蘭語",       es: "Polaco" },
+  "Haitian Creole":  { zh: "海地克里奧爾語", es: "Criollo haitiano" },
+  "Tagalog":         { zh: "菲律賓他加祿語", es: "Tagalo" },
+  "Vietnamese":      { zh: "越南語",       es: "Vietnamita" },
+  "Bengali":         { zh: "孟加拉語",     es: "Bengalí" },
 };
 
 let LANG_CURRENT = { lang: "en", L: STRINGS.en, ts: (s) => s };
@@ -587,7 +607,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.7.1"; // ← bumped on every code update
+const APP_VERSION = "v3.7.2"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1258,7 +1278,25 @@ function RegisterForm({ onSaved, onCancel, initial }) {
       </div>
 
       <Field label={L.lLang}>
-        <input style={inputStyle} value={form.languages} onChange={(e) => set("languages", e.target.value)} placeholder="English, Mandarin, Cantonese" />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {LANGUAGES.map((lang) => {
+            const current = form.languages
+              ? String(form.languages).split(/[,;]/).map((s) => s.trim()).filter(Boolean)
+              : [];
+            const active = current.includes(lang);
+            return (
+              <Chip
+                key={lang}
+                label={ts(lang)}
+                active={active}
+                onClick={() => {
+                  const next = active ? current.filter((l) => l !== lang) : [...current, lang];
+                  set("languages", next.join(", "));
+                }}
+              />
+            );
+          })}
+        </div>
       </Field>
 
       <Field label={L.lServices}>
