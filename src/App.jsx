@@ -587,7 +587,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.7"; // ← bumped on every code update
+const APP_VERSION = "v3.7.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -916,7 +916,7 @@ async function findCaregiverByPhone(phone) {
     );
     if (!r.ok) return null;
     const arr = await r.json();
-    if (arr[0]) return arr[0];
+    if (arr[0]) return aideFromDb(arr[0]);
     // Fallback: try without country code
     if (clean.startsWith("+1") && clean.length >= 12) {
       const local = clean.slice(2);
@@ -926,13 +926,26 @@ async function findCaregiverByPhone(phone) {
       );
       if (!r2.ok) return null;
       const arr2 = await r2.json();
-      return arr2[0] || null;
+      return arr2[0] ? aideFromDb(arr2[0]) : null;
     }
     return null;
   } catch (e) {
     console.warn("[KJC] findCaregiverByPhone error:", e);
     return null;
   }
+}
+
+// v3.7.1 — build a form-shaped empty aide record from an account (for first-time signup)
+function emptyAideFromAccount(acct) {
+  return {
+    name: acct?.name || "",
+    phone: acct?.phone || "",
+    email: "", city: "", zip: "",
+    age: "", years: "", rate: "",
+    languages: "", bio: "",
+    services: [], certs: [],
+    photo: null, certPhoto: null, pin: "",
+  };
 }
 
 async function fetchMember(userId) {
@@ -3622,9 +3635,9 @@ export default function App() {
                   <button type="button" onClick={async () => {
                     try {
                       const existing = await findCaregiverByPhone(account.phone);
-                      setEditing(existing || { name: account.name || "", phone: account.phone || "" });
+                      setEditing(existing || emptyAideFromAccount(account));
                     } catch (e) {
-                      setEditing({ name: account.name || "", phone: account.phone || "" });
+                      setEditing(emptyAideFromAccount(account));
                     }
                     setView("register");
                     window.scrollTo(0, 0);
@@ -3765,13 +3778,9 @@ export default function App() {
                 // (new record pre-filled with name/phone, or edit existing if found)
                 try {
                   const existing = await findCaregiverByPhone(acct.phone);
-                  if (existing) {
-                    setEditing(existing);
-                  } else {
-                    setEditing({ name: acct.name || "", phone: acct.phone || "" });
-                  }
+                  setEditing(existing || emptyAideFromAccount(acct));
                 } catch (e) {
-                  setEditing({ name: acct.name || "", phone: acct.phone || "" });
+                  setEditing(emptyAideFromAccount(acct));
                 }
                 setView("register");
                 window.scrollTo(0, 0);
