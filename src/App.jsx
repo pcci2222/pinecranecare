@@ -132,6 +132,32 @@ const STRINGS = {
     authErr: "Sign-in failed — check your email and password.",
     authConfirm: "Account created — confirm via the email we sent, then sign in.",
     signOut: "Sign out", tSignedIn: "Welcome ✓",
+    // Phone auth (v3.3)
+    phoneAuthTitle: "Sign in with your phone",
+    phoneAuthSub: "We'll text you a 6-digit code. Your account works on any device.",
+    lPhoneNumber: "Phone number",
+    lVerifyCode: "6-digit code",
+    lSetPin: "Set a 6-digit PIN",
+    lConfirmPin: "Confirm PIN",
+    lEnterPin: "Enter your PIN",
+    phoneAuthSend: "Send code",
+    phoneAuthContinue: "Continue",
+    phoneAuthVerify: "Verify",
+    phoneAuthResend: "Didn't get it? Send again",
+    phoneAuthBad: "Wrong or expired code. Try again.",
+    phoneAuthWrongPin: "Wrong phone or PIN.",
+    phoneAuthPinMismatch: "PINs don't match.",
+    phoneAuthPinLen: "PIN must be 6 digits.",
+    phoneAuthSendErr: "Could not send code. Check the phone number.",
+    phoneAuthPhoneBad: "Please enter a valid phone number.",
+    phoneAuthNewUser: "Welcome! Tell us a bit about you.",
+    phoneAuthReturning: "Welcome back",
+    phoneAuthRolePrompt: "I am a…",
+    roleMember: "Family looking for care",
+    roleAide: "Caregiver / Home aide",
+    roleAgency: "Home-care agency",
+    phoneAuthFinish: "Finish",
+    signInBtn: "Sign in",
     hiredBtn: "✓ I hired this caregiver",
     hireFormLabel: "Your name (shown with your future review)",
     hireConfirm: "Confirm hire",
@@ -257,6 +283,31 @@ const STRINGS = {
     authErr: "登入失敗 — 請檢查電子郵件與密碼。",
     authConfirm: "帳號已建立 — 請點擊確認郵件後再登入。",
     signOut: "登出", tSignedIn: "歡迎 ✓",
+    phoneAuthTitle: "以手機號碼登入",
+    phoneAuthSub: "我們會發送 6 位數驗證碼。您的帳號可在任何裝置使用。",
+    lPhoneNumber: "手機號碼",
+    lVerifyCode: "6 位數驗證碼",
+    lSetPin: "設定 6 位數 PIN 碼",
+    lConfirmPin: "確認 PIN 碼",
+    lEnterPin: "輸入您的 PIN 碼",
+    phoneAuthSend: "發送驗證碼",
+    phoneAuthContinue: "繼續",
+    phoneAuthVerify: "驗證",
+    phoneAuthResend: "沒收到？重新發送",
+    phoneAuthBad: "驗證碼錯誤或已過期，請再試一次。",
+    phoneAuthWrongPin: "手機或 PIN 碼錯誤。",
+    phoneAuthPinMismatch: "兩次輸入的 PIN 碼不同。",
+    phoneAuthPinLen: "PIN 碼必須為 6 位數。",
+    phoneAuthSendErr: "無法發送驗證碼，請檢查手機號碼。",
+    phoneAuthPhoneBad: "請輸入有效的手機號碼。",
+    phoneAuthNewUser: "歡迎！請簡單介紹一下您。",
+    phoneAuthReturning: "歡迎回來",
+    phoneAuthRolePrompt: "我是…",
+    roleMember: "尋找照護的家庭",
+    roleAide: "照護者 / 家政員",
+    roleAgency: "居家照護機構",
+    phoneAuthFinish: "完成",
+    signInBtn: "登入",
     hiredBtn: "✓ 我已聘用這位照護者",
     hireFormLabel: "您的稱呼（將與您日後的評價一同顯示）",
     hireConfirm: "確認聘用",
@@ -382,6 +433,31 @@ const STRINGS = {
     authErr: "Error al iniciar sesión — revise correo y contraseña.",
     authConfirm: "Cuenta creada — confirme con el correo enviado y luego inicie sesión.",
     signOut: "Cerrar sesión", tSignedIn: "Bienvenido ✓",
+    phoneAuthTitle: "Iniciar sesión con su teléfono",
+    phoneAuthSub: "Le enviaremos un código de 6 dígitos. Su cuenta funciona en cualquier dispositivo.",
+    lPhoneNumber: "Número de teléfono",
+    lVerifyCode: "Código de 6 dígitos",
+    lSetPin: "Elija un PIN de 6 dígitos",
+    lConfirmPin: "Confirmar PIN",
+    lEnterPin: "Ingrese su PIN",
+    phoneAuthSend: "Enviar código",
+    phoneAuthContinue: "Continuar",
+    phoneAuthVerify: "Verificar",
+    phoneAuthResend: "¿No lo recibió? Enviar de nuevo",
+    phoneAuthBad: "Código incorrecto o vencido. Intente de nuevo.",
+    phoneAuthWrongPin: "Teléfono o PIN incorrecto.",
+    phoneAuthPinMismatch: "Los PIN no coinciden.",
+    phoneAuthPinLen: "El PIN debe tener 6 dígitos.",
+    phoneAuthSendErr: "No se pudo enviar el código. Revise el teléfono.",
+    phoneAuthPhoneBad: "Ingrese un número de teléfono válido.",
+    phoneAuthNewUser: "¡Bienvenido! Cuéntenos un poco sobre usted.",
+    phoneAuthReturning: "Bienvenido de nuevo",
+    phoneAuthRolePrompt: "Yo soy…",
+    roleMember: "Familia que busca cuidado",
+    roleAide: "Cuidador/a / Auxiliar",
+    roleAgency: "Agencia de cuidado en el hogar",
+    phoneAuthFinish: "Finalizar",
+    signInBtn: "Iniciar sesión",
     hiredBtn: "✓ Contraté a este cuidador",
     hireFormLabel: "Su nombre (se mostrará con su futura reseña)",
     hireConfirm: "Confirmar contratación",
@@ -460,7 +536,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.2"; // ← bumped on every code update
+const APP_VERSION = "v3.4"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -607,6 +683,119 @@ async function sbUploadPhoto(dataUrl) {
 }
 
 // ---------- Member accounts (Supabase Auth) ----------
+// ---------- Phone Auth (v3.4) — PIN-based sign in ----------
+// PHONE_AUTH_MODE:
+//   "pin" — PIN-based auth (default). No SMS, no Twilio. Uses bcrypt via pgcrypto.
+//   "otp" — SMS OTP via Supabase + Twilio. Enable when Twilio is configured.
+const PHONE_AUTH_MODE = "pin";
+const PIN_LENGTH = 6;      // 4 or 6 — 6 is 100x harder to guess
+
+// E.164 formatter: normalize any US phone to "+1XXXXXXXXXX"
+function toE164(raw) {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10) return "+1" + digits;
+  if (digits.length === 11 && digits.startsWith("1")) return "+" + digits;
+  if (raw?.trim().startsWith("+")) return raw.trim();
+  return "+" + digits;
+}
+
+// Send OTP via SMS (Supabase → Twilio) — only used when PHONE_AUTH_MODE === "otp"
+async function sendPhoneOtp(phone) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+    body: JSON.stringify({ phone: toE164(phone), channel: "sms" }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.msg || d.error_description || "Could not send code");
+}
+
+// Verify OTP and get a Supabase session — only used when PHONE_AUTH_MODE === "otp"
+async function verifyPhoneOtp(phone, token) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+    body: JSON.stringify({ phone: toE164(phone), token, type: "sms" }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.msg || d.error_description || "Wrong code");
+  return d; // { access_token, refresh_token, user }
+}
+
+// ---- PIN-based auth (v3.4) ----
+// All three call PostgreSQL SECURITY DEFINER functions that verify PINs
+// server-side. The browser never sees any hash.
+
+async function checkPhoneRegistered(phone) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_phone`, {
+    method: "POST",
+    headers: { ...sbHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_phone: toE164(phone) }),
+  });
+  if (!r.ok) throw new Error("Lookup failed");
+  return await r.json(); // true | false
+}
+
+async function signupWithPin(phone, pin, name, role) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/signup_with_pin`, {
+    method: "POST",
+    headers: { ...sbHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      p_phone: toE164(phone),
+      p_pin: pin,
+      p_display_name: name || "",
+      p_role: role,
+    }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || d.msg || "Sign up failed");
+  const row = Array.isArray(d) ? d[0] : d;
+  return { id: row.user_id, role: row.role, name: row.display_name || name || "", phone: row.phone };
+}
+
+async function signinWithPin(phone, pin) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/signin_with_pin`, {
+    method: "POST",
+    headers: { ...sbHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_phone: toE164(phone), p_pin: pin }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || d.msg || "Wrong phone or PIN");
+  const row = Array.isArray(d) ? d[0] : d;
+  return { id: row.user_id, role: row.role, name: row.display_name || "", phone: row.phone };
+}
+
+// Fetch this user's role/name from user_profiles
+async function fetchUserProfile(userId) {
+  const r = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${userId}&select=*`,
+    { headers: sbHeaders }
+  );
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows[0] || null;
+}
+
+// Create or update this user's profile (first-time role picker, name edits)
+async function upsertUserProfile(profile) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/user_profiles`, {
+    method: "POST",
+    headers: {
+      ...sbHeaders,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify(profile),
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error("Save profile failed: " + t);
+  }
+  const rows = await r.json();
+  return rows[0];
+}
+
 async function authSignup(email, password, name) {
   const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
     method: "POST",
@@ -2082,6 +2271,180 @@ function AuthView({ onDone, onBack }) {
   );
 }
 
+// ---------- Phone Sign In (v3.4) — PIN-based, one flow for all roles ----------
+function PhoneAuthView({ onDone, onBack }) {
+  const { L } = useLang();
+  // Steps: "phone" -> "signin" (returning) or "signup" (new)
+  const [step, setStep] = useState("phone");
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("member");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const isOtpMode = PHONE_AUTH_MODE === "otp";
+
+  async function handleContinue() {
+    if ((phone.replace(/\D/g, "").length) < 10) {
+      setErr(L.phoneAuthPhoneBad);
+      return;
+    }
+    setBusy(true); setErr("");
+    try {
+      if (isOtpMode) {
+        await sendPhoneOtp(phone);
+        setStep("otp");
+      } else {
+        const exists = await checkPhoneRegistered(phone);
+        setStep(exists ? "signin" : "signup");
+      }
+    } catch (e) {
+      setErr(isOtpMode ? L.phoneAuthSendErr : L.phoneAuthPhoneBad);
+    }
+    setBusy(false);
+  }
+
+  async function handleSignin() {
+    if (pin.length !== PIN_LENGTH) { setErr(L.phoneAuthPinLen); return; }
+    setBusy(true); setErr("");
+    try {
+      const acct = await signinWithPin(phone, pin);
+      const sess = { user: acct, kind: "pin" };
+      try { localStorage.setItem("pcc_session", JSON.stringify(sess)); } catch (_) {}
+      onDone(acct);
+    } catch (e) {
+      setErr(L.phoneAuthWrongPin);
+      setPin("");
+    }
+    setBusy(false);
+  }
+
+  async function handleSignup() {
+    if (!name.trim()) { setErr(L.authErr); return; }
+    if (pin.length !== PIN_LENGTH) { setErr(L.phoneAuthPinLen); return; }
+    if (pin !== pin2) { setErr(L.phoneAuthPinMismatch); return; }
+    setBusy(true); setErr("");
+    try {
+      const acct = await signupWithPin(phone, pin, name.trim(), role);
+      const sess = { user: acct, kind: "pin" };
+      try { localStorage.setItem("pcc_session", JSON.stringify(sess)); } catch (_) {}
+      onDone(acct);
+    } catch (e) {
+      setErr(e.message || L.authErr);
+    }
+    setBusy(false);
+  }
+
+  const card = { background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}`, maxWidth: 420 };
+  const primary = { padding: "13px", borderRadius: 12, border: "none", background: busy ? T.inkSoft : T.primary, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" };
+  const secondary = { padding: "13px 18px", borderRadius: 12, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" };
+  const pinInputStyle = { ...inputStyle, letterSpacing: 8, fontSize: 22, textAlign: "center", fontWeight: 700 };
+
+  if (step === "phone") {
+    return (
+      <div style={card}>
+        <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>{L.signInBtn}</h2>
+        <p style={{ margin: "0 0 16px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>
+          {isOtpMode ? L.phoneAuthSub : "Enter your phone number to sign in or create an account."}
+        </p>
+        <Field label={L.lPhoneNumber} required>
+          <input style={inputStyle} type="tel" value={phone}
+            onChange={(e) => { setPhone(e.target.value); setErr(""); }}
+            placeholder="(415) 555-1234" autoFocus />
+        </Field>
+        {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
+        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+          <button type="button" onClick={handleContinue} disabled={busy} style={{ ...primary, flex: 1 }}>
+            {busy ? L.saving : L.phoneAuthContinue}
+          </button>
+          <button type="button" onClick={onBack} style={secondary}>{L.cancel}</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "signin") {
+    return (
+      <div style={card}>
+        <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+          {L.phoneAuthReturning}
+        </h2>
+        <p style={{ margin: "0 0 16px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>
+          <strong>{toE164(phone)}</strong>
+        </p>
+        <Field label={L.lEnterPin} required>
+          <input style={pinInputStyle} type="tel" inputMode="numeric" maxLength={PIN_LENGTH}
+            value={pin}
+            onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setErr(""); }}
+            placeholder={"\u2022".repeat(PIN_LENGTH)} autoFocus />
+        </Field>
+        {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
+        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+          <button type="button" onClick={handleSignin} disabled={busy} style={{ ...primary, flex: 1 }}>
+            {busy ? L.saving : L.signInBtn}
+          </button>
+          <button type="button" onClick={() => { setStep("phone"); setPin(""); setErr(""); }} style={secondary}>
+            {L.cancel}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const roleOptions = [
+    ["member", L.roleMember],
+    ["aide",   L.roleAide],
+    ["agency", L.roleAgency],
+  ];
+  return (
+    <div style={card}>
+      <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        {L.phoneAuthNewUser}
+      </h2>
+      <p style={{ margin: "0 0 16px", fontSize: 14.5, color: T.inkSoft }}>
+        <strong>{toE164(phone)}</strong>
+      </p>
+      <Field label={L.lName} required>
+        <input style={inputStyle} value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} autoFocus />
+      </Field>
+      <Field label={L.lSetPin} required>
+        <input style={pinInputStyle} type="tel" inputMode="numeric" maxLength={PIN_LENGTH}
+          value={pin}
+          onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setErr(""); }}
+          placeholder={"\u2022".repeat(PIN_LENGTH)} />
+      </Field>
+      <Field label={L.lConfirmPin} required>
+        <input style={pinInputStyle} type="tel" inputMode="numeric" maxLength={PIN_LENGTH}
+          value={pin2}
+          onChange={(e) => { setPin2(e.target.value.replace(/\D/g, "")); setErr(""); }}
+          placeholder={"\u2022".repeat(PIN_LENGTH)} />
+      </Field>
+      <Field label={L.phoneAuthRolePrompt} required>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {roleOptions.map(([id, label]) => (
+            <button key={id} type="button" onClick={() => setRole(id)}
+              style={{
+                padding: "12px 14px", borderRadius: 10, textAlign: "left",
+                border: `2px solid ${role === id ? T.primary : T.line}`,
+                background: role === id ? "#EFF6F3" : "#fff",
+                color: T.ink, fontSize: 15, fontWeight: role === id ? 700 : 500,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>
+              {role === id ? "\u25CF " : "\u25CB "}{label}
+            </button>
+          ))}
+        </div>
+      </Field>
+      {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
+      <button type="button" onClick={handleSignup} disabled={busy} style={{ ...primary, width: "100%" }}>
+        {busy ? L.saving : L.phoneAuthFinish}
+      </button>
+    </div>
+  );
+}
+
 // ---------- Aide self-service profile access ----------
 function AideLoginView({ onFound, onBack }) {
   const { L } = useLang();
@@ -2740,6 +3103,7 @@ export default function App() {
         const sess = JSON.parse(localStorage.getItem("pcc_session") || "null");
         if (sess && sess.user && sess.user.id) {
           signedIn = true;
+          // PIN and phone sessions carry a role already; email sessions do not
           setAccount(sess.user);
           const m = await fetchMember(sess.user.id);
           if (m) {
@@ -2923,7 +3287,29 @@ export default function App() {
       {/* Header */}
       <header style={{ background: T.primaryDark, padding: "18px 20px 20px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+            {/* Sign in / Sign out button (v3.4) — always visible */}
+            {account ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: "auto", color: "#C9DAD4", fontSize: 13 }}>
+                <span>👤 {account.name || account.email || account.phone}</span>
+                <button type="button" onClick={signOut}
+                  style={{
+                    padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                    border: `1.5px solid rgba(255,255,255,0.35)`, background: "transparent", color: "#C9DAD4",
+                  }}>
+                  {L.signOut}
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => { setView("signin"); window.scrollTo(0, 0); }}
+                style={{
+                  padding: "5px 14px", borderRadius: 999, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                  border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                  marginRight: "auto",
+                }}>
+                {L.signInBtn}
+              </button>
+            )}
             {[["en", "EN"], ["zh", "中文"], ["es", "ES"]].map(([id, label]) => (
               <button
                 key={id}
@@ -2944,7 +3330,7 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, color: "#fff", fontWeight: 700, letterSpacing: 0.2 }}>
-                Ka<span style={{ color: T.amber }}>Jing</span> Care
+                Ka<span style={{ color: T.amber }}>jing</span> Care
               </div>
               <div style={{ fontSize: 13.5, color: "#C9DAD4" }}>{L.tagline}</div>
             </div>
@@ -2999,6 +3385,33 @@ export default function App() {
               if (next && next.type === "plan") activatePlan(next.plan, acct);
               else if (next && next.type === "unlock") activateSingleUnlock(acct);
               else setView("directory");
+            }}
+          />
+        ) : view === "signin" ? (
+          <PhoneAuthView
+            onBack={() => setView("directory")}
+            onDone={async (acct) => {
+              setAccount(acct);
+              // Restore any member subscription record for this account
+              try {
+                const m = await fetchMember(acct.id);
+                if (m) {
+                  setClient({
+                    plan: m.plan,
+                    subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
+                    unlocks: m.unlocks || [],
+                  });
+                }
+              } catch (e) { /* not a subscriber yet — that's fine */ }
+              showToast(L.tSignedIn);
+              // Route by role — for v3.3 we keep it simple
+              if (acct.role === "aide") {
+                setView("aidelogin");   // aides land on the aide profile flow (v3.4 will unify)
+              } else if (acct.role === "admin") {
+                setView("admin");        // admins land on admin panel (v3.4 will remove PIN)
+              } else {
+                setView("directory");    // members + agencies land on directory for now
+              }
             }}
           />
         ) : view === "aidelogin" ? (
