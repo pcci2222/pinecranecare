@@ -619,7 +619,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8.4"; // ← bumped on every code update
+const APP_VERSION = "v3.8.5"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3481,6 +3481,15 @@ export default function App() {
   const [aidePro, setAidePro] = useState(null);
   const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
   const [pendingCount, setPendingCount] = useState(0); // v3.8: caregivers awaiting approval
+
+  // v3.8.5 — aides can't see the aides directory (own competitors); pick a valid tab
+  const isAideRole = account?.role === "aide";
+  const visibleTabIds = isAideRole ? ["jobs", "agencies"] : ["aides", "jobs", "agencies"];
+  const effectiveTab = visibleTabIds.includes(tab) ? tab : visibleTabIds[0];
+  useEffect(() => {
+    if (effectiveTab !== tab) setTab(effectiveTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveTab]);
   const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
@@ -3980,27 +3989,30 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Tabs: find an aide / care requests */}
+            {/* Tabs: find an aide / care requests. Aides don't see other aides. */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-              {[["aides", L.tabAides], ["jobs", L.tabJobs], ["agencies", L.tabAgencies]].map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTab(id)}
-                  style={{
-                    flex: 1, padding: "11px 4px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
-                    fontSize: 14, fontWeight: 800,
-                    border: `2px solid ${tab === id ? T.primary : T.line}`,
-                    background: tab === id ? T.primary : "#fff",
-                    color: tab === id ? "#fff" : T.ink,
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
+              {visibleTabIds.map((id) => {
+                const label = id === "aides" ? L.tabAides : id === "jobs" ? L.tabJobs : L.tabAgencies;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTab(id)}
+                    style={{
+                      flex: 1, padding: "11px 4px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 14, fontWeight: 800,
+                      border: `2px solid ${effectiveTab === id ? T.primary : T.line}`,
+                      background: effectiveTab === id ? T.primary : "#fff",
+                      color: effectiveTab === id ? "#fff" : T.ink,
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
-            {tab === "aides" && (
+            {effectiveTab === "aides" && (
               <div style={{ textAlign: "right", marginBottom: 10 }}>
                 <button
                   type="button"
@@ -4012,7 +4024,7 @@ export default function App() {
               </div>
             )}
 
-            {tab === "jobs" ? (
+            {effectiveTab === "jobs" ? (
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                   <p style={{ margin: 0, fontSize: 14.5, color: T.inkSoft }}>
@@ -4058,7 +4070,7 @@ export default function App() {
                   </>
                 )}
               </>
-            ) : tab === "agencies" ? (
+            ) : effectiveTab === "agencies" ? (
               <>
                 <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink }}>
                   {L.partnersTitle}
