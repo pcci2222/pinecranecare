@@ -47,6 +47,7 @@ const STRINGS = {
     ageLbl: "Age", yrsExp: "yrs exp", speaks: "Speaks:", certified: "Certified:",
     contactLbl: "Contact:", contactPerson: "Contact",
     lockedLine: "Contact: (•••) •••-•••• — members can call or email any aide directly.",
+    viewContact: "Show contact info", contactHidden: "Contact details are hidden — tap to reveal",
     unlock: "Unlock contact info",
     pinPrompt: "Enter the 4-digit PIN to continue",
     confirm: "Confirm", cancel: "Cancel", pinBad: "That PIN doesn't match.",
@@ -198,6 +199,7 @@ const STRINGS = {
     ageLbl: "年齡", yrsExp: "年經驗", speaks: "語言：", certified: "證照：",
     contactLbl: "聯絡方式：", contactPerson: "聯絡",
     lockedLine: "聯絡方式：(•••) •••-•••• — 會員可直接致電或發郵件給任何看護。",
+    viewContact: "顯示聯絡資訊", contactHidden: "聯絡資訊已隱藏 — 點擊顯示",
     unlock: "解鎖聯絡方式",
     pinPrompt: "請輸入 4 位數 PIN 碼以繼續",
     confirm: "確認", cancel: "取消", pinBad: "PIN 碼不正確。",
@@ -348,6 +350,7 @@ const STRINGS = {
     ageLbl: "Edad", yrsExp: "años exp.", speaks: "Habla:", certified: "Certificado:",
     contactLbl: "Contacto:", contactPerson: "Contactar a",
     lockedLine: "Contacto: (•••) •••-•••• — los miembros pueden llamar o escribir a cualquier cuidador.",
+    viewContact: "Mostrar contacto", contactHidden: "Datos de contacto ocultos — toque para revelar",
     unlock: "Desbloquear contacto",
     pinPrompt: "Ingrese el PIN de 4 dígitos para continuar",
     confirm: "Confirmar", cancel: "Cancelar", pinBad: "El PIN no coincide.",
@@ -536,7 +539,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.4.2"; // ← bumped on every code update
+const APP_VERSION = "v3.5"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1247,6 +1250,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
   const [revError, setRevError] = useState("");
   const [revBusy, setRevBusy] = useState(false);
   const [currentViewId, setCurrentViewId] = useState(null);   // tracking: profile_view id
+  const [contactRevealed, setContactRevealed] = useState(false); // v3.5 mouse-trap: phone hidden until click
   const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
 
   async function submitReview() {
@@ -1340,11 +1344,40 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
           )}
           {aide.bio && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{aide.bio}</p>}
           {subscribed ? (
-            <p style={{ margin: 0 }}>
-              <strong>{L.contactLbl}</strong>{" "}
-              <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
-              {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
-            </p>
+            contactRevealed ? (
+              <p style={{ margin: 0 }}>
+                <strong>{L.contactLbl}</strong>{" "}
+                <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
+                {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
+              </p>
+            ) : (
+              <div style={{ padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
+                <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>
+                  {L.contactHidden}
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    // Fire the mouse-trap event BEFORE revealing so we always capture intent
+                    await trackContactReveal({
+                      caregiverId:   aide.id,
+                      caregiverName: aide.name,
+                      profileViewId: currentViewId,
+                      searchQueryId,
+                      wasSubscribed: true,
+                      memberSession,
+                    });
+                    setContactRevealed(true);
+                  }}
+                  style={{
+                    padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary,
+                    color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  📞 {L.viewContact}
+                </button>
+              </div>
+            )
           ) : (
             <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
               <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
@@ -1471,7 +1504,8 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
               return;
             }
             if (!expanded) {
-              // Member expanding the card — fire profile_view mouse trap
+              // Member expanding the card — fire profile_view mouse trap only.
+              // contact_reveal fires later when they click "Show contact info".
               const pvId = await trackProfileView({
                 caregiverId:   aide.id,
                 caregiverName: aide.name,
@@ -1479,17 +1513,9 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
                 memberSession,
               });
               setCurrentViewId(pvId);
-              // Contact is now visible, so also record the reveal for members
-              await trackContactReveal({
-                caregiverId:   aide.id,
-                caregiverName: aide.name,
-                profileViewId: pvId,
-                searchQueryId,
-                wasSubscribed: true,
-                memberSession,
-              });
             }
             setExpanded(!expanded);
+            if (expanded) setContactRevealed(false); // collapsing re-hides contact
           }}
           style={{
             flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${T.primary}`,
