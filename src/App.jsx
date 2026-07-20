@@ -587,7 +587,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.6"; // ← bumped on every code update
+const APP_VERSION = "v3.7"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -902,6 +902,37 @@ async function seedDemoEvents() {
     if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(t || "seed failed"); }
     return await r.json();
   } catch (e) { throw e; }
+}
+
+// v3.7 — look up an existing caregiver record by phone (for aide sign-in routing)
+async function findCaregiverByPhone(phone) {
+  try {
+    const clean = (phone || "").replace(/[^\d+]/g, "");
+    if (!clean) return null;
+    // Try exact match first; caregivers table may store various formats
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/caregivers?phone=eq.${encodeURIComponent(clean)}&select=*&limit=1`,
+      { headers: sbHeaders }
+    );
+    if (!r.ok) return null;
+    const arr = await r.json();
+    if (arr[0]) return arr[0];
+    // Fallback: try without country code
+    if (clean.startsWith("+1") && clean.length >= 12) {
+      const local = clean.slice(2);
+      const r2 = await fetch(
+        `${SUPABASE_URL}/rest/v1/caregivers?phone=eq.${encodeURIComponent(local)}&select=*&limit=1`,
+        { headers: sbHeaders }
+      );
+      if (!r2.ok) return null;
+      const arr2 = await r2.json();
+      return arr2[0] || null;
+    }
+    return null;
+  } catch (e) {
+    console.warn("[KJC] findCaregiverByPhone error:", e);
+    return null;
+  }
 }
 
 async function fetchMember(userId) {
@@ -3587,6 +3618,24 @@ export default function App() {
                     📊 {L.agencyReports}
                   </button>
                 )}
+                {account.role === "aide" && (
+                  <button type="button" onClick={async () => {
+                    try {
+                      const existing = await findCaregiverByPhone(account.phone);
+                      setEditing(existing || { name: account.name || "", phone: account.phone || "" });
+                    } catch (e) {
+                      setEditing({ name: account.name || "", phone: account.phone || "" });
+                    }
+                    setView("register");
+                    window.scrollTo(0, 0);
+                  }}
+                    style={{
+                      padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                      border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                    }}>
+                    ✎ My Profile
+                  </button>
+                )}
                 <button type="button" onClick={signOut}
                   style={{
                     padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
@@ -3712,7 +3761,20 @@ export default function App() {
               }
               // Otherwise route by role
               if (acct.role === "aide") {
-                setView("aidelogin");
+                // v3.7: unified aide flow — send them straight to their caregiver profile
+                // (new record pre-filled with name/phone, or edit existing if found)
+                try {
+                  const existing = await findCaregiverByPhone(acct.phone);
+                  if (existing) {
+                    setEditing(existing);
+                  } else {
+                    setEditing({ name: acct.name || "", phone: acct.phone || "" });
+                  }
+                } catch (e) {
+                  setEditing({ name: acct.name || "", phone: acct.phone || "" });
+                }
+                setView("register");
+                window.scrollTo(0, 0);
               } else if (acct.role === "agency") {
                 setView("agency-dashboard");
               } else if (acct.role === "admin") {
