@@ -539,7 +539,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.5.1"; // ← bumped on every code update
+const APP_VERSION = "v3.5.2"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -821,11 +821,22 @@ async function authLogin(email, password) {
 }
 async function fetchMember(userId) {
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/members?user_id=eq.${userId}&select=*`, { headers: sbHeaders });
-    if (!r.ok) return null;
+    // v3.5.2: go through get_member RPC so PIN users (no auth.uid) can read their row.
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_member`, {
+      method: "POST",
+      headers: { ...sbHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_user_id: userId }),
+    });
+    if (!r.ok) {
+      console.warn("fetchMember RPC failed:", r.status, await r.text().catch(() => ""));
+      return null;
+    }
     const arr = await r.json();
     return arr[0] || null;
-  } catch (e) { return null; }
+  } catch (e) {
+    console.warn("fetchMember error:", e);
+    return null;
+  }
 }
 async function upsertMember(row) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/members?on_conflict=user_id`, {
