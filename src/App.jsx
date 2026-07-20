@@ -619,7 +619,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8.3"; // ← bumped on every code update
+const APP_VERSION = "v3.8.4"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -647,9 +647,13 @@ async function sbUpdate(table, id, row) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: "PATCH",
     headers: { ...sbHeaders, Prefer: "return=representation" },
-    body: JSON.stringify({ ...row, updated_at: new Date().toISOString() }),
+    body: JSON.stringify(row),
   });
-  if (!r.ok) throw new Error(`update ${table} failed: ${r.status}`);
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    console.warn(`[KJC] update ${table} failed:`, r.status, t);
+    throw new Error(`update ${table} failed: ${r.status}${t ? ` — ${t}` : ""}`);
+  }
   return (await r.json())[0];
 }
 async function sbUpsert(table, rows) {
@@ -2952,7 +2956,10 @@ function AdminView({ onBack, onDataChanged }) {
       setAgEditId(null);
       await refresh();
       onDataChanged();
-    } catch (e) { setMsg("Save failed — run the agencies insert/update/delete policies SQL."); }
+    } catch (e) {
+      console.error("[KJC] addAgency error:", e);
+      setMsg("Save failed: " + (e?.message || "unknown error"));
+    }
   }
 
   async function exportAll() {
