@@ -28,6 +28,102 @@ const LANGUAGES = [
   "Spanish", "Korean", "Russian", "Polish", "Haitian Creole", "Tagalog", "Vietnamese", "Bengali",
 ];
 
+// v3.9 — NYC metro ZIP centroids for radius search.
+// Covers Manhattan, Bronx, Brooklyn, Queens, Staten Island, Nassau, Suffolk (west),
+// and the northern-NJ Chinese/Korean corridor. Aides whose ZIP isn't in this table
+// fall back to non-radius search (still shown by exact ZIP or city text match).
+const ZIP_COORDS = {
+  // Manhattan
+  "10001":[40.7506,-73.9971],"10002":[40.7157,-73.9862],"10003":[40.7317,-73.9891],"10004":[40.6892,-74.0170],
+  "10005":[40.7060,-74.0087],"10006":[40.7091,-74.0132],"10007":[40.7139,-74.0071],"10009":[40.7266,-73.9787],
+  "10010":[40.7388,-73.9822],"10011":[40.7406,-74.0002],"10012":[40.7256,-73.9987],"10013":[40.7207,-74.0043],
+  "10014":[40.7340,-74.0060],"10016":[40.7448,-73.9784],"10017":[40.7519,-73.9722],"10018":[40.7549,-73.9926],
+  "10019":[40.7657,-73.9860],"10020":[40.7590,-73.9789],"10021":[40.7691,-73.9598],"10022":[40.7587,-73.9689],
+  "10023":[40.7756,-73.9819],"10024":[40.7860,-73.9760],"10025":[40.7982,-73.9683],"10026":[40.8025,-73.9524],
+  "10027":[40.8118,-73.9532],"10028":[40.7761,-73.9535],"10029":[40.7911,-73.9440],"10030":[40.8180,-73.9432],
+  "10031":[40.8256,-73.9491],"10032":[40.8388,-73.9427],"10033":[40.8500,-73.9349],"10034":[40.8676,-73.9209],
+  "10035":[40.7955,-73.9295],"10036":[40.7599,-73.9902],"10037":[40.8134,-73.9375],"10038":[40.7093,-74.0027],
+  "10039":[40.8286,-73.9366],"10040":[40.8582,-73.9294],"10044":[40.7620,-73.9502],"10065":[40.7648,-73.9629],
+  "10069":[40.7754,-73.9885],"10075":[40.7736,-73.9566],"10128":[40.7815,-73.9502],"10280":[40.7096,-74.0167],
+  // Bronx
+  "10451":[40.8215,-73.9200],"10452":[40.8378,-73.9219],"10453":[40.8532,-73.9124],"10454":[40.8054,-73.9163],
+  "10455":[40.8155,-73.9070],"10456":[40.8300,-73.9089],"10457":[40.8467,-73.8988],"10458":[40.8629,-73.8886],
+  "10459":[40.8259,-73.8926],"10460":[40.8407,-73.8788],"10461":[40.8471,-73.8410],"10462":[40.8433,-73.8600],
+  "10463":[40.8817,-73.9059],"10465":[40.8262,-73.8199],"10466":[40.8908,-73.8467],"10467":[40.8737,-73.8687],
+  "10468":[40.8686,-73.9007],"10469":[40.8703,-73.8480],"10470":[40.8975,-73.8688],"10471":[40.8985,-73.8991],
+  "10472":[40.8305,-73.8697],"10473":[40.8188,-73.8546],"10474":[40.8121,-73.8863],"10475":[40.8683,-73.8265],
+  // Brooklyn
+  "11201":[40.6959,-73.9926],"11203":[40.6499,-73.9346],"11204":[40.6197,-73.9856],"11205":[40.6941,-73.9668],
+  "11206":[40.7015,-73.9430],"11207":[40.6693,-73.8945],"11208":[40.6716,-73.8724],"11209":[40.6218,-74.0303],
+  "11210":[40.6293,-73.9469],"11211":[40.7106,-73.9536],"11212":[40.6626,-73.9142],"11213":[40.6698,-73.9367],
+  "11214":[40.5993,-73.9974],"11215":[40.6673,-73.9852],"11216":[40.6811,-73.9497],"11217":[40.6822,-73.9797],
+  "11218":[40.6432,-73.9768],"11219":[40.6329,-73.9987],"11220":[40.6414,-74.0142],"11221":[40.6910,-73.9284],
+  "11222":[40.7273,-73.9483],"11223":[40.5977,-73.9738],"11224":[40.5772,-73.9906],"11225":[40.6631,-73.9536],
+  "11226":[40.6459,-73.9564],"11228":[40.6183,-74.0132],"11229":[40.5989,-73.9450],"11230":[40.6209,-73.9628],
+  "11231":[40.6797,-74.0000],"11232":[40.6584,-74.0038],"11233":[40.6790,-73.9207],"11234":[40.6120,-73.9310],
+  "11235":[40.5822,-73.9498],"11236":[40.6408,-73.9020],"11237":[40.7020,-73.9204],"11238":[40.6801,-73.9648],
+  "11239":[40.6491,-73.8794],"11249":[40.7189,-73.9591],
+  // Queens
+  "11101":[40.7451,-73.9427],"11102":[40.7710,-73.9264],"11103":[40.7626,-73.9127],"11104":[40.7442,-73.9203],
+  "11105":[40.7803,-73.9066],"11106":[40.7629,-73.9315],"11109":[40.7451,-73.9558],
+  "11354":[40.7695,-73.8299],"11355":[40.7538,-73.8204],"11356":[40.7854,-73.8451],"11357":[40.7860,-73.8148],
+  "11358":[40.7622,-73.7952],"11359":[40.7891,-73.7749],"11360":[40.7783,-73.7844],"11361":[40.7621,-73.7742],
+  "11362":[40.7593,-73.7365],"11363":[40.7715,-73.7455],"11364":[40.7418,-73.7622],"11365":[40.7361,-73.7947],
+  "11366":[40.7278,-73.7975],"11367":[40.7291,-73.8226],"11368":[40.7502,-73.8556],"11369":[40.7614,-73.8688],
+  "11370":[40.7627,-73.8907],"11372":[40.7513,-73.8827],"11373":[40.7365,-73.8788],"11374":[40.7266,-73.8624],
+  "11375":[40.7207,-73.8479],"11377":[40.7444,-73.9038],"11378":[40.7250,-73.9092],"11379":[40.7132,-73.8785],
+  "11385":[40.7000,-73.8925],
+  "11411":[40.6947,-73.7364],"11412":[40.6981,-73.7620],"11413":[40.6749,-73.7562],"11414":[40.6614,-73.8446],
+  "11415":[40.7069,-73.8281],"11416":[40.6839,-73.8493],"11417":[40.6797,-73.8449],"11418":[40.6994,-73.8347],
+  "11419":[40.6857,-73.8378],"11420":[40.6738,-73.8225],"11421":[40.6923,-73.8578],"11422":[40.6620,-73.7346],
+  "11423":[40.7150,-73.7695],"11426":[40.7382,-73.7204],"11427":[40.7302,-73.7477],"11428":[40.7248,-73.7492],
+  "11429":[40.7099,-73.7395],"11432":[40.7134,-73.7907],"11433":[40.6980,-73.7899],"11434":[40.6754,-73.7772],
+  "11435":[40.6996,-73.8098],"11436":[40.6743,-73.7972],"11691":[40.6013,-73.7563],"11692":[40.5942,-73.7929],
+  "11693":[40.5990,-73.8207],"11694":[40.5810,-73.8460],"11697":[40.5555,-73.8918],
+  // Staten Island
+  "10301":[40.6316,-74.0864],"10302":[40.6323,-74.1370],"10303":[40.6299,-74.1620],"10304":[40.6099,-74.0894],
+  "10305":[40.5975,-74.0761],"10306":[40.5713,-74.1198],"10307":[40.5099,-74.2419],"10308":[40.5528,-74.1543],
+  "10309":[40.5290,-74.2085],"10310":[40.6337,-74.1163],"10311":[40.6068,-74.1758],"10312":[40.5445,-74.1786],
+  "10314":[40.6033,-74.1493],
+  // Nassau County (Long Island - key Chinese/Korean areas)
+  "11001":[40.7237,-73.7059],"11020":[40.7808,-73.7241],"11021":[40.7846,-73.7359],"11023":[40.7899,-73.7245],
+  "11024":[40.8033,-73.7315],"11030":[40.8020,-73.6867],"11040":[40.7431,-73.6890],"11050":[40.8378,-73.6821],
+  "11501":[40.7492,-73.6408],"11507":[40.7891,-73.6438],"11514":[40.7647,-73.6320],"11516":[40.6260,-73.7273],
+  "11530":[40.7245,-73.6337],"11542":[40.8656,-73.6349],"11552":[40.6946,-73.6598],"11553":[40.7043,-73.6288],
+  "11554":[40.7248,-73.5895],"11556":[40.7237,-73.6376],"11558":[40.6209,-73.6668],"11559":[40.6248,-73.7159],
+  "11561":[40.5893,-73.6549],"11563":[40.6570,-73.6716],"11565":[40.6588,-73.6404],"11566":[40.6592,-73.5551],
+  "11570":[40.6636,-73.6431],"11572":[40.6363,-73.6417],"11575":[40.6796,-73.6079],"11576":[40.7929,-73.6482],
+  "11577":[40.7940,-73.6216],"11579":[40.8613,-73.5977],"11580":[40.6740,-73.7115],"11581":[40.6472,-73.7207],
+  "11590":[40.7462,-73.5726],"11596":[40.7397,-73.6448],"11598":[40.6360,-73.7085],
+  // Northern NJ - Chinese/Korean corridor
+  "07020":[40.8210,-73.9782],"07022":[40.8081,-74.0018],"07024":[40.8506,-73.9700],"07026":[40.8657,-74.1213],
+  "07030":[40.7434,-74.0324],"07031":[40.8320,-74.1281],"07032":[40.7788,-74.1120],"07047":[40.7856,-74.0246],
+  "07050":[40.7723,-74.2325],"07052":[40.7803,-74.2645],"07055":[40.8563,-74.1552],"07057":[40.8590,-74.1130],
+  "07070":[40.8320,-74.1153],"07072":[40.8465,-74.0800],"07073":[40.8259,-74.0797],"07074":[40.8394,-74.0430],
+  "07075":[40.8536,-74.0839],"07076":[40.6435,-74.3696],"07087":[40.7648,-74.0294],"07093":[40.7891,-74.0129],
+  "07094":[40.7867,-74.0459],"07302":[40.7178,-74.0433],"07304":[40.7150,-74.0781],"07305":[40.6935,-74.0824],
+  "07306":[40.7350,-74.0655],"07307":[40.7490,-74.0530],"07310":[40.7278,-74.0334],
+};
+
+// Haversine distance in miles
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8; // earth radius, miles
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Is aide's ZIP within `miles` of search ZIP? Both ZIPs must be in ZIP_COORDS.
+function isZipWithinRadius(aideZip, searchZip, miles) {
+  const a = ZIP_COORDS[aideZip];
+  const s = ZIP_COORDS[searchZip];
+  if (!a || !s) return false;
+  return haversineMiles(a[0], a[1], s[0], s[1]) <= miles;
+}
+
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
@@ -41,6 +137,7 @@ const STRINGS = {
     findTitle: "Find the right caregiver for your loved one",
     findSub: "Search by ZIP code, then narrow by services, rate, and age.",
     searchPh: "Enter ZIP code where care is needed (e.g. 11354)",
+    radiusLbl: "Within:", radiusExact: "Exact ZIP",
     maxRate: "Max $/hr", ageFrom: "Age from", ageTo: "Age to",
     clearFilters: "Clear all filters", allServices: "All services",
     availableSuffix: "aides available", loadingAides: "Loading aides…",
@@ -213,6 +310,7 @@ const STRINGS = {
     findTitle: "為您的家人找到合適的看護",
     findSub: "先輸入郵遞區號，再依服務、時薪與年齡篩選。",
     searchPh: "輸入需要照護地區的郵遞區號（例：11354）",
+    radiusLbl: "範圍：", radiusExact: "同郵區",
     maxRate: "時薪上限", ageFrom: "年齡從", ageTo: "至",
     clearFilters: "清除所有篩選", allServices: "全部服務",
     availableSuffix: "位看護", loadingAides: "載入中…",
@@ -384,6 +482,7 @@ const STRINGS = {
     findTitle: "Encuentre el cuidador ideal para su ser querido",
     findSub: "Busque por código postal y filtre por servicios, tarifa y edad.",
     searchPh: "Ingrese el código postal donde se necesita cuidado (ej. 11354)",
+    radiusLbl: "Dentro de:", radiusExact: "CP exacto",
     maxRate: "Máx $/hora", ageFrom: "Edad desde", ageTo: "hasta",
     clearFilters: "Borrar filtros", allServices: "Todos los servicios",
     availableSuffix: "cuidadores disponibles", loadingAides: "Cargando…",
@@ -619,7 +718,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.8.5"; // ← bumped on every code update
+const APP_VERSION = "v3.9"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3467,6 +3566,7 @@ export default function App() {
   const [hires, setHires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
   const [minAge, setMinAge] = useState("");
@@ -3630,6 +3730,7 @@ export default function App() {
     // v3.8.2: also clear directory filters and per-session tracking so a new
     // sign-in doesn't inherit the previous user's search/context
     setSearch("");
+    setRadius(0);
     setServiceFilter("");
     setMaxRate("");
     setMinAge("");
@@ -3697,11 +3798,18 @@ export default function App() {
   }
 
   const filtered = aides.filter((a) => {
-    const q = search.trim().toLowerCase();
-    const matchQ =
-      !q ||
-      a.zip?.startsWith(q) ||
-      a.city?.toLowerCase().includes(q);
+    const q = search.trim();
+    const qLower = q.toLowerCase();
+    const isZipQuery = /^\d{5}$/.test(q);
+    let matchQ;
+    if (!q) {
+      matchQ = true;
+    } else if (isZipQuery && radius > 0) {
+      // Radius mode: only aides whose ZIP is within `radius` miles of search ZIP
+      matchQ = isZipWithinRadius(a.zip, q, radius);
+    } else {
+      matchQ = a.zip?.startsWith(q) || a.city?.toLowerCase().includes(qLower);
+    }
     const matchS = !serviceFilter || a.services?.includes(serviceFilter);
     const rate = Number(a.rate);
     const age = Number(a.age);
@@ -3871,6 +3979,7 @@ export default function App() {
               setAccount(acct);
               // v3.8.2: clear any leftover filters/search from a prior session
               setSearch("");
+              setRadius(0);
               setServiceFilter("");
               setMaxRate("");
               setMinAge("");
@@ -4200,6 +4309,31 @@ export default function App() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {/* v3.9 — ZIP radius selector: only shown when the search looks like a 5-digit ZIP */}
+            {/^\d{5}$/.test(search.trim()) && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>{L.radiusLbl}</span>
+                {[[0, L.radiusExact], [1, "1 mi"], [5, "5 mi"], [10, "10 mi"]].map(([mi, label]) => {
+                  const active = radius === mi;
+                  return (
+                    <button
+                      key={mi}
+                      type="button"
+                      onClick={() => setRadius(mi)}
+                      style={{
+                        padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                        border: `1.5px solid ${active ? T.primary : T.line}`,
+                        background: active ? T.primary : "#fff",
+                        color: active ? "#fff" : T.ink,
+                        cursor: "pointer", fontFamily: "inherit",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
               <div>
                 <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft, display: "block", marginBottom: 4 }}>{L.maxRate}</span>
@@ -4217,7 +4351,7 @@ export default function App() {
             {(maxRate || minAge || maxAge || serviceFilter || search) && (
               <button
                 type="button"
-                onClick={() => { setSearch(""); setServiceFilter(""); setMaxRate(""); setMinAge(""); setMaxAge(""); }}
+                onClick={() => { setSearch(""); setRadius(0); setServiceFilter(""); setMaxRate(""); setMinAge(""); setMaxAge(""); }}
                 style={{
                   marginBottom: 10, padding: "8px 14px", borderRadius: 999,
                   border: `1.5px solid ${T.line}`, background: "#fff", color: T.inkSoft,
