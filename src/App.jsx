@@ -778,7 +778,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.10"; // ← bumped on every code update
+const APP_VERSION = "v3.10.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3605,6 +3605,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: T.primary,
       dark: T.primaryDark,
       soft: "#EFF6F3",
+      image: "https://images.pexels.com/photos/7551654/pexels-photo-7551654.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
       en: "Kajing Care",
       zhLabel: "照護",
       tag: L.landingCareTag,
@@ -3616,6 +3617,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: "#3F6795",
       dark: "#2F507A",
       soft: "#EDF2F8",
+      image: "https://images.pexels.com/photos/7570775/pexels-photo-7570775.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
       en: "Kajing Learn",
       zhLabel: "學習",
       tag: L.landingLearnTag,
@@ -3627,6 +3629,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: "#D97848",
       dark: "#B15E33",
       soft: "#FBF1E9",
+      image: "https://images.pexels.com/photos/9044049/pexels-photo-9044049.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
       en: "Kajing Kids",
       zhLabel: "兒童",
       tag: L.landingKidsTag,
@@ -3711,14 +3714,41 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
               e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
             }}
           >
-            {/* Icon banner */}
+            {/* v3.10.1 — image banner with small emoji badge overlay */}
             <div style={{
-              background: v.soft,
+              position: "relative",
+              height: 170,
+              overflow: "hidden",
               borderBottom: `3px solid ${v.color}`,
-              padding: "26px 20px 22px",
-              textAlign: "center",
+              background: v.soft,
             }}>
-              <div style={{ fontSize: 44, lineHeight: 1 }}>{v.emoji}</div>
+              <img
+                src={v.image}
+                alt={v.en}
+                loading="lazy"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+              <div style={{
+                position: "absolute",
+                bottom: 10,
+                right: 10,
+                width: 42,
+                height: 42,
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.95)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 22,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}>
+                {v.emoji}
+              </div>
             </div>
 
             {/* Content */}
