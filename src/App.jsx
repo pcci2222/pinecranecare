@@ -262,6 +262,26 @@ const STRINGS = {
     roleAgency: "Home-care agency",
     phoneAuthFinish: "Finish",
     signInBtn: "Sign in",
+    // Home landing (v3.10)
+    landingHeroTitle: "One trusted platform for every family need",
+    landingHeroSub: "Kakatong 家家通 connects families with verified caregivers, tutors, and coaches — from the same community you know and trust.",
+    landingHeroCta: "Sign in or create account",
+    pickCategoryTitle: "What are you looking for today?",
+    pickCategorySub: "Pick a category to browse verified providers near you.",
+    landingCareTag: "Trusted caregivers for the moments that matter most.",
+    landingCareItems: ["Home aides & elder care", "Child care & babysitters", "Companionship & respite"],
+    landingLearnTag: "Tutors and teachers who meet your child where they are.",
+    landingLearnItems: ["Academic tutoring & test prep", "Music theory & language", "College application coaching"],
+    landingKidsTag: "Fun, growth, and confidence — after school and weekends.",
+    landingKidsItems: ["Piano, violin & dance", "Swim & sports coaching", "Art, drawing & martial arts"],
+    landingBrowse: "Browse",
+    howItWorksTitle: "How Kakatong works",
+    step1Title: "Browse verified providers",
+    step1Sub: "Search by ZIP, language, and rate. Every provider is ID-checked and license-verified.",
+    step2Title: "Contact directly",
+    step2Sub: "Reach out by phone or message. No agency middleman.",
+    step3Title: "Hire on your terms",
+    step3Sub: "You decide what to pay, when to start, and how long to work together.",
     agencyReports: "Agency reports",
     agencyLocked: "Verified home-care agency",
     agencyLockedSub: "Contact info visible to members and Aide Pro users.",
@@ -434,6 +454,26 @@ const STRINGS = {
     roleAgency: "居家照護機構",
     phoneAuthFinish: "完成",
     signInBtn: "登入",
+    // Home landing (v3.10)
+    landingHeroTitle: "一個平台，滿足每個家庭的需求",
+    landingHeroSub: "家家通 Kakatong 連結家庭與經過驗證的照護員、家教與教練 — 都來自您熟悉信賴的社區。",
+    landingHeroCta: "登入或建立帳號",
+    pickCategoryTitle: "您今天想找什麼？",
+    pickCategorySub: "選擇類別，瀏覽附近經過驗證的服務提供者。",
+    landingCareTag: "值得信賴的照護 — 陪伴每一個重要時刻。",
+    landingCareItems: ["家政、長者照護", "育兒、褓姆", "陪伴、短期照護"],
+    landingLearnTag: "因材施教的家教與老師。",
+    landingLearnItems: ["學科補習、升學考試準備", "音樂理論、語言學習", "大學申請輔導"],
+    landingKidsTag: "課後、週末 — 快樂學習，健康成長。",
+    landingKidsItems: ["鋼琴、小提琴、舞蹈", "游泳、運動教練", "美術、繪畫、武術"],
+    landingBrowse: "瀏覽",
+    howItWorksTitle: "家家通如何運作",
+    step1Title: "瀏覽經過驗證的服務者",
+    step1Sub: "以郵遞區號、語言和時薪搜尋。每位服務者皆經身份與證照查核。",
+    step2Title: "直接聯繫",
+    step2Sub: "以電話或訊息直接聯繫，無中介抽成。",
+    step3Title: "以您的條件雇用",
+    step3Sub: "由您決定薪資、起始時間，以及合作長度。",
     agencyReports: "機構報告",
     agencyLocked: "已認證居家照護機構",
     agencyLockedSub: "會員與家政員 Pro 可查看聯絡方式。",
@@ -606,6 +646,26 @@ const STRINGS = {
     roleAgency: "Agencia de cuidado en el hogar",
     phoneAuthFinish: "Finalizar",
     signInBtn: "Iniciar sesión",
+    // Home landing (v3.10)
+    landingHeroTitle: "Una plataforma confiable para las necesidades de toda familia",
+    landingHeroSub: "Kakatong 家家通 conecta a familias con cuidadores, tutores y entrenadores verificados — de la misma comunidad que usted conoce.",
+    landingHeroCta: "Iniciar sesión o crear cuenta",
+    pickCategoryTitle: "¿Qué busca hoy?",
+    pickCategorySub: "Elija una categoría para ver proveedores verificados cerca de usted.",
+    landingCareTag: "Cuidadores de confianza para los momentos importantes.",
+    landingCareItems: ["Cuidado en el hogar y de ancianos", "Cuidado infantil y niñeras", "Compañía y respiro"],
+    landingLearnTag: "Tutores y maestros que enseñan al ritmo de su hijo.",
+    landingLearnItems: ["Tutoría académica y preparación de exámenes", "Teoría musical e idiomas", "Asesoría universitaria"],
+    landingKidsTag: "Diversión, crecimiento y confianza — después de clases y fines de semana.",
+    landingKidsItems: ["Piano, violín y danza", "Natación y entrenamiento deportivo", "Arte, dibujo y artes marciales"],
+    landingBrowse: "Explorar",
+    howItWorksTitle: "Cómo funciona Kakatong",
+    step1Title: "Explore proveedores verificados",
+    step1Sub: "Busque por código postal, idioma y tarifa. Todos los proveedores tienen ID y licencia verificada.",
+    step2Title: "Contacto directo",
+    step2Sub: "Llame o envíe mensaje directamente. Sin intermediarios.",
+    step3Title: "Contrate en sus términos",
+    step3Sub: "Usted decide el pago, cuándo empezar y cuánto tiempo trabajar.",
     agencyReports: "Informes de agencia",
     agencyLocked: "Agencia de cuidado verificada",
     agencyLockedSub: "Información de contacto visible para miembros y usuarios Aide Pro.",
@@ -718,7 +778,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.9"; // ← bumped on every code update
+const APP_VERSION = "v3.10"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3533,6 +3593,203 @@ function BackupPanel({ aides, onRestore, onBack }) {
   );
 }
 
+// ---------- Home landing (v3.10) — three-vertical umbrella brand ----------
+function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
+  const { L } = useLang();
+
+  // Three verticals with distinct color moods that harmonize
+  const verticals = [
+    {
+      id: "care",
+      emoji: "🏡",
+      color: T.primary,
+      dark: T.primaryDark,
+      soft: "#EFF6F3",
+      en: "Kajing Care",
+      zhLabel: "照護",
+      tag: L.landingCareTag,
+      items: L.landingCareItems,
+    },
+    {
+      id: "learn",
+      emoji: "📚",
+      color: "#3F6795",
+      dark: "#2F507A",
+      soft: "#EDF2F8",
+      en: "Kajing Learn",
+      zhLabel: "學習",
+      tag: L.landingLearnTag,
+      items: L.landingLearnItems,
+    },
+    {
+      id: "kids",
+      emoji: "🎨",
+      color: "#D97848",
+      dark: "#B15E33",
+      soft: "#FBF1E9",
+      en: "Kajing Kids",
+      zhLabel: "兒童",
+      tag: L.landingKidsTag,
+      items: L.landingKidsItems,
+    },
+  ];
+
+  return (
+    <div style={{ maxWidth: 1120, margin: "0 auto", padding: "20px 16px 40px" }}>
+      {/* HERO */}
+      <section style={{
+        textAlign: "center", padding: "36px 20px 40px", marginBottom: 26,
+        background: `linear-gradient(180deg, ${T.surface} 0%, #FFF 100%)`,
+        borderRadius: 20, border: `1px solid ${T.line}`,
+      }}>
+        <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: 6, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
+          家家通
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: T.primary, letterSpacing: 4, marginTop: 4 }}>
+          KAKATONG
+        </div>
+        <h1 style={{ margin: "18px auto 8px", maxWidth: 720, fontSize: 26, fontWeight: 800, color: T.ink, lineHeight: 1.3, fontFamily: "Georgia, serif" }}>
+          {L.landingHeroTitle}
+        </h1>
+        <p style={{ margin: "0 auto", maxWidth: 640, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.55 }}>
+          {L.landingHeroSub}
+        </p>
+        {!isSignedIn && (
+          <button
+            type="button"
+            onClick={onSignIn}
+            style={{
+              marginTop: 20, padding: "11px 22px", borderRadius: 999,
+              border: "none", background: T.amber, color: "#3A2A08",
+              fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            {L.landingHeroCta}
+          </button>
+        )}
+      </section>
+
+      {/* SECTION HEADING */}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <h2 style={{ margin: "0 0 6px", fontSize: 22, fontWeight: 800, color: T.ink, fontFamily: "Georgia, serif" }}>
+          {L.pickCategoryTitle}
+        </h2>
+        <p style={{ margin: 0, fontSize: 14, color: T.inkSoft }}>
+          {L.pickCategorySub}
+        </p>
+      </div>
+
+      {/* THREE VERTICAL CARDS */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: 16, marginBottom: 32,
+      }}>
+        {verticals.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => onPickCategory(v.id)}
+            style={{
+              textAlign: "left",
+              padding: 0,
+              background: "#fff",
+              border: `1px solid ${T.line}`,
+              borderRadius: 18,
+              cursor: "pointer",
+              overflow: "hidden",
+              fontFamily: "inherit",
+              transition: "transform 0.15s ease, box-shadow 0.15s ease",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "";
+              e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
+            }}
+          >
+            {/* Icon banner */}
+            <div style={{
+              background: v.soft,
+              borderBottom: `3px solid ${v.color}`,
+              padding: "26px 20px 22px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: 44, lineHeight: 1 }}>{v.emoji}</div>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "18px 20px 22px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 20, fontWeight: 800, color: v.dark, fontFamily: "Georgia, serif" }}>
+                  {v.en}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.inkSoft }}>
+                  家家通 · {v.zhLabel}
+                </span>
+              </div>
+              <p style={{ margin: "0 0 12px", fontSize: 14, color: T.inkSoft, lineHeight: 1.5 }}>
+                {v.tag}
+              </p>
+              <ul style={{ margin: "0 0 16px", padding: 0, listStyle: "none" }}>
+                {v.items.map((item, i) => (
+                  <li key={i} style={{ fontSize: 13.5, color: T.ink, padding: "3px 0" }}>
+                    · {item}
+                  </li>
+                ))}
+              </ul>
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "9px 16px", borderRadius: 10,
+                  background: v.color, color: "#fff",
+                  fontSize: 14, fontWeight: 800,
+                }}
+              >
+                {L.landingBrowse} →
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* HOW IT WORKS */}
+      <section style={{ marginTop: 30, padding: "26px 20px", background: "#fff", borderRadius: 16, border: `1px solid ${T.line}` }}>
+        <h2 style={{ margin: "0 0 18px", textAlign: "center", fontSize: 19, fontWeight: 800, color: T.ink, fontFamily: "Georgia, serif" }}>
+          {L.howItWorksTitle}
+        </h2>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 20,
+        }}>
+          {[
+            [1, L.step1Title, L.step1Sub],
+            [2, L.step2Title, L.step2Sub],
+            [3, L.step3Title, L.step3Sub],
+          ].map(([n, title, sub]) => (
+            <div key={n} style={{ textAlign: "center", padding: "0 8px" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 40, height: 40, borderRadius: 999,
+                background: T.primary, color: "#fff", fontSize: 17, fontWeight: 800,
+                marginBottom: 10,
+              }}>
+                {n}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>{title}</div>
+              <div style={{ fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>{sub}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 // ---------- Main app ----------
 export default function App() {
   const [lang, setLangState] = useState(() => {
@@ -3554,7 +3811,8 @@ export default function App() {
   const L = STRINGS[lang];
   const ts = (s) => (lang === "en" ? s : SERVICE_I18N[s]?.[lang] || s);
   LANG_CURRENT = { lang, L, ts };
-  const [view, setView] = useState("directory"); // directory | register | postjob | plans | privacy | terms | backup
+  const [view, setView] = useState("home"); // home | directory | register | postjob | plans | privacy | terms | backup
+  const [category, setCategory] = useState(null); // v3.10: care | learn | kids — set from home landing
   const [tab, setTab] = useState("aides"); // aides | jobs
   const [editing, setEditing] = useState(null); // aide record being edited, or null
   const [jobEditing, setJobEditing] = useState(null); // job record being edited, or null
@@ -3913,12 +4171,16 @@ export default function App() {
             ))}
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
+            <button
+              type="button"
+              onClick={() => { setView("home"); window.scrollTo(0, 0); }}
+              style={{ background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}
+            >
               <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, color: "#fff", fontWeight: 700, letterSpacing: 0.2 }}>
-                Ka<span style={{ color: T.amber }}>jing</span> Care
+                家家通 <span style={{ color: T.amber, fontSize: 22, letterSpacing: 2 }}>· Kakatong</span>
               </div>
               <div style={{ fontSize: 13.5, color: "#C9DAD4" }}>{L.tagline}</div>
-            </div>
+            </button>
             {view === "directory" && (
               <button
                 type="button"
@@ -3959,7 +4221,13 @@ export default function App() {
             when deployed to real hosting. (Also check: is the Supabase project paused?)
           </div>
         )}
-        {view === "auth" ? (
+        {view === "home" ? (
+          <HomeLandingView
+            isSignedIn={!!account}
+            onSignIn={() => { setView("signin"); window.scrollTo(0, 0); }}
+            onPickCategory={(cat) => { setCategory(cat); setView("directory"); window.scrollTo(0, 0); }}
+          />
+        ) : view === "auth" ? (
           <AuthView
             onBack={() => { setAuthNext(null); setView("plans"); }}
             onDone={(acct) => {
@@ -4098,6 +4366,24 @@ export default function App() {
           />
         ) : (
           <>
+            {/* v3.10 — category breadcrumb when arriving from home landing */}
+            {category && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "8px 12px", background: T.card, border: `1px solid ${T.line}`, borderRadius: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => { setCategory(null); setView("home"); window.scrollTo(0, 0); }}
+                  style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", padding: 0 }}
+                >
+                  ← {L.landingBrowse === "Browse" ? "Home" : L.landingBrowse === "瀏覽" ? "首頁" : "Inicio"}
+                </button>
+                <span style={{ color: T.inkSoft, fontSize: 13 }}>·</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>
+                  {category === "care" ? "Kajing Care · 照護" :
+                   category === "learn" ? "Kajing Learn · 學習" :
+                   category === "kids" ? "Kajing Kids · 兒童" : ""}
+                </span>
+              </div>
+            )}
             {/* Tabs: find an aide / care requests. Aides don't see other aides. */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               {visibleTabIds.map((id) => {
