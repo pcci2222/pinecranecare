@@ -778,7 +778,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.11.1"; // ← bumped on every code update
+const APP_VERSION = "v3.12"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1223,9 +1223,11 @@ const loadReviews = async () => {
 const loadHires = async () => {
   try { return await sbSelect("hires"); } catch (e) { return []; }
 };
-const loadAgencies = async () => {
+const loadAgencies = async (category) => {
   try {
-    const rows = await sbSelect("agencies", "&active=eq.true");
+    // v3.12: filter agencies by vertical to match landing page category selection
+    const vertical = (category === "learn" || category === "kids") ? category : "care";
+    const rows = await sbSelect("agencies", `&active=eq.true&vertical=eq.${vertical}`);
     const today = new Date().toISOString().slice(0, 10);
     return rows.filter((a) => !a.paid_until || a.paid_until >= today);
   } catch (e) { return []; }
@@ -3871,8 +3873,12 @@ export default function App() {
   const [pendingCount, setPendingCount] = useState(0); // v3.8: caregivers awaiting approval
 
   // v3.8.5 — aides can't see the aides directory (own competitors); pick a valid tab
+  // v3.12 — Learn/Kids verticals only show providers (no home-aides / job-postings)
   const isAideRole = account?.role === "aide";
-  const visibleTabIds = isAideRole ? ["jobs", "agencies"] : ["aides", "jobs", "agencies"];
+  const isLearnOrKids = category === "learn" || category === "kids";
+  const visibleTabIds = isLearnOrKids
+    ? ["agencies"]
+    : (isAideRole ? ["jobs", "agencies"] : ["aides", "jobs", "agencies"]);
   const effectiveTab = visibleTabIds.includes(tab) ? tab : visibleTabIds[0];
   useEffect(() => {
     if (effectiveTab !== tab) setTab(effectiveTab);
@@ -3886,7 +3892,7 @@ export default function App() {
         setAides(await loadAides());
         setJobs(await loadJobs());
         setReviews(await loadReviews());
-        setAgencies(await loadAgencies());
+        setAgencies(await loadAgencies(category));
         setHires(await loadHires());
         setDbError(false);
       } catch (e) {
@@ -3942,6 +3948,16 @@ export default function App() {
       window.removeEventListener("focus", refresh);
     };
   }, []);
+
+  // v3.12: reload agencies when user switches between Care/Learn/Kids verticals
+  useEffect(() => {
+    (async () => {
+      try {
+        setAgencies(await loadAgencies(category));
+      } catch (e) { /* ignore */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   async function addHire(caregiverId, name) {
     const saved = await sbInsert("hires", { caregiver_id: caregiverId, client_name: name });
@@ -4345,7 +4361,7 @@ export default function App() {
             onDataChanged={async () => {
               try {
                 setAides(await loadAides());
-                setAgencies(await loadAgencies());
+                setAgencies(await loadAgencies(category));
                 setPendingCount(await fetchPendingCount());
               } catch (e) { /* ignore */ }
             }}
