@@ -241,6 +241,17 @@ const STRINGS = {
     authErr: "Sign-in failed — check your email and password.",
     authConfirm: "Account created — confirm via the email we sent, then sign in.",
     signOut: "Sign out", tSignedIn: "Welcome ✓",
+    disclaimerTitle: "Before you contact this caregiver",
+    disclaimerLead: "Kakatong is a directory and marketplace. We are not a hiring agency, employer, or staffing service. Before hiring anyone, you are responsible for your own due diligence.",
+    disclaimerPoint1: "Interview the caregiver yourself and check references",
+    disclaimerPoint2: "Verify certifications, work authorization, and identification",
+    disclaimerPoint3: "Consider running a professional background check",
+    disclaimerPoint4: "Confirm rates, schedule, and expectations in writing",
+    disclaimerPoint5: "Kakatong is not a party to any hiring, employment, wage, or service arrangement between you and the caregiver — and is not responsible for any dispute, injury, loss, or damage that may result",
+    disclaimerCheck: "I understand and agree — I will handle my own screening and hiring decisions",
+    disclaimerAgree: "I agree — show contact",
+    disclaimerCancel: "Cancel",
+    disclaimerFooter: "Full terms: kakatong.app/terms",
     myAccount: "My Account",
     myAccountTitle: "Account & Membership",
     accountInfoLabel: "Account information",
@@ -456,6 +467,17 @@ const STRINGS = {
     authErr: "登入失敗 — 請檢查電子郵件與密碼。",
     authConfirm: "帳號已建立 — 請點擊確認郵件後再登入。",
     signOut: "登出", tSignedIn: "歡迎 ✓",
+    disclaimerTitle: "聯繫這位照護者之前，請注意：",
+    disclaimerLead: "家家通 (Kakatong) 是一個資訊平台與市集，並非仲介公司、雇主或人力派遣機構。在僱用任何人之前，您需自行進行必要的查核與判斷。",
+    disclaimerPoint1: "親自面試照護者並查核推薦人",
+    disclaimerPoint2: "確認證照、工作許可與身份文件",
+    disclaimerPoint3: "建議進行專業背景調查",
+    disclaimerPoint4: "以書面確認薪資、班表與工作內容",
+    disclaimerPoint5: "家家通不介入您與照護者之間的僱用、薪資或服務關係，亦不對因此產生的任何爭議、傷害、損失或損害承擔責任",
+    disclaimerCheck: "我了解並同意 — 我將自行負責篩選與僱用決定",
+    disclaimerAgree: "我同意 — 顯示聯絡資訊",
+    disclaimerCancel: "取消",
+    disclaimerFooter: "完整條款：kakatong.app/terms",
     myAccount: "我的帳戶",
     myAccountTitle: "帳戶與會員資訊",
     accountInfoLabel: "帳戶資訊",
@@ -670,6 +692,17 @@ const STRINGS = {
     authErr: "Error al iniciar sesión — revise correo y contraseña.",
     authConfirm: "Cuenta creada — confirme con el correo enviado y luego inicie sesión.",
     signOut: "Cerrar sesión", tSignedIn: "Bienvenido ✓",
+    disclaimerTitle: "Antes de contactar a este cuidador",
+    disclaimerLead: "Kakatong es un directorio y mercado en línea. No somos una agencia de contratación, empleador o servicio de personal. Antes de contratar a alguien, usted es responsable de su propia diligencia.",
+    disclaimerPoint1: "Entreviste al cuidador personalmente y verifique referencias",
+    disclaimerPoint2: "Verifique certificaciones, autorización de trabajo e identificación",
+    disclaimerPoint3: "Considere realizar una verificación profesional de antecedentes",
+    disclaimerPoint4: "Confirme tarifas, horario y expectativas por escrito",
+    disclaimerPoint5: "Kakatong no es parte de ningún acuerdo de contratación, empleo, salario o servicio entre usted y el cuidador — y no es responsable de ninguna disputa, lesión, pérdida o daño que pueda resultar",
+    disclaimerCheck: "Entiendo y acepto — Me haré cargo de mi propia selección y decisiones de contratación",
+    disclaimerAgree: "Acepto — mostrar contacto",
+    disclaimerCancel: "Cancelar",
+    disclaimerFooter: "Términos completos: kakatong.app/terms",
     myAccount: "Mi cuenta",
     myAccountTitle: "Cuenta y membresía",
     accountInfoLabel: "Información de la cuenta",
@@ -844,7 +877,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.6"; // ← bumped on every code update
+const APP_VERSION = "v3.12.7"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1665,6 +1698,105 @@ function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
 }
 
 // ---------- Directory ----------
+// v3.12.7 — legal disclaimer shown before contact reveal (paid members)
+// Localstorage key "kk_disclaimer_ack_v1" persists acknowledgement per browser.
+// If user clears cache, they'll see it once more. That's fine — safer to over-notice.
+function LegalDisclaimerModal({ open, onAgree, onCancel }) {
+  const { L } = useLang();
+  const [checked, setChecked] = useState(false);
+  useEffect(() => { if (open) setChecked(false); }, [open]);
+  if (!open) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onCancel}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(15,20,15,0.55)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 9999, padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff", borderRadius: 16, padding: "26px 24px",
+          maxWidth: 560, width: "100%", maxHeight: "88vh", overflow: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
+          border: `2px solid ${T.primary}`,
+        }}
+      >
+        <div style={{ fontSize: 11, fontWeight: 800, color: T.primary, letterSpacing: 2, marginBottom: 8 }}>
+          ⚖  IMPORTANT NOTICE
+        </div>
+        <h2 style={{ margin: "0 0 12px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink, lineHeight: 1.3 }}>
+          {L.disclaimerTitle}
+        </h2>
+        <p style={{ margin: "0 0 14px", fontSize: 14.5, color: T.ink, lineHeight: 1.55 }}>
+          {L.disclaimerLead}
+        </p>
+        <ul style={{ margin: "0 0 16px", padding: "0 0 0 20px", color: T.ink, fontSize: 14, lineHeight: 1.55 }}>
+          <li style={{ marginBottom: 6 }}>{L.disclaimerPoint1}</li>
+          <li style={{ marginBottom: 6 }}>{L.disclaimerPoint2}</li>
+          <li style={{ marginBottom: 6 }}>{L.disclaimerPoint3}</li>
+          <li style={{ marginBottom: 6 }}>{L.disclaimerPoint4}</li>
+          <li style={{ marginBottom: 0, fontWeight: 700, color: T.ink }}>{L.disclaimerPoint5}</li>
+        </ul>
+
+        <label
+          style={{
+            display: "flex", alignItems: "flex-start", gap: 10,
+            padding: "12px 14px", background: T.surface, borderRadius: 10,
+            border: `1.5px solid ${checked ? T.primary : T.line}`,
+            cursor: "pointer", marginBottom: 16,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => setChecked(e.target.checked)}
+            style={{ marginTop: 3, width: 18, height: 18, cursor: "pointer" }}
+          />
+          <span style={{ fontSize: 14, color: T.ink, fontWeight: 600, lineHeight: 1.45 }}>
+            {L.disclaimerCheck}
+          </span>
+        </label>
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              padding: "11px 18px", borderRadius: 10,
+              border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
+              fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            {L.disclaimerCancel}
+          </button>
+          <button
+            type="button"
+            onClick={onAgree}
+            disabled={!checked}
+            style={{
+              padding: "11px 20px", borderRadius: 10, border: "none",
+              background: checked ? T.primary : "#B4C0B3", color: "#fff",
+              fontSize: 14, fontWeight: 800, cursor: checked ? "pointer" : "not-allowed",
+              fontFamily: "inherit", opacity: checked ? 1 : 0.75,
+            }}
+          >
+            {L.disclaimerAgree}
+          </button>
+        </div>
+
+        <p style={{ margin: "14px 0 0", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
+          {L.disclaimerFooter}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
   const { L, ts } = useLang();
   const [hireOpen, setHireOpen] = useState(false);
@@ -1692,7 +1824,32 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
   const [revBusy, setRevBusy] = useState(false);
   const [currentViewId, setCurrentViewId] = useState(null);   // tracking: profile_view id
   const [contactRevealed, setContactRevealed] = useState(false); // v3.5 mouse-trap: phone hidden until click
+  const [showDisclaimer, setShowDisclaimer] = useState(false); // v3.12.7: legal disclaimer gate
   const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
+
+  // v3.12.7: perform the actual contact reveal (tracking + state)
+  async function doRevealContact() {
+    try {
+      await trackContactReveal({
+        caregiverId:   aide.id,
+        caregiverName: aide.name,
+        profileViewId: currentViewId,
+        searchQueryId,
+        wasSubscribed: true,
+        memberSession,
+      });
+    } catch (e) { /* tracking best-effort */ }
+    setContactRevealed(true);
+  }
+
+  // v3.12.7: gate the reveal on the legal disclaimer.
+  // We remember the ack in localStorage — once per browser is enough.
+  function requestRevealContact() {
+    let acked = false;
+    try { acked = localStorage.getItem("kk_disclaimer_ack_v1") === "1"; } catch (e) { /* ignore */ }
+    if (acked) { doRevealContact(); return; }
+    setShowDisclaimer(true);
+  }
 
   async function submitReview() {
     if (!revRating || !revName.trim()) { setRevError(L.errReview); return; }
@@ -1739,6 +1896,15 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
         padding: 16, marginBottom: 14,
       }}
     >
+      <LegalDisclaimerModal
+        open={showDisclaimer}
+        onCancel={() => setShowDisclaimer(false)}
+        onAgree={() => {
+          try { localStorage.setItem("kk_disclaimer_ack_v1", "1"); } catch (e) { /* ignore */ }
+          setShowDisclaimer(false);
+          doRevealContact();
+        }}
+      />
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
         <div style={{ width: 68, height: 68, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: T.surface, border: `2px solid ${T.amber}` }}>
           {aide.photo ? (
@@ -1798,18 +1964,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
                 </p>
                 <button
                   type="button"
-                  onClick={async () => {
-                    // Fire the mouse-trap event BEFORE revealing so we always capture intent
-                    await trackContactReveal({
-                      caregiverId:   aide.id,
-                      caregiverName: aide.name,
-                      profileViewId: currentViewId,
-                      searchQueryId,
-                      wasSubscribed: true,
-                      memberSession,
-                    });
-                    setContactRevealed(true);
-                  }}
+                  onClick={requestRevealContact}
                   style={{
                     padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary,
                     color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
