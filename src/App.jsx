@@ -799,7 +799,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.2"; // ← bumped on every code update
+const APP_VERSION = "v3.12.3"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3628,7 +3628,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: T.primary,
       dark: T.primaryDark,
       soft: "#EFF6F3",
-      image: "https://images.pexels.com/photos/7551654/pexels-photo-7551654.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
+      image: "https://images.pexels.com/photos/7551654/pexels-photo-7551654.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
       en: "Kakatong Care",
       zhLabel: "照護",
       tag: L.landingCareTag,
@@ -3640,7 +3640,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: "#3F6795",
       dark: "#2F507A",
       soft: "#EDF2F8",
-      image: "https://images.pexels.com/photos/6502728/pexels-photo-6502728.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
+      image: "https://images.pexels.com/photos/6502728/pexels-photo-6502728.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
       en: "Kakatong Learn",
       zhLabel: "學習",
       tag: L.landingLearnTag,
@@ -3652,7 +3652,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: "#D97848",
       dark: "#B15E33",
       soft: "#FBF1E9",
-      image: "https://images.pexels.com/photos/6011945/pexels-photo-6011945.jpeg?auto=compress&cs=tinysrgb&w=800&h=500&fit=crop",
+      image: "https://images.pexels.com/photos/6011945/pexels-photo-6011945.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
       en: "Kakatong Kids",
       zhLabel: "兒童",
       tag: L.landingKidsTag,
