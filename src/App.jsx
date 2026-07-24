@@ -799,7 +799,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.3"; // ← bumped on every code update
+const APP_VERSION = "v3.12.4"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3652,7 +3652,7 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       color: "#D97848",
       dark: "#B15E33",
       soft: "#FBF1E9",
-      image: "https://images.pexels.com/photos/6011945/pexels-photo-6011945.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
+      image: "https://images.pexels.com/photos/7570759/pexels-photo-7570759.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
       en: "Kakatong Kids",
       zhLabel: "兒童",
       tag: L.landingKidsTag,
