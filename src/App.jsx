@@ -213,6 +213,11 @@ const STRINGS = {
     medicaidTeaser: "Think you may qualify for Medicaid home care? See licensed agencies",
     partnersTitle: "Medicaid & Licensed Agency Partners",
     partnersSub: "Think your loved one may qualify for Medicaid home care? These licensed agencies can help you check eligibility, apply, and receive covered care.",
+    learnPartnersTitle: "Kakatong Learn Providers",
+    learnPartnersSub: "Verified tutoring centers, test prep, Chinese language schools, and coding classes — trusted providers for your family's learning journey.",
+    kidsPartnersTitle: "Kakatong Kids Providers",
+    kidsPartnersSub: "Verified music, swim, martial arts, dance, and art programs — trusted providers for kids' activities and enrichment.",
+    learnTabLabel: "Providers", kidsTabLabel: "Providers",
     sponsoredTag: "Sponsored", partnerCall: "Call", partnerSite: "Website",
     postFeeTitle: "Care request posting fee",
     postFeeNote: "One-time $9.99 fee per posting. Demo checkout — no real payment is collected in this prototype; the live version uses Stripe's secure payment page.",
@@ -406,6 +411,11 @@ const STRINGS = {
     medicaidTeaser: "家人可能符合 Medicaid 資格？查看持牌機構",
     partnersTitle: "Medicaid 與持牌機構夥伴",
     partnersSub: "您的家人可能符合 Medicaid 居家照護資格？這些持牌機構可協助您確認資格、提出申請並獲得保險給付的照護。",
+    learnPartnersTitle: "Kakatong Learn 學習夥伴",
+    learnPartnersSub: "經過驗證的補習班、升學考試準備、中文學校及程式設計課程 — 值得信賴的學習夥伴。",
+    kidsPartnersTitle: "Kakatong Kids 兒童夥伴",
+    kidsPartnersSub: "經過驗證的音樂、游泳、武術、舞蹈及藝術課程 — 值得信賴的兒童活動夥伴。",
+    learnTabLabel: "夥伴", kidsTabLabel: "夥伴",
     sponsoredTag: "贊助", partnerCall: "致電", partnerSite: "網站",
     postFeeTitle: "徵求發布費",
     postFeeNote: "每則徵求一次性收費 $9.99。示範結帳 — 原型不會實際收費；正式版將使用 Stripe 安全付款頁面。",
@@ -598,6 +608,11 @@ const STRINGS = {
     medicaidTeaser: "¿Podría calificar para Medicaid? Vea agencias licenciadas",
     partnersTitle: "Agencias Licenciadas y Medicaid",
     partnersSub: "¿Su ser querido podría calificar para cuidado en el hogar por Medicaid? Estas agencias licenciadas pueden ayudarle a verificar la elegibilidad, aplicar y recibir cuidado cubierto.",
+    learnPartnersTitle: "Proveedores de Kakatong Learn",
+    learnPartnersSub: "Centros de tutoría verificados, preparación para exámenes, escuelas de idiomas chinos y clases de programación.",
+    kidsPartnersTitle: "Proveedores de Kakatong Kids",
+    kidsPartnersSub: "Programas verificados de música, natación, artes marciales, danza y arte para niños.",
+    learnTabLabel: "Proveedores", kidsTabLabel: "Proveedores",
     sponsoredTag: "Patrocinado", partnerCall: "Llamar", partnerSite: "Sitio web",
     postFeeTitle: "Tarifa por publicar solicitud",
     postFeeNote: "Pago único de $9.99 por publicación. Pago de demostración — este prototipo no cobra; la versión real usará la página segura de Stripe.",
@@ -778,7 +793,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12"; // ← bumped on every code update
+const APP_VERSION = "v3.12.1"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -4433,7 +4448,10 @@ export default function App() {
             {/* Tabs: find an aide / care requests. Aides don't see other aides. */}
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
               {visibleTabIds.map((id) => {
-                const label = id === "aides" ? L.tabAides : id === "jobs" ? L.tabJobs : L.tabAgencies;
+                const agencyLabel = category === "learn" ? "🎓 " + (L.learnTabLabel || "Providers")
+                                    : category === "kids" ? "🎨 " + (L.kidsTabLabel || "Providers")
+                                    : L.tabAgencies;
+                const label = id === "aides" ? L.tabAides : id === "jobs" ? L.tabJobs : agencyLabel;
                 return (
                   <button
                     key={id}
@@ -4514,9 +4532,15 @@ export default function App() {
             ) : effectiveTab === "agencies" ? (
               <>
                 <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink }}>
-                  {L.partnersTitle}
+                  {category === "learn" ? L.learnPartnersTitle
+                   : category === "kids" ? L.kidsPartnersTitle
+                   : L.partnersTitle}
                 </h2>
-                <p style={{ margin: "0 0 14px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>{L.partnersSub}</p>
+                <p style={{ margin: "0 0 14px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>
+                  {category === "learn" ? L.learnPartnersSub
+                   : category === "kids" ? L.kidsPartnersSub
+                   : L.partnersSub}
+                </p>
                 {agencies.length === 0 ? (
                   <div style={{ textAlign: "center", marginTop: 40 }}>
                     <div style={{ fontSize: 44 }}>🏛️</div>
