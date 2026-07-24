@@ -4,30 +4,153 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3B4A3A" />
 
-    <!-- Browser tab -->
-    <title>Kakatong · 家家通 — Care · Learn · Kids</title>
+    <!-- ============================================================ -->
+    <!-- Core SEO tags                                                -->
+    <!-- ============================================================ -->
+    <title>Kakatong · 家家通 — Care · Learn · Kids for Chinese-community families</title>
+    <meta name="description" content="Kakatong 家家通 — trusted bilingual marketplace connecting Chinese-community families in NYC and beyond with verified home care aides, tutors, music teachers, swim coaches, and kids' activity providers. 家家通，安心到家。" />
+    <meta name="keywords" content="Chinese home aide NYC, Cantonese caregiver, Mandarin tutor, Chinese piano lesson, SHSAT prep Flushing, 中文家政, 华人家政, home care Flushing, tutoring Bayside, kids activities Chinese community, 家家通, Kakatong" />
+    <meta name="author" content="Kakatong Inc" />
+    <link rel="canonical" href="https://kakatong.app/" />
 
-    <!-- Search engine description -->
-    <meta name="description" content="Kakatong 家家通 — trusted marketplace for Chinese-community home care, tutoring, and kids' activities across NYC and beyond. 家家通，安心到家." />
+    <!-- ============================================================ -->
+    <!-- Multi-language declaration (hreflang)                        -->
+    <!-- ============================================================ -->
+    <!-- App switches language client-side, so all three point to same URL -->
+    <link rel="alternate" hreflang="en"   href="https://kakatong.app/" />
+    <link rel="alternate" hreflang="zh-Hant" href="https://kakatong.app/" />
+    <link rel="alternate" hreflang="zh-Hans" href="https://kakatong.app/" />
+    <link rel="alternate" hreflang="es"   href="https://kakatong.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://kakatong.app/" />
 
-    <!-- Social share preview (WeChat, iMessage, Facebook, LinkedIn) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Kakatong · 家家通" />
-    <meta property="og:description" content="家家通，安心到家. Care · Learn · Kids — one trusted door for Chinese-community families." />
-    <meta property="og:url" content="https://kakatong.app" />
-    <meta property="og:site_name" content="Kakatong" />
+    <!-- ============================================================ -->
+    <!-- Open Graph (Facebook, LinkedIn, iMessage, Slack)             -->
+    <!-- ============================================================ -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="Kakatong 家家通" />
+    <meta property="og:title"       content="Kakatong · 家家通 — Care · Learn · Kids" />
+    <meta property="og:description" content="家家通，安心到家. Care · Learn · Kids — one trusted door for Chinese-community families. Verified home aides, tutors, music/swim/martial-arts teachers, and more." />
+    <meta property="og:url"         content="https://kakatong.app/" />
+    <meta property="og:image"       content="https://kakatong.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="Kakatong 家家通 — Care · Learn · Kids" />
+    <meta property="og:locale"           content="en_US" />
+    <meta property="og:locale:alternate" content="zh_TW" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="es_US" />
 
-    <!-- Twitter/X card -->
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Kakatong · 家家通" />
-    <meta name="twitter:description" content="Care · Learn · Kids — one trusted door for Chinese-community families." />
+    <!-- ============================================================ -->
+    <!-- Twitter / X card                                             -->
+    <!-- ============================================================ -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Kakatong · 家家通" />
+    <meta name="twitter:description" content="Care · Learn · Kids — trusted marketplace for Chinese-community families." />
+    <meta name="twitter:image"       content="https://kakatong.app/og-image.png" />
+    <meta name="twitter:image:alt"   content="Kakatong 家家通 — Care · Learn · Kids" />
 
-    <!-- Search engines: prefer kakatong.app as canonical URL -->
-    <link rel="canonical" href="https://kakatong.app" />
+    <!-- ============================================================ -->
+    <!-- WeChat share (uses same OG tags, plus this for image preview)-->
+    <!-- ============================================================ -->
+    <meta itemprop="name"        content="Kakatong 家家通" />
+    <meta itemprop="description" content="家家通，安心到家 — 華人家庭的照護、學習與兒童活動一站式平台。" />
+    <meta itemprop="image"       content="https://kakatong.app/og-image.png" />
+
+    <!-- ============================================================ -->
+    <!-- Search-engine verification placeholders                       -->
+    <!-- Uncomment and paste the verification token when you register  -->
+    <!-- each one in Search Console / Webmaster Tools.                 -->
+    <!-- ============================================================ -->
+    <!-- <meta name="google-site-verification" content="PASTE_TOKEN_FROM_SEARCH.GOOGLE.COM/SEARCH-CONSOLE" /> -->
+    <!-- <meta name="msvalidate.01"            content="PASTE_TOKEN_FROM_BING.COM/WEBMASTERS" /> -->
+    <!-- <meta name="baidu-site-verification"  content="PASTE_TOKEN_FROM_ZIYUAN.BAIDU.COM" /> -->
+    <!-- <meta name="yandex-verification"      content="PASTE_TOKEN_FROM_YANDEX.COM/WEBMASTER" /> -->
+
+    <!-- ============================================================ -->
+    <!-- Schema.org structured data (JSON-LD)                          -->
+    <!-- Helps Google understand Kakatong is: an organization, a       -->
+    <!-- website, and offers three distinct service categories.         -->
+    <!-- ============================================================ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://kakatong.app/#organization",
+          "name": "Kakatong Inc",
+          "alternateName": ["Kakatong", "家家通"],
+          "url": "https://kakatong.app/",
+          "logo": "https://kakatong.app/og-image.png",
+          "email": "support@kakatong.app",
+          "areaServed": [
+            { "@type": "City", "name": "New York" },
+            { "@type": "AdministrativeArea", "name": "New York Metropolitan Area" }
+          ],
+          "knowsLanguage": ["en", "zh-Hant", "zh-Hans", "es"],
+          "description": "Bilingual (English + Chinese) marketplace connecting Chinese-community families with verified home care aides, tutors, and kids' activity providers."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://kakatong.app/#website",
+          "url": "https://kakatong.app/",
+          "name": "Kakatong 家家通",
+          "publisher": { "@id": "https://kakatong.app/#organization" },
+          "inLanguage": ["en-US", "zh-Hant", "zh-Hans", "es-US"]
+        },
+        {
+          "@type": "Service",
+          "@id": "https://kakatong.app/#service-care",
+          "name": "Kakatong Care — Home care marketplace",
+          "provider": { "@id": "https://kakatong.app/#organization" },
+          "areaServed": { "@type": "City", "name": "New York" },
+          "serviceType": "Home care agency directory",
+          "description": "Verified home care aides, elder care, and child care providers serving the Chinese-community across NYC."
+        },
+        {
+          "@type": "Service",
+          "@id": "https://kakatong.app/#service-learn",
+          "name": "Kakatong Learn — Tutoring & test prep",
+          "provider": { "@id": "https://kakatong.app/#organization" },
+          "areaServed": { "@type": "City", "name": "New York" },
+          "serviceType": "Education directory",
+          "description": "Verified SAT/SHSAT tutoring, Chinese language schools, and coding programs for Chinese-community families."
+        },
+        {
+          "@type": "Service",
+          "@id": "https://kakatong.app/#service-kids",
+          "name": "Kakatong Kids — Music, swim, martial arts",
+          "provider": { "@id": "https://kakatong.app/#organization" },
+          "areaServed": { "@type": "City", "name": "New York" },
+          "serviceType": "Kids activities directory",
+          "description": "Verified piano teachers, swim coaches, martial-arts dojos, dance studios, and art classes for kids in Chinese-community neighborhoods."
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- No-JS fallback so search-engine crawlers and users with JS disabled
+         at least see WHAT Kakatong is, even when the React app hasn't loaded.
+         Google DOES read this content when it can't render JavaScript. -->
+    <noscript>
+      <div style="max-width:640px;margin:60px auto;padding:24px;font-family:Georgia,serif;color:#1F2937">
+        <h1 style="color:#3B4A3A">Kakatong · 家家通</h1>
+        <p><strong>The trusted door for Chinese-community families.</strong></p>
+        <p>Kakatong is a bilingual (English + 中文) marketplace connecting Chinese-community families with verified providers across three services:</p>
+        <ul>
+          <li><strong>Kakatong Care 照護</strong> — home aides, elder care, child care</li>
+          <li><strong>Kakatong Learn 學習</strong> — tutoring, test prep, Chinese language, coding</li>
+          <li><strong>Kakatong Kids 兒童</strong> — piano, swim, martial arts, dance, art</li>
+        </ul>
+        <p>Please enable JavaScript to browse listings, or contact us at <a href="mailto:support@kakatong.app">support@kakatong.app</a>.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
