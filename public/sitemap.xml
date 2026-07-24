@@ -1,1 +1,43 @@
-https://kakatong.app/ daily 1.0 https://kakatong.app/#faq monthly 0.4 https://kakatong.app/#privacy monthly 0.3 https://kakatong.app/#terms monthly 0.3
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Main landing page — highest priority -->
+  <url>
+    <loc>https://kakatong.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kakatong.app/" />
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://kakatong.app/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kakatong.app/" />
+  </url>
+
+  <!-- Legal pages -->
+  <url>
+    <loc>https://kakatong.app/#faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://kakatong.app/#privacy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://kakatong.app/#terms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!--
+    NOTE: because Kakatong is a single-page React app, Google currently sees
+    only one real URL (the root). To rank for vertical-specific queries like
+    "piano lesson Flushing" or "SHSAT tutoring Bayside", each vertical needs
+    its OWN real URL — e.g., /care, /learn, /kids — served by the SPA but
+    presented to Google as distinct pages with distinct meta tags.
+
+    That is a code change (React Router + Vercel rewrites), not just a
+    config change. Recommended for a future SEO push once the base is live.
+  -->
+
+</urlset>
