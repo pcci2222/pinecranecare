@@ -241,6 +241,21 @@ const STRINGS = {
     authErr: "Sign-in failed — check your email and password.",
     authConfirm: "Account created — confirm via the email we sent, then sign in.",
     signOut: "Sign out", tSignedIn: "Welcome ✓",
+    myAccount: "My Account",
+    myAccountTitle: "Account & Membership",
+    accountInfoLabel: "Account information",
+    membershipLabel: "Membership",
+    daysLeftLabel: "Days remaining",
+    unlocksUsedLabel: "Unlocks used",
+    noActivePlan: "No active plan",
+    planUpgrade: "See membership plans",
+    updateProfile: "Update profile",
+    saveChanges: "Save changes",
+    nameLabel: "Name", emailLabel: "Email", phoneLabel: "Phone",
+    tProfileSaved: "Profile updated ✓",
+    expiresLabel: "Expires",
+    membershipActive: "Active",
+    membershipExpired: "Expired — renew to keep full access",
     // Phone auth (v3.3)
     phoneAuthTitle: "Sign in with your phone",
     phoneAuthSub: "We'll text you a 6-digit code. Your account works on any device.",
@@ -441,6 +456,21 @@ const STRINGS = {
     authErr: "登入失敗 — 請檢查電子郵件與密碼。",
     authConfirm: "帳號已建立 — 請點擊確認郵件後再登入。",
     signOut: "登出", tSignedIn: "歡迎 ✓",
+    myAccount: "我的帳戶",
+    myAccountTitle: "帳戶與會員資訊",
+    accountInfoLabel: "帳戶資訊",
+    membershipLabel: "會員資格",
+    daysLeftLabel: "剩餘天數",
+    unlocksUsedLabel: "已使用解鎖",
+    noActivePlan: "尚無會員方案",
+    planUpgrade: "查看會員方案",
+    updateProfile: "更新個人資料",
+    saveChanges: "儲存變更",
+    nameLabel: "姓名", emailLabel: "電子郵件", phoneLabel: "電話",
+    tProfileSaved: "個人資料已更新 ✓",
+    expiresLabel: "到期日",
+    membershipActive: "有效",
+    membershipExpired: "已過期 — 續訂以繼續存取",
     phoneAuthTitle: "以手機號碼登入",
     phoneAuthSub: "我們會發送 6 位數驗證碼。您的帳號可在任何裝置使用。",
     lPhoneNumber: "手機號碼",
@@ -640,6 +670,21 @@ const STRINGS = {
     authErr: "Error al iniciar sesión — revise correo y contraseña.",
     authConfirm: "Cuenta creada — confirme con el correo enviado y luego inicie sesión.",
     signOut: "Cerrar sesión", tSignedIn: "Bienvenido ✓",
+    myAccount: "Mi cuenta",
+    myAccountTitle: "Cuenta y membresía",
+    accountInfoLabel: "Información de la cuenta",
+    membershipLabel: "Membresía",
+    daysLeftLabel: "Días restantes",
+    unlocksUsedLabel: "Desbloqueos usados",
+    noActivePlan: "Sin plan activo",
+    planUpgrade: "Ver planes de membresía",
+    updateProfile: "Actualizar perfil",
+    saveChanges: "Guardar cambios",
+    nameLabel: "Nombre", emailLabel: "Correo electrónico", phoneLabel: "Teléfono",
+    tProfileSaved: "Perfil actualizado ✓",
+    expiresLabel: "Expira",
+    membershipActive: "Activa",
+    membershipExpired: "Expirada — renueva para mantener acceso completo",
     phoneAuthTitle: "Iniciar sesión con su teléfono",
     phoneAuthSub: "Le enviaremos un código de 6 dígitos. Su cuenta funciona en cualquier dispositivo.",
     lPhoneNumber: "Número de teléfono",
@@ -799,7 +844,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.4"; // ← bumped on every code update
+const APP_VERSION = "v3.12.5"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2396,6 +2441,176 @@ const PLANS = [
   { id: "quarterly", name: "3 Months", price: "$49.99", per: "/3 months", months: 3, blurb: "Save 17% — most popular.", featured: true },
   { id: "annual", name: "Annual", price: "$149.99", per: "/year", months: 12, blurb: "Best value — save 37%." },
 ];
+
+function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, onSignOut }) {
+  const { L } = useLang();
+  const [name, setName] = useState(account?.name || "");
+  const [email, setEmail] = useState(account?.email || "");
+  const [busy, setBusy] = useState(false);
+
+  const subscribedUntil = client?.subscribedUntil || 0;
+  const now = Date.now();
+  const isActive = subscribedUntil > now;
+  const msLeft = Math.max(0, subscribedUntil - now);
+  const daysLeft = Math.ceil(msLeft / (24 * 3600 * 1000));
+  const unlocksUsed = (client?.unlocks || []).length;
+  const currentPlanName = client?.plan || null;
+  const expiresDate = subscribedUntil ? new Date(subscribedUntil).toLocaleDateString() : null;
+
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}` }}>
+      <button
+        type="button"
+        onClick={onBack}
+        style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", marginBottom: 12, padding: 0 }}
+      >
+        ← Back
+      </button>
+
+      <h1 style={{ margin: "0 0 20px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, color: T.ink }}>
+        {L.myAccountTitle}
+      </h1>
+
+      {/* Membership status card */}
+      <div style={{
+        padding: "18px 20px",
+        borderRadius: 12,
+        background: isActive ? "#EFF3EC" : "#FFF8E7",
+        border: `2px solid ${isActive ? T.primary : T.amber}`,
+        marginBottom: 20,
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: isActive ? T.primary : "#6B5A2A", letterSpacing: 2, marginBottom: 6 }}>
+          {L.membershipLabel.toUpperCase()}
+        </div>
+        {currentPlanName ? (
+          <>
+            <div style={{ fontSize: 22, fontWeight: 800, color: T.ink, marginBottom: 4 }}>
+              {currentPlanName}{" "}
+              <span style={{ fontSize: 13, fontWeight: 700, color: isActive ? T.primary : T.danger, marginLeft: 8 }}>
+                {isActive ? "· " + L.membershipActive : "· " + L.membershipExpired}
+              </span>
+            </div>
+            {isActive && (
+              <div style={{ fontSize: 15, color: T.inkSoft, marginTop: 6 }}>
+                <strong style={{ color: T.ink, fontSize: 20 }}>{daysLeft}</strong>{" "}
+                <span>{L.daysLeftLabel.toLowerCase()}</span>
+                {" · "}
+                <span>{L.expiresLabel}: {expiresDate}</span>
+              </div>
+            )}
+            {!isActive && (
+              <button type="button" onClick={onUpgradePlan}
+                style={{
+                  marginTop: 10, padding: "10px 18px", borderRadius: 8, background: T.primary, color: "#fff",
+                  fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit",
+                }}>
+                {L.planUpgrade}
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 10 }}>
+              {L.noActivePlan}
+            </div>
+            <button type="button" onClick={onUpgradePlan}
+              style={{
+                padding: "10px 18px", borderRadius: 8, background: T.primary, color: "#fff",
+                fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit",
+              }}>
+              {L.planUpgrade}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Usage stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
+        <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: T.primary }}>{unlocksUsed}</div>
+          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.unlocksUsedLabel}</div>
+        </div>
+        {isActive && (
+          <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: T.primary }}>{daysLeft}</div>
+            <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.daysLeftLabel}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Profile edit form */}
+      <div style={{ borderTop: `1px solid ${T.line}`, paddingTop: 18 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: T.inkSoft, letterSpacing: 2, marginBottom: 12 }}>
+          {L.accountInfoLabel.toUpperCase()}
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{L.nameLabel}</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", fontSize: 16, borderRadius: 8, border: `1.5px solid ${T.line}`, background: "#fff", fontFamily: "inherit" }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{L.emailLabel}</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", fontSize: 16, borderRadius: 8, border: `1.5px solid ${T.line}`, background: "#fff", fontFamily: "inherit" }}
+          />
+        </div>
+
+        {account?.phone && (
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{L.phoneLabel}</label>
+            <input
+              type="tel"
+              value={account.phone}
+              disabled
+              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", fontSize: 16, borderRadius: 8, border: `1.5px solid ${T.line}`, background: T.surface, color: T.inkSoft, fontFamily: "inherit" }}
+            />
+            <div style={{ fontSize: 11.5, color: T.inkSoft, marginTop: 4 }}>Phone is verified — contact support to change.</div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={async () => {
+            setBusy(true);
+            await onSaveProfile({ name: name.trim(), email: email.trim() });
+            setBusy(false);
+          }}
+          disabled={busy}
+          style={{
+            padding: "12px 20px", borderRadius: 10, background: T.primary, color: "#fff",
+            fontSize: 15, fontWeight: 700, border: "none", cursor: busy ? "wait" : "pointer",
+            fontFamily: "inherit", opacity: busy ? 0.6 : 1,
+          }}
+        >
+          {L.saveChanges}
+        </button>
+      </div>
+
+      {/* Sign out */}
+      <div style={{ borderTop: `1px solid ${T.line}`, marginTop: 24, paddingTop: 18, textAlign: "right" }}>
+        <button
+          type="button"
+          onClick={onSignOut}
+          style={{
+            padding: "9px 18px", borderRadius: 8, background: "#fff", color: T.danger,
+            fontSize: 14, fontWeight: 700, border: `1.5px solid ${T.danger}`, cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          {L.signOut}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function PlansView({ onActivate, onBack, singleUnlock, onSingleUnlock }) {
   const { L } = useLang();
@@ -4220,6 +4435,16 @@ export default function App() {
                     ✎ My Profile
                   </button>
                 )}
+                {/* v3.12.5: My Account button for members (role !== agency/aide) */}
+                {account.role !== "agency" && account.role !== "aide" && (
+                  <button type="button" onClick={() => { setView("myaccount"); window.scrollTo(0, 0); }}
+                    style={{
+                      padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                      border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                    }}>
+                    👤 {L.myAccount}
+                  </button>
+                )}
                 <button type="button" onClick={signOut}
                   style={{
                     padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
@@ -4435,6 +4660,32 @@ export default function App() {
           />
         ) : view === "plans" ? (
           <PlansView onActivate={activatePlan} onBack={() => { setPendingUnlock(null); setView("directory"); }} singleUnlock={!!pendingUnlock} onSingleUnlock={activateSingleUnlock} />
+        ) : view === "myaccount" ? (
+          <MyAccountView
+            account={account}
+            client={client}
+            onBack={() => { setView(category ? "directory" : "home"); window.scrollTo(0, 0); }}
+            onSaveProfile={async (updated) => {
+              try {
+                await upsertMember({
+                  user_id: account.id,
+                  email: updated.email || null,
+                  phone: updated.phone || null,
+                  name: updated.name || null,
+                  plan: client?.plan || null,
+                  subscribed_until: client?.subscribedUntil ? new Date(client.subscribedUntil).toISOString() : null,
+                  unlocks: client?.unlocks || [],
+                });
+                setAccount({ ...account, name: updated.name, email: updated.email });
+                showToast(L.tProfileSaved);
+              } catch (e) {
+                showToast("Save failed — please try again");
+                console.error("profile save failed:", e);
+              }
+            }}
+            onUpgradePlan={() => { setView("plans"); window.scrollTo(0, 0); }}
+            onSignOut={signOut}
+          />
         ) : view === "register" ? (
           <RegisterForm
             initial={editing}
