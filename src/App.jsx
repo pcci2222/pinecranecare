@@ -844,7 +844,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.5"; // ← bumped on every code update
+const APP_VERSION = "v3.12.6"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3289,6 +3289,8 @@ function AdminView({ onBack, onDataChanged }) {
   const [tab, setTab] = useState("caregivers");
   const [rows, setRows] = useState([]);
   const [ags, setAgs] = useState([]);
+  const [mems, setMems] = useState([]);
+  const [memFilter, setMemFilter] = useState("all"); // all | active | expired
   const [msg, setMsg] = useState("");
   const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
   const [agEditId, setAgEditId] = useState(null);
@@ -3306,6 +3308,16 @@ function AdminView({ onBack, onDataChanged }) {
       setRows(all);
     } catch (e) { setMsg("Could not load caregivers."); }
     try { setAgs(await sbSelect("agencies")); } catch (e) { /* table may be empty */ }
+    try {
+      const memRows = await sbSelect("members");
+      // sort by most recent activity: subscribed_until DESC, then created_at DESC
+      memRows.sort((a, b) => {
+        const aKey = a.subscribed_until || a.created_at || "";
+        const bKey = b.subscribed_until || b.created_at || "";
+        return bKey.localeCompare(aKey);
+      });
+      setMems(memRows);
+    } catch (e) { /* members table may not have data yet */ }
     try { setJobsCount((await sbSelect("care_requests")).length); } catch (e) { /* ignore */ }
     try { setRevsCount((await sbSelect("reviews")).length); } catch (e) { /* ignore */ }
     try { setHiresCount((await sbSelect("hires")).length); } catch (e) { /* ignore */ }
@@ -3453,7 +3465,7 @@ function AdminView({ onBack, onDataChanged }) {
         <button type="button" style={btn("#fff", T.ink, `1.5px solid ${T.line}`)} onClick={onBack}>Exit</button>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"], ["demo", "🌱 Demo"]].map(([id, label]) => (
+        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["members", `Members (${mems.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"], ["demo", "🌱 Demo"]].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
             style={btn(tab === id ? T.primary : "#fff", tab === id ? "#fff" : T.ink, `1.5px solid ${tab === id ? T.primary : T.line}`)}>
             {label}
@@ -3520,6 +3532,7 @@ function AdminView({ onBack, onDataChanged }) {
                     ["Reviews", String(revsCount), T.primary],
                     ["Hires reported", String(hiresCount), T.primary],
                     ["Agencies", `${ags.filter((a) => a.active).length} active · ${expiredAgs} expired`, expiredAgs > 0 ? T.amber : T.primary],
+                    ["Members", `${mems.length} total · ${mems.filter((m) => m.subscribed_until && new Date(m.subscribed_until).getTime() > Date.now()).length} active`, T.primary],
                     ["App version", APP_VERSION, T.primary],
                   ].map(([k, v, c]) => (
                     <div key={k} style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 12, padding: "10px 12px" }}>
@@ -3602,6 +3615,68 @@ function AdminView({ onBack, onDataChanged }) {
               />
             </label>
           </div>
+        </div>
+      ) : tab === "members" ? (
+        <div>
+          {/* Filter chips */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            {[
+              ["all", `All (${mems.length})`],
+              ["active", `Active (${mems.filter((m) => m.subscribed_until && new Date(m.subscribed_until).getTime() > Date.now()).length})`],
+              ["expired", `Expired (${mems.filter((m) => m.subscribed_until && new Date(m.subscribed_until).getTime() <= Date.now()).length})`],
+              ["nopaid", `No plan (${mems.filter((m) => !m.subscribed_until).length})`],
+            ].map(([id, label]) => (
+              <button key={id} type="button" onClick={() => setMemFilter(id)}
+                style={btn(memFilter === id ? T.primary : "#fff", memFilter === id ? "#fff" : T.ink, `1.5px solid ${memFilter === id ? T.primary : T.line}`)}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {mems.length === 0 ? (
+            <p style={{ color: T.inkSoft, fontSize: 14 }}>No members yet. Members appear here once someone signs up and activates a plan.</p>
+          ) : (
+            <>
+              {mems
+                .filter((m) => {
+                  const until = m.subscribed_until ? new Date(m.subscribed_until).getTime() : 0;
+                  if (memFilter === "active") return until > Date.now();
+                  if (memFilter === "expired") return until > 0 && until <= Date.now();
+                  if (memFilter === "nopaid") return !until;
+                  return true;
+                })
+                .map((m) => {
+                  const until = m.subscribed_until ? new Date(m.subscribed_until).getTime() : 0;
+                  const isActive = until > Date.now();
+                  const daysLeft = isActive ? Math.ceil((until - Date.now()) / (24 * 3600 * 1000)) : 0;
+                  const unlocks = Array.isArray(m.unlocks) ? m.unlocks.length : 0;
+                  const status = !until ? "no plan"
+                    : isActive ? `${daysLeft}d left`
+                    : "EXPIRED";
+                  const bg = !until ? "transparent"
+                    : isActive ? "transparent"
+                    : "#FBEAE5";
+                  return (
+                    <div key={m.id || m.user_id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: bg, borderRadius: 8, marginBottom: 4 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14.5, color: T.ink }}>
+                          {m.name || "(no name)"}
+                          {m.has_credit && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: T.amber, border: `1px solid ${T.amber}`, borderRadius: 999, padding: "1px 7px" }}>💰 credit</span>}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: T.inkSoft }}>
+                          {m.email || "—"}{m.phone ? ` · ${m.phone}` : ""}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: !until ? T.inkSoft : isActive ? T.primary : T.danger, fontWeight: 600 }}>
+                          {m.plan || "(no plan)"} · {status}
+                          {until ? ` · until ${new Date(until).toISOString().slice(0,10)}` : ""}
+                          {unlocks > 0 ? ` · ${unlocks} unlocks` : ""}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </>
+          )}
         </div>
       ) : (
         <>
