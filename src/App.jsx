@@ -281,6 +281,8 @@ const STRINGS = {
     landingKidsItems: ["Piano, violin & dance", "Swim & sports coaching", "Art, drawing & martial arts"],
     landingBrowse: "Browse",
     howItWorksTitle: "How Kakatong works",
+    qrShareTitle: "Share Kakatong 家家通",
+    qrShareSub: "Scan with any phone camera to visit kakatong.app",
     step1Title: "Browse verified providers",
     step1Sub: "Search by ZIP, language, and rate. Every provider is ID-checked and license-verified.",
     step2Title: "Contact directly",
@@ -478,6 +480,8 @@ const STRINGS = {
     landingKidsItems: ["鋼琴、小提琴、舞蹈", "游泳、運動教練", "美術、繪畫、武術"],
     landingBrowse: "瀏覽",
     howItWorksTitle: "家家通如何運作",
+    qrShareTitle: "分享家家通 Kakatong",
+    qrShareSub: "用手機掃描 QR 碼即可造訪 kakatong.app",
     step1Title: "瀏覽經過驗證的服務者",
     step1Sub: "以郵遞區號、語言和時薪搜尋。每位服務者皆經身份與證照查核。",
     step2Title: "直接聯繫",
@@ -675,6 +679,8 @@ const STRINGS = {
     landingKidsItems: ["Piano, violín y danza", "Natación y entrenamiento deportivo", "Arte, dibujo y artes marciales"],
     landingBrowse: "Explorar",
     howItWorksTitle: "Cómo funciona Kakatong",
+    qrShareTitle: "Comparte Kakatong 家家通",
+    qrShareSub: "Escanea con la cámara de tu teléfono para visitar kakatong.app",
     step1Title: "Explore proveedores verificados",
     step1Sub: "Busque por código postal, idioma y tarifa. Todos los proveedores tienen ID y licencia verificada.",
     step2Title: "Contacto directo",
@@ -793,7 +799,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.1"; // ← bumped on every code update
+const APP_VERSION = "v3.12.2"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3832,6 +3838,24 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* QR SHARE — v3.12.2 */}
+      <section style={{
+        marginTop: 22, padding: "26px 20px", background: "#fff", borderRadius: 16,
+        border: `1px solid ${T.line}`, textAlign: "center",
+      }}>
+        <h2 style={{ margin: "0 0 6px", fontSize: 19, fontWeight: 800, color: T.ink, fontFamily: "Georgia, serif" }}>
+          {L.qrShareTitle}
+        </h2>
+        <p style={{ margin: "0 0 16px", fontSize: 13.5, color: T.inkSoft }}>{L.qrShareSub}</p>
+        <div style={{ display: "inline-block", padding: 14, background: "#fff", borderRadius: 12, border: `1px solid ${T.line}` }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 174 174" width="180" height="180" aria-label="QR code for kakatong.app">
+            <rect width="174" height="174" fill="#fff"/>
+            <path fill="#3B4A3A" d="M12 12h6v6h-6zM18 12h6v6h-6zM24 12h6v6h-6zM30 12h6v6h-6zM36 12h6v6h-6zM42 12h6v6h-6zM48 12h6v6h-6zM66 12h6v6h-6zM72 12h6v6h-6zM90 12h6v6h-6zM96 12h6v6h-6zM120 12h6v6h-6zM126 12h6v6h-6zM132 12h6v6h-6zM138 12h6v6h-6zM144 12h6v6h-6zM150 12h6v6h-6zM156 12h6v6h-6zM12 18h6v6h-6zM48 18h6v6h-6zM66 18h6v6h-6zM84 18h6v6h-6zM120 18h6v6h-6zM156 18h6v6h-6zM12 24h6v6h-6zM24 24h6v6h-6zM30 24h6v6h-6zM36 24h6v6h-6zM48 24h6v6h-6zM72 24h6v6h-6zM90 24h6v6h-6zM120 24h6v6h-6zM132 24h6v6h-6zM138 24h6v6h-6zM144 24h6v6h-6zM156 24h6v6h-6zM12 30h6v6h-6zM24 30h6v6h-6zM30 30h6v6h-6zM36 30h6v6h-6zM48 30h6v6h-6zM60 30h6v6h-6zM66 30h6v6h-6zM72 30h6v6h-6zM78 30h6v6h-6zM90 30h6v6h-6zM96 30h6v6h-6zM102 30h6v6h-6zM120 30h6v6h-6zM132 30h6v6h-6zM138 30h6v6h-6zM144 30h6v6h-6zM156 30h6v6h-6zM12 36h6v6h-6zM24 36h6v6h-6zM30 36h6v6h-6zM36 36h6v6h-6zM48 36h6v6h-6zM66 36h6v6h-6zM72 36h6v6h-6zM78 36h6v6h-6zM84 36h6v6h-6zM90 36h6v6h-6zM108 36h6v6h-6zM120 36h6v6h-6zM132 36h6v6h-6zM138 36h6v6h-6zM144 36h6v6h-6zM156 36h6v6h-6zM12 42h6v6h-6zM48 42h6v6h-6zM60 42h6v6h-6zM66 42h6v6h-6zM72 42h6v6h-6zM78 42h6v6h-6zM108 42h6v6h-6zM120 42h6v6h-6zM156 42h6v6h-6zM12 48h6v6h-6zM18 48h6v6h-6zM24 48h6v6h-6zM30 48h6v6h-6zM36 48h6v6h-6zM42 48h6v6h-6zM48 48h6v6h-6zM60 48h6v6h-6zM72 48h6v6h-6zM84 48h6v6h-6zM96 48h6v6h-6zM108 48h6v6h-6zM120 48h6v6h-6zM126 48h6v6h-6zM132 48h6v6h-6zM138 48h6v6h-6zM144 48h6v6h-6zM150 48h6v6h-6zM156 48h6v6h-6zM60 54h6v6h-6zM78 54h6v6h-6zM84 54h6v6h-6zM102 54h6v6h-6zM108 54h6v6h-6zM18 60h6v6h-6zM24 60h6v6h-6zM48 60h6v6h-6zM66 60h6v6h-6zM78 60h6v6h-6zM102 60h6v6h-6zM108 60h6v6h-6zM120 60h6v6h-6zM126 60h6v6h-6zM138 60h6v6h-6zM12 66h6v6h-6zM30 66h6v6h-6zM42 66h6v6h-6zM54 66h6v6h-6zM60 66h6v6h-6zM72 66h6v6h-6zM78 66h6v6h-6zM84 66h6v6h-6zM96 66h6v6h-6zM102 66h6v6h-6zM108 66h6v6h-6zM120 66h6v6h-6zM126 66h6v6h-6zM138 66h6v6h-6zM150 66h6v6h-6zM156 66h6v6h-6zM12 72h6v6h-6zM30 72h6v6h-6zM42 72h6v6h-6zM48 72h6v6h-6zM66 72h6v6h-6zM78 72h6v6h-6zM90 72h6v6h-6zM96 72h6v6h-6zM102 72h6v6h-6zM108 72h6v6h-6zM114 72h6v6h-6zM120 72h6v6h-6zM138 72h6v6h-6zM144 72h6v6h-6zM156 72h6v6h-6zM12 78h6v6h-6zM60 78h6v6h-6zM66 78h6v6h-6zM78 78h6v6h-6zM84 78h6v6h-6zM102 78h6v6h-6zM108 78h6v6h-6zM114 78h6v6h-6zM132 78h6v6h-6zM138 78h6v6h-6zM24 84h6v6h-6zM36 84h6v6h-6zM48 84h6v6h-6zM54 84h6v6h-6zM60 84h6v6h-6zM66 84h6v6h-6zM72 84h6v6h-6zM78 84h6v6h-6zM90 84h6v6h-6zM96 84h6v6h-6zM108 84h6v6h-6zM120 84h6v6h-6zM126 84h6v6h-6zM156 84h6v6h-6zM18 90h6v6h-6zM42 90h6v6h-6zM60 90h6v6h-6zM72 90h6v6h-6zM102 90h6v6h-6zM108 90h6v6h-6zM120 90h6v6h-6zM126 90h6v6h-6zM150 90h6v6h-6zM156 90h6v6h-6zM12 96h6v6h-6zM18 96h6v6h-6zM24 96h6v6h-6zM42 96h6v6h-6zM48 96h6v6h-6zM54 96h6v6h-6zM66 96h6v6h-6zM96 96h6v6h-6zM102 96h6v6h-6zM114 96h6v6h-6zM138 96h6v6h-6zM144 96h6v6h-6zM156 96h6v6h-6zM36 102h6v6h-6zM54 102h6v6h-6zM60 102h6v6h-6zM72 102h6v6h-6zM78 102h6v6h-6zM96 102h6v6h-6zM102 102h6v6h-6zM108 102h6v6h-6zM114 102h6v6h-6zM120 102h6v6h-6zM126 102h6v6h-6zM132 102h6v6h-6zM138 102h6v6h-6zM12 108h6v6h-6zM18 108h6v6h-6zM30 108h6v6h-6zM36 108h6v6h-6zM42 108h6v6h-6zM48 108h6v6h-6zM60 108h6v6h-6zM66 108h6v6h-6zM72 108h6v6h-6zM90 108h6v6h-6zM108 108h6v6h-6zM114 108h6v6h-6zM120 108h6v6h-6zM126 108h6v6h-6zM132 108h6v6h-6zM150 108h6v6h-6zM60 114h6v6h-6zM66 114h6v6h-6zM72 114h6v6h-6zM78 114h6v6h-6zM90 114h6v6h-6zM96 114h6v6h-6zM108 114h6v6h-6zM132 114h6v6h-6zM156 114h6v6h-6zM12 120h6v6h-6zM18 120h6v6h-6zM24 120h6v6h-6zM30 120h6v6h-6zM36 120h6v6h-6zM42 120h6v6h-6zM48 120h6v6h-6zM96 120h6v6h-6zM108 120h6v6h-6zM120 120h6v6h-6zM132 120h6v6h-6zM156 120h6v6h-6zM12 126h6v6h-6zM48 126h6v6h-6zM84 126h6v6h-6zM90 126h6v6h-6zM96 126h6v6h-6zM102 126h6v6h-6zM108 126h6v6h-6zM132 126h6v6h-6zM12 132h6v6h-6zM24 132h6v6h-6zM30 132h6v6h-6zM36 132h6v6h-6zM48 132h6v6h-6zM66 132h6v6h-6zM72 132h6v6h-6zM84 132h6v6h-6zM102 132h6v6h-6zM108 132h6v6h-6zM114 132h6v6h-6zM120 132h6v6h-6zM126 132h6v6h-6zM132 132h6v6h-6zM156 132h6v6h-6zM12 138h6v6h-6zM24 138h6v6h-6zM30 138h6v6h-6zM36 138h6v6h-6zM48 138h6v6h-6zM66 138h6v6h-6zM78 138h6v6h-6zM84 138h6v6h-6zM96 138h6v6h-6zM114 138h6v6h-6zM132 138h6v6h-6zM144 138h6v6h-6zM150 138h6v6h-6zM12 144h6v6h-6zM24 144h6v6h-6zM30 144h6v6h-6zM36 144h6v6h-6zM48 144h6v6h-6zM60 144h6v6h-6zM72 144h6v6h-6zM90 144h6v6h-6zM96 144h6v6h-6zM108 144h6v6h-6zM114 144h6v6h-6zM126 144h6v6h-6zM132 144h6v6h-6zM138 144h6v6h-6zM150 144h6v6h-6zM156 144h6v6h-6zM12 150h6v6h-6zM48 150h6v6h-6zM60 150h6v6h-6zM78 150h6v6h-6zM90 150h6v6h-6zM96 150h6v6h-6zM102 150h6v6h-6zM108 150h6v6h-6zM126 150h6v6h-6zM132 150h6v6h-6zM12 156h6v6h-6zM18 156h6v6h-6zM24 156h6v6h-6zM30 156h6v6h-6zM36 156h6v6h-6zM42 156h6v6h-6zM48 156h6v6h-6zM72 156h6v6h-6zM78 156h6v6h-6zM96 156h6v6h-6zM108 156h6v6h-6zM120 156h6v6h-6zM138 156h6v6h-6zM156 156h6v6h-6z"/>
+          </svg>
+        </div>
+        <div style={{ marginTop: 10, fontSize: 14, fontWeight: 700, color: T.primary, letterSpacing: 0.5 }}>kakatong.app</div>
       </section>
     </div>
   );
