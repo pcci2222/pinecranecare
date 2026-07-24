@@ -877,7 +877,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.8"; // ← bumped on every code update
+const APP_VERSION = "v3.12.9"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3651,7 +3651,7 @@ function AdminView({ onBack, onDataChanged }) {
         <button type="button" style={btn("#fff", T.ink, `1.5px solid ${T.line}`)} onClick={onBack}>Exit</button>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["members", `Members (${mems.length})`], ["acks", `🛡️ Legal Acks (${acks.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"], ["demo", "🌱 Demo"]].map(([id, label]) => (
+        {[["caregivers", `Caregivers (${rows.filter((r) => !r.approved).length} pending)`], ["agencies", `Agencies (${ags.length})`], ["members", `Members (${mems.length})`], ["acks", `🛡️ Legal Acks (${acks.length})`], ["status", "📊 Status"], ["backup", "💾 Backup"]].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
             style={btn(tab === id ? T.primary : "#fff", tab === id ? "#fff" : T.ink, `1.5px solid ${tab === id ? T.primary : T.line}`)}>
             {label}
@@ -3750,30 +3750,6 @@ function AdminView({ onBack, onDataChanged }) {
               </>
             );
           })()}
-        </div>
-      ) : tab === "demo" ? (
-        <div>
-          <p style={{ fontSize: 14, color: T.inkSoft, lineHeight: 1.6, marginTop: 0 }}>
-            <strong style={{ color: T.ink }}>Seed demo events</strong> populates the analytics tables
-            with realistic-looking activity — profile views, contact reveals, and searches spread across
-            the last 30 days. Use this so the Agency Reports dashboard looks alive during your road show.
-            <br /><br />
-            Safe to run multiple times; each click adds more data.
-          </p>
-          <button type="button"
-            style={{ ...btn(T.primary, "#fff"), fontSize: 15, padding: "12px 18px" }}
-            onClick={async () => {
-              try {
-                setMsg("Seeding…");
-                const n = await seedDemoEvents();
-                setMsg(`${L.demoSeedDone} ${n}`);
-              } catch (e) {
-                setMsg(L.demoSeedFail);
-                console.error("seed error:", e);
-              }
-            }}>
-            🌱 {L.demoSeedBtn}
-          </button>
         </div>
       ) : tab === "backup" ? (
         <div>
