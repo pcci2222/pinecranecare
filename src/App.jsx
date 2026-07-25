@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.11"; // ← bumped on every code update
+const APP_VERSION = "v3.12.12"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1316,6 +1316,22 @@ async function upsertMember(row) {
   });
   if (!r.ok) throw new Error("member save failed");
   return (await r.json())[0];
+}
+
+// v3.12.12: after every sign-in, ensure a members row exists for this user
+// so admin can see and manage ALL signed-in users — not only paying subscribers.
+// Best-effort: failure never blocks sign-in.
+async function ensureMemberRow(acct) {
+  if (!acct || !acct.id) return;
+  try {
+    await upsertMember({
+      user_id: acct.id,
+      email:   acct.email || null,
+      phone:   acct.phone || null,
+      name:    acct.name  || null,
+      role:    acct.role  || "member",
+    });
+  } catch (e) { /* best-effort */ }
 }
 
 // Map between app records and database rows
@@ -3637,6 +3653,8 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   const [editMemId, setEditMemId] = useState(null); // v3.12.11: member row being inline-edited
   const [editMemName, setEditMemName] = useState("");
   const [editMemEmail, setEditMemEmail] = useState("");
+  const [editMemRole, setEditMemRole] = useState("member"); // v3.12.12
+  const [editMemPhone, setEditMemPhone] = useState(""); // v3.12.12
   const [acks, setAcks] = useState([]);
   const [msg, setMsg] = useState("");
   const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
@@ -4015,12 +4033,26 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {editMemId === m.id ? (
                           // v3.12.11 Fix 3: inline edit form
+                          // v3.12.12: also edit role and phone
                           <>
-                            <input value={editMemName} onChange={(e) => setEditMemName(e.target.value)} placeholder="Name"
+                            <div style={{ display: "flex", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+                              <select
+                                value={editMemRole}
+                                onChange={(e) => setEditMemRole(e.target.value)}
+                                style={{ ...inputStyle, padding: "8px 10px", fontSize: 13, flex: "0 0 auto", width: "auto" }}
+                              >
+                                <option value="member">👤 Client</option>
+                                <option value="aide">🧑 Aide</option>
+                                <option value="agency">🏛️ Agency</option>
+                                <option value="admin">🛡️ Admin</option>
+                              </select>
+                              <input value={editMemName} onChange={(e) => setEditMemName(e.target.value)} placeholder="Name"
+                                style={{ ...inputStyle, padding: "8px 10px", fontSize: 14, flex: 1, minWidth: 120 }} />
+                            </div>
+                            <input value={editMemPhone} onChange={(e) => setEditMemPhone(e.target.value)} placeholder="Phone" type="tel"
                               style={{ ...inputStyle, marginBottom: 6, padding: "8px 10px", fontSize: 14 }} />
                             <input value={editMemEmail} onChange={(e) => setEditMemEmail(e.target.value)} placeholder="Email" type="email"
-                              style={{ ...inputStyle, marginBottom: 4, padding: "8px 10px", fontSize: 14 }} />
-                            <div style={{ fontSize: 11.5, color: T.inkSoft }}>Phone {m.phone || "—"} is verified — cannot edit here.</div>
+                              style={{ ...inputStyle, padding: "8px 10px", fontSize: 14 }} />
                           </>
                         ) : (
                           <>
@@ -4048,7 +4080,12 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                           <>
                             <button type="button" style={btn(T.primary, "#fff")} onClick={async () => {
                               try {
-                                await patch("members", m.id, { name: editMemName, email: editMemEmail });
+                                await patch("members", m.id, {
+                                  name: editMemName,
+                                  email: editMemEmail,
+                                  phone: editMemPhone,
+                                  role: editMemRole,
+                                });
                                 setMsg("Member updated");
                                 setEditMemId(null);
                               } catch (e) { setMsg("Update failed"); }
@@ -4059,12 +4096,14 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                           <>
                             <button
                               type="button"
-                              title="Edit name and email"
+                              title="Edit role, name, phone, email"
                               style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
                               onClick={() => {
                                 setEditMemId(m.id);
                                 setEditMemName(m.name || "");
                                 setEditMemEmail(m.email || "");
+                                setEditMemPhone(m.phone || "");
+                                setEditMemRole(m.role || "member");
                               }}>
                               ✎
                             </button>
@@ -4720,6 +4759,7 @@ export default function App() {
           signedIn = true;
           // PIN and phone sessions carry a role already; email sessions do not
           setAccount(sess.user);
+          ensureMemberRow(sess.user); // v3.12.12: keep members table in sync
           const m = await fetchMember(sess.user.id);
           if (m) {
             setClient({
@@ -5115,6 +5155,7 @@ export default function App() {
             onBack={() => { setAuthNext(null); setView("plans"); }}
             onDone={(acct) => {
               setAccount(acct);
+              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               const next = authNext;
               setAuthNext(null);
               showToast(L.tSignedIn);
@@ -5128,6 +5169,7 @@ export default function App() {
             onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
               setAccount(acct);
+              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               // v3.8.2: clear any leftover filters/search from a prior session
               setSearch("");
               setRadius(0);
