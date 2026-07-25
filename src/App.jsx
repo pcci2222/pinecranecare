@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.15"; // ← bumped on every code update
+const APP_VERSION = "v3.12.16"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1173,6 +1173,27 @@ async function upsertUserProfile(profile) {
   }
   const rows = await r.json();
   return rows[0];
+}
+
+// v3.12.16: admin RPC bypasses RLS on user_profiles table so admin edits
+// to name/role/phone from the Members tab actually persist. Calls a
+// SECURITY DEFINER Postgres function created via v31216_admin_rpc.sql.
+async function adminUpdateUserProfile({ user_id, display_name, role, phone }) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_user_profile`, {
+    method: "POST",
+    headers: { ...sbHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      p_user_id:      user_id,
+      p_display_name: display_name,
+      p_role:         role,
+      p_phone:        phone,
+    }),
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error("Admin profile update failed: " + t);
+  }
+  return true;
 }
 
 async function authSignup(email, password, name) {
@@ -4121,21 +4142,19 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                           <>
                             <button type="button" style={btn(T.primary, "#fff")} onClick={async () => {
                               try {
-                                // v3.12.15: update BOTH tables — user_profiles is the source
-                                // of truth for auth (name/role read by signin_with_pin RPC),
-                                // members is for admin analytics and subscription state.
-                                // If we only update members, admin edits don't stick because
-                                // auth re-reads from user_profiles on every sign-in.
+                                // v3.12.16: use SECURITY DEFINER RPC to bypass RLS
+                                // on user_profiles (browser anon key can't UPDATE directly).
                                 if (m.user_id) {
                                   try {
-                                    await upsertUserProfile({
+                                    await adminUpdateUserProfile({
                                       user_id: m.user_id,
                                       display_name: editMemName,
                                       role: editMemRole,
                                       phone: editMemPhone,
                                     });
                                   } catch (e) {
-                                    console.warn("[KJC] user_profiles update failed:", e);
+                                    console.warn("[KJC] admin_update_user_profile failed:", e);
+                                    setMsg("Auth update failed — admin RPC may not be installed. Run v31216_admin_rpc.sql.");
                                   }
                                 }
                                 await patch("members", m.id, {
