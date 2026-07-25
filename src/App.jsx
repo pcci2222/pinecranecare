@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.10"; // ← bumped on every code update
+const APP_VERSION = "v3.12.11"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3624,7 +3624,7 @@ function AideLoginView({ onFound, onBack }) {
 // ---------- Admin panel (platform operator only) ----------
 const ADMIN_PIN = "8888"; // ← CHANGE THIS to your own passcode before deploying
 
-function AdminView({ onBack, onDataChanged }) {
+function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   const [ok, setOk] = useState(false);
   const [pin, setPin] = useState("");
   const [pinErr, setPinErr] = useState("");
@@ -3632,7 +3632,11 @@ function AdminView({ onBack, onDataChanged }) {
   const [rows, setRows] = useState([]);
   const [ags, setAgs] = useState([]);
   const [mems, setMems] = useState([]);
-  const [memFilter, setMemFilter] = useState("all"); // all | active | expired
+  const [memFilter, setMemFilter] = useState("all"); // all | active | expired | nopaid
+  const [memRole, setMemRole] = useState("all"); // v3.12.11: all | client | aide | agency
+  const [editMemId, setEditMemId] = useState(null); // v3.12.11: member row being inline-edited
+  const [editMemName, setEditMemName] = useState("");
+  const [editMemEmail, setEditMemEmail] = useState("");
   const [acks, setAcks] = useState([]);
   const [msg, setMsg] = useState("");
   const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
@@ -3848,6 +3852,11 @@ function AdminView({ onBack, onDataChanged }) {
               onClick={() => patch("caregivers", r.id, { featured: !r.featured })}>
               ★
             </button>
+            {/* v3.12.11 Fix 2: admin can edit any caregiver's full profile */}
+            <button type="button" style={btn("#fff", T.primary, `1.5px solid ${T.line}`)} title="Edit profile"
+              onClick={() => onEditCaregiver && onEditCaregiver(r)}>
+              ✎
+            </button>
             <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("caregivers", r.id, r.name)}>✕</button>
           </div>
         ))
@@ -3942,8 +3951,24 @@ function AdminView({ onBack, onDataChanged }) {
         </div>
       ) : tab === "members" ? (
         <div>
-          {/* Filter chips */}
+          {/* v3.12.11 Fix 3: role filter (Client / Aide / Agency) */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, alignSelf: "center", marginRight: 4 }}>ROLE</span>
+            {[
+              ["all",    `All (${mems.length})`],
+              ["client", `Clients (${mems.filter((m) => !m.role || m.role === "member").length})`],
+              ["aide",   `Home Aides (${mems.filter((m) => m.role === "aide").length})`],
+              ["agency", `Agency Contacts (${mems.filter((m) => m.role === "agency").length})`],
+            ].map(([id, label]) => (
+              <button key={id} type="button" onClick={() => setMemRole(id)}
+                style={btn(memRole === id ? T.primary : "#fff", memRole === id ? "#fff" : T.ink, `1.5px solid ${memRole === id ? T.primary : T.line}`)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {/* Plan-status filter chips */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, alignSelf: "center", marginRight: 4 }}>PLAN</span>
             {[
               ["all", `All (${mems.length})`],
               ["active", `Active (${mems.filter((m) => m.subscribed_until && new Date(m.subscribed_until).getTime() > Date.now()).length})`],
@@ -3963,6 +3988,11 @@ function AdminView({ onBack, onDataChanged }) {
             <>
               {mems
                 .filter((m) => {
+                  // v3.12.11: role filter (Clients / Home Aides / Agency Contacts)
+                  if (memRole === "client") { if (m.role && m.role !== "member") return false; }
+                  else if (memRole === "aide")   { if (m.role !== "aide")   return false; }
+                  else if (memRole === "agency") { if (m.role !== "agency") return false; }
+                  // Plan-status filter
                   const until = m.subscribed_until ? new Date(m.subscribed_until).getTime() : 0;
                   if (memFilter === "active") return until > Date.now();
                   if (memFilter === "expired") return until > 0 && until <= Date.now();
@@ -3983,65 +4013,107 @@ function AdminView({ onBack, onDataChanged }) {
                   return (
                     <div key={m.id || m.user_id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: bg, borderRadius: 8, marginBottom: 4 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14.5, color: T.ink }}>
-                          {m.name || "(no name)"}
-                          {m.has_credit && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: T.amber, border: `1px solid ${T.amber}`, borderRadius: 999, padding: "1px 7px" }}>💰 credit</span>}
-                        </div>
-                        <div style={{ fontSize: 12.5, color: T.inkSoft }}>
-                          {m.email || "—"}{m.phone ? ` · ${m.phone}` : ""}
-                        </div>
-                        <div style={{ fontSize: 12.5, color: !until ? T.inkSoft : isActive ? T.primary : T.danger, fontWeight: 600 }}>
-                          {m.plan || "(no plan)"} · {status}
-                          {until ? ` · until ${new Date(until).toISOString().slice(0,10)}` : ""}
-                          {unlocks > 0 ? ` · ${unlocks} unlocks` : ""}
-                        </div>
+                        {editMemId === m.id ? (
+                          // v3.12.11 Fix 3: inline edit form
+                          <>
+                            <input value={editMemName} onChange={(e) => setEditMemName(e.target.value)} placeholder="Name"
+                              style={{ ...inputStyle, marginBottom: 6, padding: "8px 10px", fontSize: 14 }} />
+                            <input value={editMemEmail} onChange={(e) => setEditMemEmail(e.target.value)} placeholder="Email" type="email"
+                              style={{ ...inputStyle, marginBottom: 4, padding: "8px 10px", fontSize: 14 }} />
+                            <div style={{ fontSize: 11.5, color: T.inkSoft }}>Phone {m.phone || "—"} is verified — cannot edit here.</div>
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ fontWeight: 700, fontSize: 14.5, color: T.ink }}>
+                              {m.name || "(no name)"}
+                              {m.role === "aide" && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#3F6795", border: `1px solid #3F6795`, borderRadius: 999, padding: "1px 7px" }}>🧑 Aide</span>}
+                              {m.role === "agency" && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: T.primary, border: `1px solid ${T.primary}`, borderRadius: 999, padding: "1px 7px" }}>🏛️ Agency</span>}
+                              {(!m.role || m.role === "member") && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: T.inkSoft, border: `1px solid ${T.line}`, borderRadius: 999, padding: "1px 7px" }}>👤 Client</span>}
+                              {m.has_credit && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: T.amber, border: `1px solid ${T.amber}`, borderRadius: 999, padding: "1px 7px" }}>💰 credit</span>}
+                            </div>
+                            <div style={{ fontSize: 12.5, color: T.inkSoft }}>
+                              {m.email || "—"}{m.phone ? ` · ${m.phone}` : ""}
+                            </div>
+                            <div style={{ fontSize: 12.5, color: !until ? T.inkSoft : isActive ? T.primary : T.danger, fontWeight: 600 }}>
+                              {m.plan || "(no plan)"} · {status}
+                              {until ? ` · until ${new Date(until).toISOString().slice(0,10)}` : ""}
+                              {unlocks > 0 ? ` · ${unlocks} unlocks` : ""}
+                            </div>
+                          </>
+                        )}
                       </div>
                       {/* v3.12.10: admin actions on members */}
-                      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                        <button
-                          type="button"
-                          title="Extend subscription by 7 days"
-                          style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
-                          onClick={async () => {
-                            const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
-                            const base = Math.max(cur, Date.now());
-                            const newUntil = new Date(base + 7 * 24 * 3600 * 1000).toISOString();
-                            const newPlan = m.plan || "Comp";
-                            try {
-                              await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
-                              setMsg(`Extended ${m.name || m.email || "member"} +7d`);
-                            } catch (e) { setMsg("Extend failed"); }
-                          }}>
-                          +7d
-                        </button>
-                        <button
-                          type="button"
-                          title="Extend subscription by 30 days"
-                          style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
-                          onClick={async () => {
-                            const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
-                            const base = Math.max(cur, Date.now());
-                            const newUntil = new Date(base + 30 * 24 * 3600 * 1000).toISOString();
-                            const newPlan = m.plan || "Comp";
-                            try {
-                              await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
-                              setMsg(`Extended ${m.name || m.email || "member"} +30d`);
-                            } catch (e) { setMsg("Extend failed"); }
-                          }}>
-                          +30d
-                        </button>
-                        <button
-                          type="button"
-                          title={m.has_credit ? "Revoke unused 25% review credit" : "Grant a 25% review credit"}
-                          style={btn("#fff", m.has_credit ? T.danger : T.amber, `1.5px solid ${T.line}`)}
-                          onClick={async () => {
-                            try {
-                              await patch("members", m.id, { has_credit: !m.has_credit });
-                              setMsg(m.has_credit ? "Credit revoked" : "Credit granted");
-                            } catch (e) { setMsg("Failed"); }
-                          }}>
-                          {m.has_credit ? "− credit" : "🎁"}
-                        </button>
+                      <div style={{ display: "flex", gap: 4, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        {editMemId === m.id ? (
+                          <>
+                            <button type="button" style={btn(T.primary, "#fff")} onClick={async () => {
+                              try {
+                                await patch("members", m.id, { name: editMemName, email: editMemEmail });
+                                setMsg("Member updated");
+                                setEditMemId(null);
+                              } catch (e) { setMsg("Update failed"); }
+                            }}>Save</button>
+                            <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => setEditMemId(null)}>Cancel</button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              title="Edit name and email"
+                              style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
+                              onClick={() => {
+                                setEditMemId(m.id);
+                                setEditMemName(m.name || "");
+                                setEditMemEmail(m.email || "");
+                              }}>
+                              ✎
+                            </button>
+                            <button
+                              type="button"
+                              title="Extend subscription by 7 days"
+                              style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
+                              onClick={async () => {
+                                const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
+                                const base = Math.max(cur, Date.now());
+                                const newUntil = new Date(base + 7 * 24 * 3600 * 1000).toISOString();
+                                const newPlan = m.plan || "Comp";
+                                try {
+                                  await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
+                                  setMsg(`Extended ${m.name || m.email || "member"} +7d`);
+                                } catch (e) { setMsg("Extend failed"); }
+                              }}>
+                              +7d
+                            </button>
+                            <button
+                              type="button"
+                              title="Extend subscription by 30 days"
+                              style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
+                              onClick={async () => {
+                                const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
+                                const base = Math.max(cur, Date.now());
+                                const newUntil = new Date(base + 30 * 24 * 3600 * 1000).toISOString();
+                                const newPlan = m.plan || "Comp";
+                                try {
+                                  await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
+                                  setMsg(`Extended ${m.name || m.email || "member"} +30d`);
+                                } catch (e) { setMsg("Extend failed"); }
+                              }}>
+                              +30d
+                            </button>
+                            <button
+                              type="button"
+                              title={m.has_credit ? "Revoke unused 25% review credit" : "Grant a 25% review credit"}
+                              style={btn("#fff", m.has_credit ? T.danger : T.amber, `1.5px solid ${T.line}`)}
+                              onClick={async () => {
+                                try {
+                                  await patch("members", m.id, { has_credit: !m.has_credit });
+                                  setMsg(m.has_credit ? "Credit revoked" : "Credit granted");
+                                } catch (e) { setMsg("Failed"); }
+                              }}>
+                              {m.has_credit ? "− credit" : "🎁"}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   );
@@ -4786,6 +4858,10 @@ export default function App() {
     setPendingUnlock(null);
     setAuthNext(null);
     setTab("aides");
+    // v3.12.11 Fix 1: return to landing page instead of staying on profile/dashboard
+    setCategory(null);
+    setView("home");
+    window.scrollTo(0, 0);
   }
 
   async function activateAidePro() {
@@ -5130,6 +5206,12 @@ export default function App() {
                 setAgencies(await loadAgencies(category));
                 setPendingCount(await fetchPendingCount());
               } catch (e) { /* ignore */ }
+            }}
+            onEditCaregiver={(rec) => {
+              // v3.12.11 Fix 2: open caregiver in the register form for full profile edit
+              setEditing(rec);
+              setView("register");
+              window.scrollTo(0, 0);
             }}
           />
         ) : view === "faq" ? (
