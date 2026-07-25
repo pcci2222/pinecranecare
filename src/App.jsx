@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.12"; // ← bumped on every code update
+const APP_VERSION = "v3.12.13"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1320,18 +1320,40 @@ async function upsertMember(row) {
 
 // v3.12.12: after every sign-in, ensure a members row exists for this user
 // so admin can see and manage ALL signed-in users — not only paying subscribers.
+// v3.12.13: no longer overwrites existing rows. Returns the current row so
+// callers can OVERLAY admin edits (name/role/email) on top of the auth session.
 // Best-effort: failure never blocks sign-in.
 async function ensureMemberRow(acct) {
-  if (!acct || !acct.id) return;
+  if (!acct || !acct.id) return null;
   try {
-    await upsertMember({
+    // Check if a members row already exists for this user
+    const existing = await fetchMember(acct.id);
+    if (existing) {
+      return existing; // admin's edits (if any) survive — caller can overlay them
+    }
+    // No row yet — create with initial values from the auth session
+    const created = await upsertMember({
       user_id: acct.id,
       email:   acct.email || null,
       phone:   acct.phone || null,
       name:    acct.name  || null,
       role:    acct.role  || "member",
     });
-  } catch (e) { /* best-effort */ }
+    return created || null;
+  } catch (e) { return null; }
+}
+
+// v3.12.13: overlay admin edits from the members table onto the auth-session
+// account so admin changes to name/role/email take effect on next sign-in.
+// The signin_with_pin RPC returns cached name/role from its own source, but
+// the members table is the source of truth for what admin edited.
+function overlayFromMember(acct, member) {
+  if (!acct || !member) return acct;
+  const next = { ...acct };
+  if (member.name  != null && member.name  !== "") next.name  = member.name;
+  if (member.role  != null && member.role  !== "") next.role  = member.role;
+  if (member.email != null && member.email !== "") next.email = member.email;
+  return next;
 }
 
 // Map between app records and database rows
@@ -4758,9 +4780,10 @@ export default function App() {
         if (sess && sess.user && sess.user.id) {
           signedIn = true;
           // PIN and phone sessions carry a role already; email sessions do not
-          setAccount(sess.user);
-          ensureMemberRow(sess.user); // v3.12.12: keep members table in sync
-          const m = await fetchMember(sess.user.id);
+          const memberRow = await ensureMemberRow(sess.user); // v3.12.13: get + overlay
+          const acctOverlaid = overlayFromMember(sess.user, memberRow);
+          setAccount(acctOverlaid);
+          const m = memberRow || await fetchMember(sess.user.id);
           if (m) {
             setClient({
               plan: m.plan,
@@ -5153,9 +5176,11 @@ export default function App() {
         ) : view === "auth" ? (
           <AuthView
             onBack={() => { setAuthNext(null); setView("plans"); }}
-            onDone={(acct) => {
-              setAccount(acct);
-              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
+            onDone={async (acct) => {
+              const memberRow = await ensureMemberRow(acct); // v3.12.13
+              const acctOverlaid = overlayFromMember(acct, memberRow);
+              setAccount(acctOverlaid);
+              acct = acctOverlaid;
               const next = authNext;
               setAuthNext(null);
               showToast(L.tSignedIn);
@@ -5168,8 +5193,10 @@ export default function App() {
           <PhoneAuthView
             onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
-              setAccount(acct);
-              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
+              const memberRow = await ensureMemberRow(acct); // v3.12.13
+              const acctOverlaid = overlayFromMember(acct, memberRow);
+              setAccount(acctOverlaid);
+              acct = acctOverlaid; // downstream uses new values (role routing, etc.)
               // v3.8.2: clear any leftover filters/search from a prior session
               setSearch("");
               setRadius(0);
