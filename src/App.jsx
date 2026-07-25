@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.13"; // ← bumped on every code update
+const APP_VERSION = "v3.12.14"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1308,6 +1308,24 @@ async function fetchMember(userId) {
     return null;
   }
 }
+
+// v3.12.14: fetchMemberDirect reads the members table directly with select=*
+// so we get ALL columns, including newly-added ones like `role` that the older
+// get_member RPC (a stored function) doesn't return. Used for overlaying admin
+// edits on the auth session.
+async function fetchMemberDirect(userId) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/members?user_id=eq.${encodeURIComponent(userId)}&select=*&limit=1`,
+      { headers: sbHeaders }
+    );
+    if (!r.ok) return null;
+    const arr = await r.json();
+    return arr[0] || null;
+  } catch (e) {
+    return null;
+  }
+}
 async function upsertMember(row) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/members?on_conflict=user_id`, {
     method: "POST",
@@ -1326,10 +1344,11 @@ async function upsertMember(row) {
 async function ensureMemberRow(acct) {
   if (!acct || !acct.id) return null;
   try {
-    // Check if a members row already exists for this user
-    const existing = await fetchMember(acct.id);
+    // v3.12.14: read directly from members table (not RPC) so we get ALL
+    // columns including `role` — which the older get_member RPC doesn't return.
+    const existing = await fetchMemberDirect(acct.id);
     if (existing) {
-      return existing; // admin's edits (if any) survive — caller can overlay them
+      return existing; // admin's edits survive — caller can overlay them
     }
     // No row yet — create with initial values from the auth session
     const created = await upsertMember({
