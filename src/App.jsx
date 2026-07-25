@@ -892,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.14"; // ← bumped on every code update
+const APP_VERSION = "v3.12.15"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -4121,13 +4121,30 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                           <>
                             <button type="button" style={btn(T.primary, "#fff")} onClick={async () => {
                               try {
+                                // v3.12.15: update BOTH tables — user_profiles is the source
+                                // of truth for auth (name/role read by signin_with_pin RPC),
+                                // members is for admin analytics and subscription state.
+                                // If we only update members, admin edits don't stick because
+                                // auth re-reads from user_profiles on every sign-in.
+                                if (m.user_id) {
+                                  try {
+                                    await upsertUserProfile({
+                                      user_id: m.user_id,
+                                      display_name: editMemName,
+                                      role: editMemRole,
+                                      phone: editMemPhone,
+                                    });
+                                  } catch (e) {
+                                    console.warn("[KJC] user_profiles update failed:", e);
+                                  }
+                                }
                                 await patch("members", m.id, {
                                   name: editMemName,
                                   email: editMemEmail,
                                   phone: editMemPhone,
                                   role: editMemRole,
                                 });
-                                setMsg("Member updated");
+                                setMsg("Member updated (auth + subscription tables synced)");
                                 setEditMemId(null);
                               } catch (e) { setMsg("Update failed"); }
                             }}>Save</button>
@@ -4799,10 +4816,9 @@ export default function App() {
         if (sess && sess.user && sess.user.id) {
           signedIn = true;
           // PIN and phone sessions carry a role already; email sessions do not
-          const memberRow = await ensureMemberRow(sess.user); // v3.12.13: get + overlay
-          const acctOverlaid = overlayFromMember(sess.user, memberRow);
-          setAccount(acctOverlaid);
-          const m = memberRow || await fetchMember(sess.user.id);
+          setAccount(sess.user);
+          ensureMemberRow(sess.user); // v3.12.12: keep members table in sync (fire and forget)
+          const m = await fetchMember(sess.user.id);
           if (m) {
             setClient({
               plan: m.plan,
@@ -5196,10 +5212,8 @@ export default function App() {
           <AuthView
             onBack={() => { setAuthNext(null); setView("plans"); }}
             onDone={async (acct) => {
-              const memberRow = await ensureMemberRow(acct); // v3.12.13
-              const acctOverlaid = overlayFromMember(acct, memberRow);
-              setAccount(acctOverlaid);
-              acct = acctOverlaid;
+              setAccount(acct);
+              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               const next = authNext;
               setAuthNext(null);
               showToast(L.tSignedIn);
@@ -5212,10 +5226,8 @@ export default function App() {
           <PhoneAuthView
             onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
-              const memberRow = await ensureMemberRow(acct); // v3.12.13
-              const acctOverlaid = overlayFromMember(acct, memberRow);
-              setAccount(acctOverlaid);
-              acct = acctOverlaid; // downstream uses new values (role routing, etc.)
+              setAccount(acct);
+              ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               // v3.8.2: clear any leftover filters/search from a prior session
               setSearch("");
               setRadius(0);
