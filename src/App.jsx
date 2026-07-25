@@ -316,6 +316,11 @@ const STRINGS = {
     step3Title: "Hire on your terms",
     step3Sub: "You decide what to pay, when to start, and how long to work together.",
     agencyReports: "Agency reports",
+    agencyMyProfile: "My Profile",
+    agencyProfileTitle: "Agency Profile",
+    agencyProfileSub: "Update your agency's public information visible to member families.",
+    agencyProfileSaved: "Profile updated ✓",
+    agencyProfileNotFound: "No agency record on file for this account. Contact support@kakatong.app to set one up.",
     agencyLocked: "Verified home-care agency",
     agencyLockedSub: "Contact info visible to members and Aide Pro users.",
     agencyUnlockBtn: "🔒 Unlock agency contact",
@@ -541,6 +546,11 @@ const STRINGS = {
     step3Title: "以您的條件雇用",
     step3Sub: "由您決定薪資、起始時間，以及合作長度。",
     agencyReports: "機構報告",
+    agencyMyProfile: "我的檔案",
+    agencyProfileTitle: "機構檔案",
+    agencyProfileSub: "更新您機構的公開資訊，會員家庭可見。",
+    agencyProfileSaved: "檔案已更新 ✓",
+    agencyProfileNotFound: "此帳戶未建立機構檔案。請聯繫 support@kakatong.app 協助設置。",
     agencyLocked: "已認證居家照護機構",
     agencyLockedSub: "會員與家政員 Pro 可查看聯絡方式。",
     agencyUnlockBtn: "🔒 解鎖機構聯絡資訊",
@@ -766,6 +776,11 @@ const STRINGS = {
     step3Title: "Contrate en sus términos",
     step3Sub: "Usted decide el pago, cuándo empezar y cuánto tiempo trabajar.",
     agencyReports: "Informes de agencia",
+    agencyMyProfile: "Mi perfil",
+    agencyProfileTitle: "Perfil de agencia",
+    agencyProfileSub: "Actualiza la información pública de tu agencia visible para las familias miembros.",
+    agencyProfileSaved: "Perfil actualizado ✓",
+    agencyProfileNotFound: "No hay registro de agencia para esta cuenta. Contacta support@kakatong.app para configurarlo.",
     agencyLocked: "Agencia de cuidado verificada",
     agencyLockedSub: "Información de contacto visible para miembros y usuarios Aide Pro.",
     agencyUnlockBtn: "🔒 Desbloquear contacto de agencia",
@@ -877,7 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.9"; // ← bumped on every code update
+const APP_VERSION = "v3.12.10"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -3263,6 +3278,153 @@ function PhoneAuthView({ onDone, onBack }) {
 }
 
 // ---------- Agency dashboard (v3.6) — leaderboard + demand report ----------
+function AgencyProfileView({ account, onBack }) {
+  const { L } = useLang();
+  const [loading, setLoading] = useState(true);
+  const [agency, setAgency] = useState(null);
+  const [notFound, setNotFound] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [website, setWebsite] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [areas, setAreas] = useState("");
+  const [blurb, setBlurb] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // Look up agency by phone first, then by email
+        let found = null;
+        const cleanPhone = (account?.phone || "").replace(/[^\d+]/g, "");
+        if (cleanPhone) {
+          try {
+            const rows = await sbSelect("agencies", `&phone=eq.${encodeURIComponent(cleanPhone)}&limit=1`);
+            if (rows && rows.length) found = rows[0];
+          } catch (e) { /* fall through to email lookup */ }
+        }
+        if (!found && account?.email) {
+          try {
+            const rows = await sbSelect("agencies", `&email=eq.${encodeURIComponent(account.email)}&limit=1`);
+            if (rows && rows.length) found = rows[0];
+          } catch (e) { /* still nothing */ }
+        }
+        if (found) {
+          setAgency(found);
+          setName(found.name || "");
+          setPhone(found.phone || "");
+          setEmail(found.email || "");
+          setWebsite(found.website || "");
+          setContactName(found.contact_name || "");
+          setAreas(found.areas || "");
+          setBlurb(found.blurb || "");
+        } else {
+          setNotFound(true);
+        }
+      } catch (e) {
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [account]);
+
+  async function save() {
+    if (!agency) return;
+    setBusy(true);
+    try {
+      await sbUpdate("agencies", agency.id, {
+        name, phone, email, website,
+        contact_name: contactName,
+        areas, blurb,
+      });
+      setToast(L.agencyProfileSaved);
+      setTimeout(() => setToast(""), 2400);
+    } catch (e) {
+      setToast("Save failed — please try again");
+      setTimeout(() => setToast(""), 3000);
+      console.error("agency profile save failed:", e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}` }}>
+      <button type="button" onClick={onBack}
+        style={{ background: "none", border: "none", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", marginBottom: 12, padding: 0 }}>
+        ← Back
+      </button>
+
+      <h1 style={{ margin: "0 0 6px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 26, color: T.ink }}>
+        {L.agencyProfileTitle}
+      </h1>
+      <p style={{ margin: "0 0 22px", fontSize: 14, color: T.inkSoft }}>{L.agencyProfileSub}</p>
+
+      {loading ? (
+        <p style={{ color: T.inkSoft }}>Loading…</p>
+      ) : notFound ? (
+        <div style={{ padding: "18px 20px", background: "#FFF8E7", borderRadius: 12, border: `2px solid ${T.amber}`, color: "#6B5A2A" }}>
+          {L.agencyProfileNotFound}
+        </div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14, marginBottom: 14 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Agency name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Phone</label>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Website</label>
+              <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Contact person</label>
+              <input value={contactName} onChange={(e) => setContactName(e.target.value)} style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Areas served</label>
+              <input value={areas} onChange={(e) => setAreas(e.target.value)} placeholder="e.g. Flushing, Bayside" style={inputStyle} />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Description / Blurb</label>
+            <textarea value={blurb} onChange={(e) => setBlurb(e.target.value)} rows={4}
+              style={{ ...inputStyle, resize: "vertical", minHeight: 90, fontFamily: "inherit" }} />
+            <div style={{ fontSize: 11.5, color: T.inkSoft, marginTop: 4 }}>Shown to families browsing agencies.</div>
+          </div>
+
+          <button type="button" onClick={save} disabled={busy}
+            style={{
+              padding: "12px 22px", borderRadius: 10, background: T.primary, color: "#fff",
+              fontSize: 15, fontWeight: 700, border: "none", cursor: busy ? "wait" : "pointer",
+              fontFamily: "inherit", opacity: busy ? 0.6 : 1,
+            }}>
+            {busy ? "Saving…" : "Save changes"}
+          </button>
+
+          {toast && (
+            <div style={{ marginTop: 12, padding: "10px 14px", background: T.primarySoft || "#EFF3EC", color: T.primary, borderRadius: 8, fontWeight: 700, fontSize: 14 }}>
+              {toast}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function AgencyDashboardView({ account, subscribed, onUpgrade, onBack }) {
   const { L } = useLang();
   const [aides, setAides] = useState([]);
@@ -3833,6 +3995,53 @@ function AdminView({ onBack, onDataChanged }) {
                           {until ? ` · until ${new Date(until).toISOString().slice(0,10)}` : ""}
                           {unlocks > 0 ? ` · ${unlocks} unlocks` : ""}
                         </div>
+                      </div>
+                      {/* v3.12.10: admin actions on members */}
+                      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          title="Extend subscription by 7 days"
+                          style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
+                          onClick={async () => {
+                            const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
+                            const base = Math.max(cur, Date.now());
+                            const newUntil = new Date(base + 7 * 24 * 3600 * 1000).toISOString();
+                            const newPlan = m.plan || "Comp";
+                            try {
+                              await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
+                              setMsg(`Extended ${m.name || m.email || "member"} +7d`);
+                            } catch (e) { setMsg("Extend failed"); }
+                          }}>
+                          +7d
+                        </button>
+                        <button
+                          type="button"
+                          title="Extend subscription by 30 days"
+                          style={btn("#fff", T.primary, `1.5px solid ${T.line}`)}
+                          onClick={async () => {
+                            const cur = m.subscribed_until ? new Date(m.subscribed_until).getTime() : Date.now();
+                            const base = Math.max(cur, Date.now());
+                            const newUntil = new Date(base + 30 * 24 * 3600 * 1000).toISOString();
+                            const newPlan = m.plan || "Comp";
+                            try {
+                              await patch("members", m.id, { subscribed_until: newUntil, plan: newPlan });
+                              setMsg(`Extended ${m.name || m.email || "member"} +30d`);
+                            } catch (e) { setMsg("Extend failed"); }
+                          }}>
+                          +30d
+                        </button>
+                        <button
+                          type="button"
+                          title={m.has_credit ? "Revoke unused 25% review credit" : "Grant a 25% review credit"}
+                          style={btn("#fff", m.has_credit ? T.danger : T.amber, `1.5px solid ${T.line}`)}
+                          onClick={async () => {
+                            try {
+                              await patch("members", m.id, { has_credit: !m.has_credit });
+                              setMsg(m.has_credit ? "Credit revoked" : "Credit granted");
+                            } catch (e) { setMsg("Failed"); }
+                          }}>
+                          {m.has_credit ? "− credit" : "🎁"}
+                        </button>
                       </div>
                     </div>
                   );
@@ -4688,13 +4897,22 @@ export default function App() {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: "auto", color: "#C9DAD4", fontSize: 13 }}>
                 <span>👤 {account.name || account.email || account.phone}</span>
                 {account.role === "agency" && (
-                  <button type="button" onClick={() => { setView("agency-dashboard"); window.scrollTo(0, 0); }}
-                    style={{
-                      padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                      border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
-                    }}>
-                    📊 {L.agencyReports}
-                  </button>
+                  <>
+                    <button type="button" onClick={() => { setView("agency-dashboard"); window.scrollTo(0, 0); }}
+                      style={{
+                        padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                        border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                      }}>
+                      📊 {L.agencyReports}
+                    </button>
+                    <button type="button" onClick={() => { setView("agency-profile"); window.scrollTo(0, 0); }}
+                      style={{
+                        padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                        border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
+                      }}>
+                      ✎ {L.agencyMyProfile}
+                    </button>
+                  </>
                 )}
                 {account.role === "aide" && (
                   <button type="button" onClick={async () => {
@@ -4897,6 +5115,11 @@ export default function App() {
             subscribed={subscribed}
             onBack={() => setView("directory")}
             onUpgrade={() => { setView("plans"); window.scrollTo(0, 0); }}
+          />
+        ) : view === "agency-profile" ? (
+          <AgencyProfileView
+            account={account}
+            onBack={() => { setView("directory"); window.scrollTo(0, 0); }}
           />
         ) : view === "admin" ? (
           <AdminView
