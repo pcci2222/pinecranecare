@@ -1188,23 +1188,61 @@ async function fetchUserProfile(userId) {
   return rows[0] || null;
 }
 
-// v3.12.22: resolve a user_id from a phone number via user_profiles.
+// v3.12.22: resolve a user_id from a phone number.
 // Used as a fallback when signin_with_pin / signup_with_pin return a row
 // without out_user_id — without a user_id, every members-table write fails
 // with "userId is required" and the whole paywall silently breaks.
-async function fetchProfileByPhone(phoneE164) {
-  if (!phoneE164) return null;
+//
+// Robust to phone-format drift and to which table the person lives in:
+//   • tries several phone spellings (E.164, 11-digit, 10-digit)
+//   • searches BOTH user_profiles and members
+// Returns a normalized { user_id, role, display_name, phone } or null.
+async function resolveUserIdByPhone(rawPhone) {
+  const digits = (rawPhone || "").replace(/\D/g, "");
+  if (!digits) return null;
+  const last10 = digits.slice(-10);
+  // candidate spellings the phone might be stored as
+  const candidates = Array.from(new Set([
+    toE164(rawPhone),                 // +1XXXXXXXXXX
+    "+" + digits,                     // +<asTyped>
+    digits,                           // 1XXXXXXXXXX or XXXXXXXXXX
+    last10,                           // XXXXXXXXXX
+    "+1" + last10,                    // normalized US E.164
+  ].filter(Boolean)));
+  const inList = "(" + candidates.map((c) => `"${c}"`).join(",") + ")";
+
+  // 1) user_profiles — the auth source of truth
   try {
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?phone=eq.${encodeURIComponent(phoneE164)}&select=user_id,role,display_name,phone&limit=1`,
+      `${SUPABASE_URL}/rest/v1/user_profiles?phone=in.${encodeURIComponent(inList)}&select=user_id,role,display_name,phone&limit=1`,
       { headers: sbHeaders }
     );
-    if (!r.ok) return null;
-    const rows = await r.json();
-    return rows[0] || null;
-  } catch (e) {
-    return null;
-  }
+    if (r.ok) {
+      const rows = await r.json();
+      if (rows[0] && rows[0].user_id) return rows[0];
+    }
+  } catch (e) { /* fall through */ }
+
+  // 2) members — has user_id too; covers users not (yet) in user_profiles
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/members?phone=in.${encodeURIComponent(inList)}&select=user_id,role,name,phone&limit=1`,
+      { headers: sbHeaders }
+    );
+    if (r.ok) {
+      const rows = await r.json();
+      if (rows[0] && rows[0].user_id) {
+        return { user_id: rows[0].user_id, role: rows[0].role, display_name: rows[0].name, phone: rows[0].phone };
+      }
+    }
+  } catch (e) { /* fall through */ }
+
+  return null;
+}
+
+// Back-compat thin wrapper (older call sites).
+async function fetchProfileByPhone(phoneE164) {
+  return resolveUserIdByPhone(phoneE164);
 }
 
 // Create or update this user's profile (first-time role picker, name edits)
@@ -5049,14 +5087,24 @@ export default function App() {
   async function ensureAccountId(acct) {
     if (!acct) return acct;
     if (acct.id) return acct;
-    const prof = await fetchProfileByPhone(toE164(acct.phone || ""));
-    if (!prof || !prof.user_id) return acct; // still no id — caller handles
+    console.warn("[KJC] account missing id, attempting recovery:", acct);
+    const prof = await resolveUserIdByPhone(acct.phone || "");
+    if (!prof || !prof.user_id) {
+      // Distinguish the two failure modes for support/debugging.
+      console.error(
+        "[KJC] id recovery FAILED. account.phone =", acct.phone,
+        "— either no phone on the signed-in account, or no matching row in user_profiles/members."
+      );
+      return acct; // still no id — caller handles
+    }
     const repaired = {
       ...acct,
       id: prof.user_id,
       role: acct.role || prof.role,
       name: acct.name || prof.display_name || "",
+      phone: acct.phone || prof.phone || "",
     };
+    console.info("[KJC] account id recovered:", repaired.id);
     setAccount(repaired);
     try {
       const sess = JSON.parse(localStorage.getItem("pcc_session") || "null") || {};
@@ -5064,6 +5112,23 @@ export default function App() {
       localStorage.setItem("pcc_session", JSON.stringify(sess));
     } catch (e) { /* non-fatal */ }
     return repaired;
+  }
+
+  // v3.12.22: when an account id can't be recovered, route the user to a clean
+  // re-sign-in (which runs the hardened signinWithPin and re-establishes the id)
+  // rather than leaving them stuck on a dead checkout button.
+  function handleMissingId(acct) {
+    if (!acct || !acct.phone) {
+      // No phone on the in-memory account (stale pre-fix session) — the only
+      // reliable repair is a fresh sign-in. Clear the broken session and route.
+      try { localStorage.removeItem("pcc_session"); } catch (e) { /* ignore */ }
+      setAccount(null);
+      showToast("Please sign in again to finish — your session needs a refresh.");
+      setView("signin");
+      window.scrollTo(0, 0);
+      return;
+    }
+    showToast("We couldn't match your account to your phone (" + acct.phone + "). Please contact support.");
   }
 
   async function activatePlan(plan, acct = account) {
@@ -5077,7 +5142,8 @@ export default function App() {
     // sign-in id fix) before we try to save, so checkout doesn't dead-end.
     acct = await ensureAccountId(acct);
     if (!acct || !acct.id) {
-      showToast("Couldn't verify your account — please sign out and sign in again.");
+      setAuthNext({ type: "plan", plan }); // resume checkout after re-sign-in
+      handleMissingId(acct);
       return;
     }
     const rec = {
@@ -5170,7 +5236,8 @@ export default function App() {
     // v3.12.22: recover a missing account id before saving (see activatePlan).
     acct = await ensureAccountId(acct);
     if (!acct || !acct.id) {
-      showToast("Couldn't verify your account — please sign out and sign in again.");
+      setAuthNext({ type: "unlock" }); // resume unlock after re-sign-in
+      handleMissingId(acct);
       return;
     }
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
