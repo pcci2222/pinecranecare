@@ -901,7 +901,13 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.21"; // ← bumped on every code update
+const APP_VERSION = "v3.12.22"; // ← bumped on every code update
+// v3.12.22: fixes "saveMemberSubscription: userId is required" on checkout.
+//   Root cause: sign-in returned an account with no id when the RPC didn't
+//   surface out_user_id, so every members write (subscription, unlock, member
+//   row) silently failed. Now the id is guaranteed at sign-in (phone fallback)
+//   and recovered at checkout for older sessions. See fetchProfileByPhone /
+//   ensureAccountId.
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1139,7 +1145,15 @@ async function signupWithPin(phone, pin, name, role) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Sign up failed");
   const row = Array.isArray(d) ? d[0] : d;
-  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || name || "", phone: row.out_phone };
+  // v3.12.22: tolerate id under alternate column names, then fall back to a
+  // phone lookup so account.id is NEVER undefined (see fetchProfileByPhone).
+  let id = row.out_user_id || row.user_id || row.id || null;
+  if (!id) {
+    const prof = await fetchProfileByPhone(toE164(phone));
+    id = prof && prof.user_id ? prof.user_id : null;
+  }
+  if (!id) throw new Error("Account created but its ID could not be resolved. Please sign in again.");
+  return { id, role: row.out_role || role, name: row.out_display_name || name || "", phone: row.out_phone || toE164(phone) };
 }
 
 async function signinWithPin(phone, pin) {
@@ -1151,7 +1165,16 @@ async function signinWithPin(phone, pin) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Wrong phone or PIN");
   const row = Array.isArray(d) ? d[0] : d;
-  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || "", phone: row.out_phone };
+  // v3.12.22: tolerate id under alternate column names, then fall back to a
+  // phone lookup so account.id is NEVER undefined. A missing id here is what
+  // caused "saveMemberSubscription: userId is required" on checkout.
+  let id = row.out_user_id || row.user_id || row.id || null;
+  if (!id) {
+    const prof = await fetchProfileByPhone(toE164(phone));
+    id = prof && prof.user_id ? prof.user_id : null;
+  }
+  if (!id) throw new Error("Signed in, but your account ID could not be resolved. Please contact support.");
+  return { id, role: row.out_role, name: row.out_display_name || "", phone: row.out_phone || toE164(phone) };
 }
 
 // Fetch this user's role/name from user_profiles
@@ -1163,6 +1186,25 @@ async function fetchUserProfile(userId) {
   if (!r.ok) return null;
   const rows = await r.json();
   return rows[0] || null;
+}
+
+// v3.12.22: resolve a user_id from a phone number via user_profiles.
+// Used as a fallback when signin_with_pin / signup_with_pin return a row
+// without out_user_id — without a user_id, every members-table write fails
+// with "userId is required" and the whole paywall silently breaks.
+async function fetchProfileByPhone(phoneE164) {
+  if (!phoneE164) return null;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?phone=eq.${encodeURIComponent(phoneE164)}&select=user_id,role,display_name,phone&limit=1`,
+      { headers: sbHeaders }
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    return rows[0] || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 // Create or update this user's profile (first-time role picker, name edits)
@@ -5000,11 +5042,42 @@ export default function App() {
     showToast(L.tJobRem);
   }
 
+  // v3.12.22: guarantee an account has a usable id. If it's missing (older
+  // session, or an RPC that didn't return out_user_id), resolve it from the
+  // phone number, then persist the repair to state + localStorage so every
+  // later action (save subscription, unlock, profile) works this visit.
+  async function ensureAccountId(acct) {
+    if (!acct) return acct;
+    if (acct.id) return acct;
+    const prof = await fetchProfileByPhone(toE164(acct.phone || ""));
+    if (!prof || !prof.user_id) return acct; // still no id — caller handles
+    const repaired = {
+      ...acct,
+      id: prof.user_id,
+      role: acct.role || prof.role,
+      name: acct.name || prof.display_name || "",
+    };
+    setAccount(repaired);
+    try {
+      const sess = JSON.parse(localStorage.getItem("pcc_session") || "null") || {};
+      sess.user = repaired;
+      localStorage.setItem("pcc_session", JSON.stringify(sess));
+    } catch (e) { /* non-fatal */ }
+    return repaired;
+  }
+
   async function activatePlan(plan, acct = account) {
     if (!acct) {
       setAuthNext({ type: "plan", plan });
       setView("signin");
       window.scrollTo(0, 0);
+      return;
+    }
+    // v3.12.22: recover a missing account id (e.g. a session stored before the
+    // sign-in id fix) before we try to save, so checkout doesn't dead-end.
+    acct = await ensureAccountId(acct);
+    if (!acct || !acct.id) {
+      showToast("Couldn't verify your account — please sign out and sign in again.");
       return;
     }
     const rec = {
@@ -5092,6 +5165,12 @@ export default function App() {
       setAuthNext({ type: "unlock" });
       setView("signin");
       window.scrollTo(0, 0);
+      return;
+    }
+    // v3.12.22: recover a missing account id before saving (see activatePlan).
+    acct = await ensureAccountId(acct);
+    if (!acct || !acct.id) {
+      showToast("Couldn't verify your account — please sign out and sign in again.");
       return;
     }
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
