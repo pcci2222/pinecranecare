@@ -224,6 +224,8 @@ const STRINGS = {
     payPublish: "Pay $9.99 & publish",
     aideProLocked: "Client contact info is available to Aide Pro members.",
     aideProBtn: "Become Aide Pro — $14.99/month (demo)",
+    aideProSignInFirst: "Sign in to access client contacts",
+    aideProAidesOnly: "Aide Pro is available only for caregivers (aide role). Sign up as an aide or contact support.",
     tAidePro: "Aide Pro active — client contacts unlocked ✓",
     tUnlocked: "Caregiver unlocked ✓",
     plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual",
@@ -455,6 +457,8 @@ const STRINGS = {
     payPublish: "支付 $9.99 並發布",
     aideProLocked: "客戶聯絡方式僅限 Aide Pro 會員查看。",
     aideProBtn: "成為 Aide Pro — 每月 $14.99（示範）",
+    aideProSignInFirst: "請先登入以查看客戶聯絡方式",
+    aideProAidesOnly: "Aide Pro 僅供照護者（aide 角色）使用。請以照護者身份註冊或聯繫客服。",
     tAidePro: "Aide Pro 已啟用 — 客戶聯絡方式已解鎖 ✓",
     tUnlocked: "已解鎖照護者 ✓",
     plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳",
@@ -685,6 +689,8 @@ const STRINGS = {
     payPublish: "Pagar $9.99 y publicar",
     aideProLocked: "El contacto del cliente está disponible para miembros Aide Pro.",
     aideProBtn: "Hazte Aide Pro — $14.99/mes (demo)",
+    aideProSignInFirst: "Inicia sesión para acceder a los contactos del cliente",
+    aideProAidesOnly: "Aide Pro es solo para cuidadores (rol aide). Regístrate como cuidador o contacta a soporte.",
     tAidePro: "Aide Pro activo — contactos de clientes desbloqueados ✓",
     tUnlocked: "Cuidador desbloqueado ✓",
     plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual",
@@ -892,7 +898,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.16"; // ← bumped on every code update
+const APP_VERSION = "v3.12.17"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2587,7 +2593,7 @@ function JobForm({ onSaved, onCancel, initial }) {
   );
 }
 
-function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup }) {
+function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
   const { L, ts } = useLang();
   const [expanded, setExpanded] = useState(false);
   const [pinAction, setPinAction] = useState(null);
@@ -2643,18 +2649,27 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup }) {
           ) : (
             <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
               <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
-                🔒 <strong>{L.contactPerson} {job.name}: (•••) •••-••••</strong> — {L.aideProLocked}
+                🔒 <strong>{L.contactPerson} {job.name}: (•••) •••-••••</strong>
+                {" "}—{" "}
+                {/* v3.12.17: message adapts to sign-in status and role */}
+                {!account
+                  ? L.aideProSignInFirst
+                  : account.role !== "aide"
+                    ? L.aideProAidesOnly
+                    : L.aideProLocked}
               </p>
-              <button
-                type="button"
-                onClick={onAideProSignup}
-                style={{
-                  padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary,
-                  color: "#fff", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
-                }}
-              >
-                {L.aideProBtn}
-              </button>
+              {(!account || account.role === "aide") && (
+                <button
+                  type="button"
+                  onClick={onAideProSignup}
+                  style={{
+                    padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary,
+                    color: "#fff", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  {!account ? L.signIn : L.aideProBtn}
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -4799,7 +4814,14 @@ export default function App() {
   const [pendingUnlock, setPendingUnlock] = useState(null);
   const unlockedIds = client?.unlocks || [];
   const [aidePro, setAidePro] = useState(null);
-  const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
+  // v3.12.17 — Aide Pro requires signed-in + role=aide + valid Aide Pro subscription.
+  // Prevents guest / client accounts from bypassing the paywall.
+  const isAidePro = !!(
+    account &&
+    account.role === "aide" &&
+    aidePro &&
+    aidePro.proUntil > Date.now()
+  );
   const [pendingCount, setPendingCount] = useState(0); // v3.8: caregivers awaiting approval
 
   // v3.8.5 — aides can't see the aides directory (own competitors); pick a valid tab
@@ -4982,6 +5004,18 @@ export default function App() {
   }
 
   async function activateAidePro() {
+    // v3.12.17 — guests must sign in first
+    if (!account) {
+      setAuthNext({ type: "aidepro" });
+      setView("signin");
+      window.scrollTo(0, 0);
+      return;
+    }
+    // v3.12.17 — Aide Pro is aides-only. Clients and agencies can't purchase it.
+    if (account.role !== "aide") {
+      showToast(L.aideProAidesOnly);
+      return;
+    }
     const rec = { proUntil: Date.now() + 30 * 24 * 3600 * 1000, activatedAt: Date.now() };
     try {
       localStorage.setItem("pcc_aidepro", JSON.stringify(rec));
@@ -5499,6 +5533,7 @@ export default function App() {
                         key={j.id}
                         job={j}
                         aidePro={isAidePro}
+                        account={account}
                         onAideProSignup={activateAidePro}
                         onDelete={handleDeleteJob}
                         onEdit={(rec) => { setJobEditing(rec); setView("postjob"); window.scrollTo(0, 0); }}
