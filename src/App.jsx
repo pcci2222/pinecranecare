@@ -228,8 +228,9 @@ const STRINGS = {
     aideProAidesOnly: "Aide Pro is available only for caregivers (aide role). Sign up as an aide or contact support.",
     tAidePro: "Aide Pro active — client contacts unlocked ✓",
     tUnlocked: "Caregiver unlocked ✓",
-    plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual",
+    plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual", plan_week_pass: "Week Pass",
     blurb_monthly: "Full access, cancel anytime.",
+    blurb_week_pass: "One week pass — unlimited access to home aides and agencies.",
     blurb_quarterly: "Save 17% — most popular.",
     blurb_annual: "Best value — save 37%.",
     lServicesNeeded: "Services needed",
@@ -461,8 +462,9 @@ const STRINGS = {
     aideProAidesOnly: "Aide Pro 僅供照護者（aide 角色）使用。請以照護者身份註冊或聯繫客服。",
     tAidePro: "Aide Pro 已啟用 — 客戶聯絡方式已解鎖 ✓",
     tUnlocked: "已解鎖照護者 ✓",
-    plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳",
+    plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳", plan_week_pass: "一週通行證",
     blurb_monthly: "完整功能，隨時取消。",
+    blurb_week_pass: "一週通行證 — 無限查看照護者與機構聯絡方式。",
     blurb_quarterly: "省 17% — 最受歡迎。",
     blurb_annual: "最划算 — 省 37%。",
     lServicesNeeded: "需要的服務",
@@ -693,8 +695,9 @@ const STRINGS = {
     aideProAidesOnly: "Aide Pro es solo para cuidadores (rol aide). Regístrate como cuidador o contacta a soporte.",
     tAidePro: "Aide Pro activo — contactos de clientes desbloqueados ✓",
     tUnlocked: "Cuidador desbloqueado ✓",
-    plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual",
+    plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual", plan_week_pass: "Pase Semanal",
     blurb_monthly: "Acceso total, cancele cuando quiera.",
+    blurb_week_pass: "Pase semanal — acceso ilimitado a cuidadores y agencias.",
     blurb_quarterly: "Ahorre 17% — el más popular.",
     blurb_annual: "Mejor precio — ahorre 37%.",
     lServicesNeeded: "Servicios necesarios",
@@ -898,7 +901,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.18"; // ← bumped on every code update
+const APP_VERSION = "v3.12.19"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
