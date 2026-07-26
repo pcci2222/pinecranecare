@@ -203,7 +203,7 @@ const STRINGS = {
     benefit2: "Free replacement matching if your caregiver becomes unavailable",
     benefit3: "Post care requests — let caregivers come to you",
     benefit4: "Write and read verified reviews",
-    suName: "Single Unlock", suPrice: "$12.99", suPer: " one-time",
+    suName: "Single Unlock", suPrice: "$4.99", suPer: " one-time",
     suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
     featuredBadge: "★ Featured",
     teaserName: "Verified Caregiver",
@@ -436,7 +436,7 @@ const STRINGS = {
     benefit2: "照護者無法繼續時，免費重新配對",
     benefit3: "發布照護徵求 — 讓照護者主動聯繫您",
     benefit4: "撰寫並查看真實評價",
-    suName: "單次解鎖", suPrice: "$12.99", suPer: " 一次性",
+    suName: "單次解鎖", suPrice: "$4.99", suPer: " 一次性",
     suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
     featuredBadge: "★ 精選",
     teaserName: "已驗證照護者",
@@ -668,7 +668,7 @@ const STRINGS = {
     benefit2: "Reemplazo gratuito si su cuidador deja de estar disponible",
     benefit3: "Publique solicitudes — deje que los cuidadores lo contacten",
     benefit4: "Escriba y lea reseñas verificadas",
-    suName: "Desbloqueo Único", suPrice: "$12.99", suPer: " pago único",
+    suName: "Desbloqueo Único", suPrice: "$4.99", suPer: " pago único",
     suBlurb: "¿No está listo para una membresía? Desbloquee el perfil completo y contacto de este cuidador.",
     featuredBadge: "★ Destacado",
     teaserName: "Cuidador Verificado",
@@ -898,7 +898,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.17"; // ← bumped on every code update
+const APP_VERSION = "v3.12.18"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -2724,10 +2724,14 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
 }
 
 // ---------- Subscription plans ----------
+// ---------- Subscription plans ----------
+// v3.12.18: pivoted to a two-option pricing model:
+//   • $4.99 single unlock (see one aide's contact)
+//   • $19.99 week pass (unlimited access to all aides AND agencies for 7 days)
+// Legacy monthly/quarterly/annual subscribers keep access until their existing
+// subscribed_until expires (grandfathered via the same field).
 const PLANS = [
-  { id: "monthly", name: "Monthly", price: "$19.99", per: "/month", months: 1, blurb: "Full access, cancel anytime." },
-  { id: "quarterly", name: "3 Months", price: "$49.99", per: "/3 months", months: 3, blurb: "Save 17% — most popular.", featured: true },
-  { id: "annual", name: "Annual", price: "$149.99", per: "/year", months: 12, blurb: "Best value — save 37%." },
+  { id: "week_pass", name: "Week Pass", price: "$19.99", per: "/week", days: 7, blurb: "Unlimited access to home aides and agencies for 7 days.", featured: true },
 ];
 
 function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, onSignOut }) {
@@ -4947,7 +4951,10 @@ export default function App() {
     const rec = {
       ...(client || {}),
       plan: plan.name,
-      subscribedUntil: Date.now() + plan.months * 30 * 24 * 3600 * 1000,
+      // v3.12.18: support both days-based (week_pass) and months-based (legacy monthly/quarterly/annual)
+      subscribedUntil: Date.now()
+        + (plan.days   ? plan.days   * 24 * 3600 * 1000 : 0)
+        + (plan.months ? plan.months * 30 * 24 * 3600 * 1000 : 0),
       activatedAt: Date.now(),
     };
     try {
