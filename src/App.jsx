@@ -901,7 +901,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.19"; // ← bumped on every code update
+const APP_VERSION = "v3.12.20"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1364,6 +1364,31 @@ async function upsertMember(row) {
   });
   if (!r.ok) throw new Error("member save failed");
   return (await r.json())[0];
+}
+
+// v3.12.20: saveMemberSubscription updates a member row's subscription fields.
+// Tries PATCH first (works around RLS policies that block INSERT/UPSERT).
+// Falls back to POST/upsert if the row doesn't exist yet.
+async function saveMemberSubscription(userId, fields) {
+  // First — try PATCH on the existing row by user_id
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/members?user_id=eq.${encodeURIComponent(userId)}`,
+      {
+        method: "PATCH",
+        headers: { ...sbHeaders, Prefer: "return=representation" },
+        body: JSON.stringify(fields),
+      }
+    );
+    if (r.ok) {
+      const arr = await r.json();
+      if (arr && arr.length) return arr[0];
+    }
+    // If PATCH returned 0 rows, the row doesn't exist — fall through to upsert
+  } catch (e) { /* fall through */ }
+
+  // Fallback — POST with merge-duplicates. Might fail on RLS but worth trying.
+  return await upsertMember({ user_id: userId, ...fields });
 }
 
 // v3.12.12: after every sign-in, ensure a members row exists for this user
@@ -4961,8 +4986,8 @@ export default function App() {
       activatedAt: Date.now(),
     };
     try {
-      await upsertMember({
-        user_id: acct.id,
+      // v3.12.20: use PATCH-first helper to avoid RLS blocking INSERT/UPSERT
+      await saveMemberSubscription(acct.id, {
         email: acct.email || null,
         phone: acct.phone || null,
         name: acct.name || null,
@@ -4973,7 +4998,7 @@ export default function App() {
     } catch (e) {
       // Surface member-save failures so we notice them (v3.5.1)
       showToast("Save failed — please try again");
-      console.error("upsertMember failed:", e);
+      console.error("saveMemberSubscription failed:", e);
       return;
     }
     try {
@@ -5044,8 +5069,8 @@ export default function App() {
     }
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
     try {
-      await upsertMember({
-        user_id: acct.id,
+      // v3.12.20: use PATCH-first helper to avoid RLS blocking INSERT/UPSERT
+      await saveMemberSubscription(acct.id, {
         email: acct.email || null,
         phone: acct.phone || null,
         name: acct.name || null,
@@ -5055,7 +5080,7 @@ export default function App() {
       });
     } catch (e) {
       showToast("Save failed — please try again");
-      console.error("upsertMember failed:", e);
+      console.error("saveMemberSubscription failed:", e);
       return;
     }
     try {
