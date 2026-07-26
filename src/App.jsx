@@ -901,13 +901,18 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.22"; // ← bumped on every code update
+const APP_VERSION = "v3.12.23"; // ← bumped on every code update
 // v3.12.22: fixes "saveMemberSubscription: userId is required" on checkout.
 //   Root cause: sign-in returned an account with no id when the RPC didn't
 //   surface out_user_id, so every members write (subscription, unlock, member
 //   row) silently failed. Now the id is guaranteed at sign-in (phone fallback)
 //   and recovered at checkout for older sessions. See fetchProfileByPhone /
 //   ensureAccountId.
+// v3.12.23: widen id recovery — resolveUserIdByPhone tries multiple phone
+//   formats across BOTH user_profiles and members; when an in-memory account
+//   has no phone to recover from, handleMissingId clears the stale session and
+//   routes to a clean sign-in (preserving the pending purchase). Verify the
+//   footer reads v3.12.23 to confirm this build is live.
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
