@@ -901,7 +901,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.20"; // ← bumped on every code update
+const APP_VERSION = "v3.12.21"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1369,8 +1369,14 @@ async function upsertMember(row) {
 // v3.12.20: saveMemberSubscription updates a member row's subscription fields.
 // Tries PATCH first (works around RLS policies that block INSERT/UPSERT).
 // Falls back to POST/upsert if the row doesn't exist yet.
+// v3.12.21: surfaces the actual Postgres error in the thrown message so the
+// UI can show a specific reason instead of "Save failed — please try again".
 async function saveMemberSubscription(userId, fields) {
+  if (!userId) throw new Error("saveMemberSubscription: userId is required");
+
   // First — try PATCH on the existing row by user_id
+  let patchStatus = 0;
+  let patchBody = "";
   try {
     const r = await fetch(
       `${SUPABASE_URL}/rest/v1/members?user_id=eq.${encodeURIComponent(userId)}`,
@@ -1380,15 +1386,40 @@ async function saveMemberSubscription(userId, fields) {
         body: JSON.stringify(fields),
       }
     );
+    patchStatus = r.status;
+    patchBody = await r.text();
     if (r.ok) {
-      const arr = await r.json();
-      if (arr && arr.length) return arr[0];
+      const arr = patchBody ? JSON.parse(patchBody) : [];
+      if (arr && arr.length) return arr[0]; // updated existing row
+      // r.ok with 0 rows means row didn't exist — fall through to insert
+    } else {
+      console.warn("[KJC] PATCH members failed:", patchStatus, patchBody);
     }
-    // If PATCH returned 0 rows, the row doesn't exist — fall through to upsert
-  } catch (e) { /* fall through */ }
+  } catch (e) {
+    console.warn("[KJC] PATCH members threw:", e);
+  }
 
-  // Fallback — POST with merge-duplicates. Might fail on RLS but worth trying.
-  return await upsertMember({ user_id: userId, ...fields });
+  // Fallback — INSERT a new row (Postgres will error if row already exists
+  // and there is a unique constraint; but if PATCH returned 0 rows, there
+  // was no matching row, so INSERT is the right action).
+  try {
+    const insertR = await fetch(`${SUPABASE_URL}/rest/v1/members`, {
+      method: "POST",
+      headers: { ...sbHeaders, Prefer: "return=representation" },
+      body: JSON.stringify({ user_id: userId, ...fields }),
+    });
+    if (!insertR.ok) {
+      const errBody = await insertR.text();
+      throw new Error(`members INSERT failed (${insertR.status}): ${errBody}`);
+    }
+    const insertArr = await insertR.json();
+    return insertArr[0];
+  } catch (e) {
+    // Surface both attempts so we know what actually went wrong
+    throw new Error(
+      `save failed. PATCH status=${patchStatus} body=${patchBody.slice(0, 300)}; INSERT error=${e.message || e}`
+    );
+  }
 }
 
 // v3.12.12: after every sign-in, ensure a members row exists for this user
@@ -4986,18 +5017,14 @@ export default function App() {
       activatedAt: Date.now(),
     };
     try {
-      // v3.12.20: use PATCH-first helper to avoid RLS blocking INSERT/UPSERT
+      // v3.12.21: send ONLY the fields that change for a plan activation.
       await saveMemberSubscription(acct.id, {
-        email: acct.email || null,
-        phone: acct.phone || null,
-        name: acct.name || null,
         plan: rec.plan,
         subscribed_until: new Date(rec.subscribedUntil).toISOString(),
-        unlocks: rec.unlocks || [],
       });
     } catch (e) {
-      // Surface member-save failures so we notice them (v3.5.1)
-      showToast("Save failed — please try again");
+      const msg = (e && e.message) ? e.message : String(e);
+      showToast("Plan save failed: " + msg.slice(0, 120));
       console.error("saveMemberSubscription failed:", e);
       return;
     }
@@ -5069,17 +5096,15 @@ export default function App() {
     }
     const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
     try {
-      // v3.12.20: use PATCH-first helper to avoid RLS blocking INSERT/UPSERT
+      // v3.12.21: send ONLY the field that actually changes for this action.
+      // name/email/phone live in user_profiles as source of truth (v3.12.15+).
+      // Sending fewer fields = less chance of hitting a constraint / type issue.
       await saveMemberSubscription(acct.id, {
-        email: acct.email || null,
-        phone: acct.phone || null,
-        name: acct.name || null,
-        plan: rec.plan || null,
-        subscribed_until: rec.subscribedUntil ? new Date(rec.subscribedUntil).toISOString() : null,
         unlocks: rec.unlocks,
       });
     } catch (e) {
-      showToast("Save failed — please try again");
+      const msg = (e && e.message) ? e.message : String(e);
+      showToast("Unlock save failed: " + msg.slice(0, 120));
       console.error("saveMemberSubscription failed:", e);
       return;
     }
