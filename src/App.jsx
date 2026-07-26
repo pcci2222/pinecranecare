@@ -901,7 +901,10 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.23"; // ← bumped on every code update
+const APP_VERSION = "v3.12.24"; // ← bumped on every code update
+// v3.12.24: heal or clear an id-less session at page load (see the mount
+//   effect), so a stale pre-fix session is resolved before checkout instead
+//   of interrupting a purchase. Footer should read v3.12.24.
 // v3.12.22: fixes "saveMemberSubscription: userId is required" on checkout.
 //   Root cause: sign-in returned an account with no id when the RPC didn't
 //   surface out_user_id, so every members write (subscription, unlock, member
@@ -5002,12 +5005,26 @@ export default function App() {
       let signedIn = false;
       try {
         const sess = JSON.parse(localStorage.getItem("pcc_session") || "null");
-        if (sess && sess.user && sess.user.id) {
+        let user = sess && sess.user ? sess.user : null;
+        // v3.12.24: heal (or discard) a session that's missing its id at LOAD
+        // time — before the user can reach checkout — so a stale pre-fix session
+        // never interrupts a purchase mid-flow. Recover the id from the phone if
+        // possible; otherwise clear the broken session and start signed-out.
+        if (user && !user.id) {
+          const repaired = await ensureAccountId(user);
+          if (repaired && repaired.id) {
+            user = repaired;
+          } else {
+            try { localStorage.removeItem("pcc_session"); } catch (e) { /* ignore */ }
+            user = null;
+          }
+        }
+        if (user && user.id) {
           signedIn = true;
           // PIN and phone sessions carry a role already; email sessions do not
-          setAccount(sess.user);
-          ensureMemberRow(sess.user); // v3.12.12: keep members table in sync (fire and forget)
-          const m = await fetchMember(sess.user.id);
+          setAccount(user);
+          ensureMemberRow(user); // v3.12.12: keep members table in sync (fire and forget)
+          const m = await fetchMember(user.id);
           if (m) {
             setClient({
               plan: m.plan,
