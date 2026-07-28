@@ -910,7 +910,10 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.25"; // ← bumped on every code update
+const APP_VERSION = "v3.12.26"; // ← bumped on every code update
+// v3.12.26: admin-assisted PIN reset. Admin Members tab has a "🔑 PIN" button
+//   per user that sets a new temporary PIN via the admin_reset_pin SECURITY
+//   DEFINER RPC (run v31226_admin_reset_pin.sql). Works for every role.
 // v3.12.25: role-first signup. Three colored role buttons on the landing hero
 //   (Family / Home Aide / Agency) each launch a sign-up with the role LOCKED, and
 //   the signup picker no longer defaults to client — a first-time aide can't be
@@ -1305,6 +1308,21 @@ async function adminUpdateUserProfile({ user_id, display_name, role, phone }) {
   if (!r.ok) {
     const t = await r.text();
     throw new Error("Admin profile update failed: " + t);
+  }
+  return true;
+}
+
+// v3.12.26: admin-assisted PIN reset via SECURITY DEFINER RPC (bypasses RLS,
+// re-hashes with bcrypt). Requires v31226_admin_reset_pin.sql to be installed.
+async function adminResetPin(userId, newPin) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_pin`, {
+    method: "POST",
+    headers: { ...sbHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_user_id: userId, p_new_pin: newPin }),
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error("PIN reset failed: " + t);
   }
   return true;
 }
@@ -4406,6 +4424,27 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                                 setEditMemRole(m.role || "member");
                               }}>
                               ✎
+                            </button>
+                            {/* v3.12.26: admin-assisted PIN reset (any role) */}
+                            <button
+                              type="button"
+                              title="Reset this user's PIN"
+                              style={btn("#fff", "#3F6795", `1.5px solid ${T.line}`)}
+                              onClick={async () => {
+                                if (!m.user_id) { setMsg("No auth account (user_id) on this member — can't reset PIN."); return; }
+                                const entered = window.prompt(`Set a new temporary ${PIN_LENGTH}-digit PIN for ${m.name || m.phone || "this user"}:`);
+                                if (entered == null) return;
+                                const pin = entered.replace(/\D/g, "");
+                                if (pin.length < 4) { setMsg("PIN must be at least 4 digits."); return; }
+                                try {
+                                  await adminResetPin(m.user_id, pin);
+                                  setMsg(`PIN reset for ${m.name || m.phone}. Temporary PIN: ${pin} — tell them to sign in with it.`);
+                                } catch (e) {
+                                  console.warn("[KJC] admin_reset_pin failed:", e);
+                                  setMsg("PIN reset failed — is the RPC installed? Run v31226_admin_reset_pin.sql.");
+                                }
+                              }}>
+                              🔑 PIN
                             </button>
                             <button
                               type="button"
