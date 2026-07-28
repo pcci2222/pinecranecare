@@ -294,12 +294,15 @@ const STRINGS = {
     roleMember: "Family looking for care",
     roleAide: "Caregiver / Home aide",
     roleAgency: "Home-care agency",
+    roleRequired: "Please choose who you are to continue.",         // v3.12.25
+    signingUpAs: "Signing up as",                                    // v3.12.25
+    landingRolePrompt: "First time here? Get started as:",           // v3.12.25
     phoneAuthFinish: "Finish",
     signInBtn: "Sign in",
     // Home landing (v3.10)
     landingHeroTitle: "One trusted platform for every family need",
     landingHeroSub: "Kakatong 家家通 connects families with verified caregivers, tutors, and coaches — from the same community you know and trust.",
-    landingHeroCta: "Sign in or create account",
+    landingHeroCta: "Already have an account? Sign in",
     pickCategoryTitle: "What are you looking for today?",
     pickCategorySub: "Pick a category to browse verified providers near you.",
     landingCareTag: "Trusted caregivers for the moments that matter most.",
@@ -527,12 +530,15 @@ const STRINGS = {
     roleMember: "尋找照護的家庭",
     roleAide: "照護者 / 家政員",
     roleAgency: "居家照護機構",
+    roleRequired: "請先選擇您的身分以繼續。",
+    signingUpAs: "註冊身分",
+    landingRolePrompt: "第一次使用？請選擇您的身分開始：",
     phoneAuthFinish: "完成",
     signInBtn: "登入",
     // Home landing (v3.10)
     landingHeroTitle: "一個平台，滿足每個家庭的需求",
     landingHeroSub: "家家通 Kakatong 連結家庭與經過驗證的照護員、家教與教練 — 都來自您熟悉信賴的社區。",
-    landingHeroCta: "登入或建立帳號",
+    landingHeroCta: "已有帳號？登入",
     pickCategoryTitle: "您今天想找什麼？",
     pickCategorySub: "選擇類別，瀏覽附近經過驗證的服務提供者。",
     landingCareTag: "值得信賴的照護 — 陪伴每一個重要時刻。",
@@ -760,12 +766,15 @@ const STRINGS = {
     roleMember: "Familia que busca cuidado",
     roleAide: "Cuidador/a / Auxiliar",
     roleAgency: "Agencia de cuidado en el hogar",
+    roleRequired: "Por favor elija quién es usted para continuar.",
+    signingUpAs: "Registrándose como",
+    landingRolePrompt: "¿Primera vez? Comience como:",
     phoneAuthFinish: "Finalizar",
     signInBtn: "Iniciar sesión",
     // Home landing (v3.10)
     landingHeroTitle: "Una plataforma confiable para las necesidades de toda familia",
     landingHeroSub: "Kakatong 家家通 conecta a familias con cuidadores, tutores y entrenadores verificados — de la misma comunidad que usted conoce.",
-    landingHeroCta: "Iniciar sesión o crear cuenta",
+    landingHeroCta: "¿Ya tiene cuenta? Inicie sesión",
     pickCategoryTitle: "¿Qué busca hoy?",
     pickCategorySub: "Elija una categoría para ver proveedores verificados cerca de usted.",
     landingCareTag: "Cuidadores de confianza para los momentos importantes.",
@@ -901,7 +910,14 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.24"; // ← bumped on every code update
+const APP_VERSION = "v3.12.25"; // ← bumped on every code update
+// v3.12.25: role-first signup. Three colored role buttons on the landing hero
+//   (Family / Home Aide / Agency) each launch a sign-up with the role LOCKED, and
+//   the signup picker no longer defaults to client — a first-time aide can't be
+//   created as a client anymore. Admin fix: converting a member to Home Aide now
+//   seeds a PENDING caregiver profile (the public aide directory is built from the
+//   caregivers table, not the role field), so they enter the approval queue instead
+//   of staying invisible.
 // v3.12.24: heal or clear an id-less session at page load (see the mount
 //   effect), so a stale pre-fix session is resolved before checkout instead
 //   of interrupting a purchase. Footer should read v3.12.24.
@@ -3348,7 +3364,7 @@ function AuthView({ onDone, onBack }) {
 }
 
 // ---------- Phone Sign In (v3.4) — PIN-based, one flow for all roles ----------
-function PhoneAuthView({ onDone, onBack }) {
+function PhoneAuthView({ onDone, onBack, initialRole }) {
   const { L } = useLang();
   // Steps: "phone" -> "signin" (returning) or "signup" (new)
   const [step, setStep] = useState("phone");
@@ -3356,7 +3372,11 @@ function PhoneAuthView({ onDone, onBack }) {
   const [pin, setPin] = useState("");
   const [pin2, setPin2] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("member");
+  // v3.12.25: role comes pre-selected from the landing role buttons. No silent
+  // default to "member" — a new user must have an explicit role, so first-time
+  // aides can no longer be created as clients by skipping the picker.
+  const [role, setRole] = useState(initialRole || null);
+  const roleLocked = !!initialRole;
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -3399,6 +3419,7 @@ function PhoneAuthView({ onDone, onBack }) {
 
   async function handleSignup() {
     if (!name.trim()) { setErr(L.authErr); return; }
+    if (!role) { setErr(L.roleRequired); return; }   // v3.12.25: role is mandatory
     if (pin.length !== PIN_LENGTH) { setErr(L.phoneAuthPinLen); return; }
     if (pin !== pin2) { setErr(L.phoneAuthPinMismatch); return; }
     setBusy(true); setErr("");
@@ -3469,11 +3490,14 @@ function PhoneAuthView({ onDone, onBack }) {
     );
   }
 
+  // v3.12.25: each role has its own accent color (matches the landing buttons).
   const roleOptions = [
-    ["member", L.roleMember],
-    ["aide",   L.roleAide],
-    ["agency", L.roleAgency],
+    ["member", L.roleMember, T.primary],
+    ["aide",   L.roleAide,   "#3F6795"],
+    ["agency", L.roleAgency, "#D97848"],
   ];
+  const lockedLabel = (roleOptions.find((r) => r[0] === role) || [])[1];
+  const lockedColor = (roleOptions.find((r) => r[0] === role) || [])[2] || T.primary;
   return (
     <div style={card}>
       <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
@@ -3497,22 +3521,35 @@ function PhoneAuthView({ onDone, onBack }) {
           onChange={(e) => { setPin2(e.target.value.replace(/\D/g, "")); setErr(""); }}
           placeholder={"\u2022".repeat(PIN_LENGTH)} />
       </Field>
-      <Field label={L.phoneAuthRolePrompt} required>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {roleOptions.map(([id, label]) => (
-            <button key={id} type="button" onClick={() => setRole(id)}
-              style={{
-                padding: "12px 14px", borderRadius: 10, textAlign: "left",
-                border: `2px solid ${role === id ? T.primary : T.line}`,
-                background: role === id ? "#EFF6F3" : "#fff",
-                color: T.ink, fontSize: 15, fontWeight: role === id ? 700 : 500,
-                cursor: "pointer", fontFamily: "inherit",
-              }}>
-              {role === id ? "\u25CF " : "\u25CB "}{label}
-            </button>
-          ))}
+      {roleLocked ? (
+        /* v3.12.25: role came pre-selected from a landing button \u2014 confirm, don't re-ask */
+        <div style={{
+          margin: "0 0 14px", padding: "12px 14px", borderRadius: 10,
+          border: `2px solid ${lockedColor}`, background: "#fff",
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <span style={{ width: 12, height: 12, borderRadius: 999, background: lockedColor, flexShrink: 0 }} />
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>{L.signingUpAs}:</span>
+          <strong style={{ fontSize: 15, color: T.ink }}>{lockedLabel}</strong>
         </div>
-      </Field>
+      ) : (
+        <Field label={L.phoneAuthRolePrompt} required>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {roleOptions.map(([id, label, color]) => (
+              <button key={id} type="button" onClick={() => { setRole(id); setErr(""); }}
+                style={{
+                  padding: "12px 14px", borderRadius: 10, textAlign: "left",
+                  border: `2px solid ${role === id ? color : T.line}`,
+                  background: role === id ? color : "#fff",
+                  color: role === id ? "#fff" : T.ink, fontSize: 15, fontWeight: role === id ? 800 : 500,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}>
+                {role === id ? "\u25CF " : "\u25CB "}{label}
+              </button>
+            ))}
+          </div>
+        </Field>
+      )}
       {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
       <button type="button" onClick={handleSignup} disabled={busy} style={{ ...primary, width: "100%" }}>
         {busy ? L.saving : L.phoneAuthFinish}
@@ -4323,13 +4360,33 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                                     setMsg("Auth update failed — admin RPC may not be installed. Run v31216_admin_rpc.sql.");
                                   }
                                 }
+                                // v3.12.25: role alone doesn't list an aide — the public
+                                // directory is built from the caregivers table. When admin
+                                // converts someone to Home Aide, seed a PENDING caregiver
+                                // profile so they enter the approval queue instead of being
+                                // invisible. It stays hidden until completed + approved.
+                                let aideNote = "";
+                                if (editMemRole === "aide" && m.role !== "aide") {
+                                  try {
+                                    const existingCg = await findCaregiverByPhone(editMemPhone || m.phone || "");
+                                    if (!existingCg) {
+                                      await sbInsert("caregivers", {
+                                        ...aideToDb({ name: editMemName || m.name || "", phone: editMemPhone || m.phone || "" }),
+                                        approved: false,
+                                      });
+                                      aideNote = " · Pending aide profile created — open the Caregivers tab to add services / ZIP / rate, then Approve so they appear in the directory.";
+                                    } else {
+                                      aideNote = " · This person already has a caregiver profile" + (existingCg.approved ? " (already listed)." : " — approve it in the Caregivers tab to list them.");
+                                    }
+                                  } catch (e) { console.warn("[KJC] aide profile seed failed:", e); }
+                                }
                                 await patch("members", m.id, {
                                   name: editMemName,
                                   email: editMemEmail,
                                   phone: editMemPhone,
                                   role: editMemRole,
                                 });
-                                setMsg("Member updated (auth + subscription tables synced)");
+                                setMsg("Member updated (auth + subscription tables synced)" + aideNote);
                                 setEditMemId(null);
                               } catch (e) { setMsg("Update failed"); }
                             }}>Save</button>
@@ -4738,17 +4795,41 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
           {L.landingHeroSub}
         </p>
         {!isSignedIn && (
-          <button
-            type="button"
-            onClick={onSignIn}
-            style={{
-              marginTop: 20, padding: "11px 22px", borderRadius: 999,
-              border: "none", background: T.amber, color: "#3A2A08",
-              fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-            }}
-          >
-            {L.landingHeroCta}
-          </button>
+          <>
+            {/* v3.12.25: role-preselected sign-up. Each button locks the correct role
+                so a first-time aide can never be created as a client by mistake. */}
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: T.inkSoft, letterSpacing: 0.3, margin: "22px 0 10px" }}>
+              {L.landingRolePrompt}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", maxWidth: 620, margin: "0 auto" }}>
+              {[
+                ["member", L.roleMember, T.primary],
+                ["aide",   L.roleAide,   "#3F6795"],
+                ["agency", L.roleAgency, "#D97848"],
+              ].map(([id, label, color]) => (
+                <button key={id} type="button" onClick={() => onSignIn(id)}
+                  style={{
+                    flex: "1 1 170px", minWidth: 150, padding: "13px 16px", borderRadius: 12,
+                    border: "none", background: color, color: "#fff",
+                    fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => onSignIn(null)}
+              style={{
+                marginTop: 14, padding: "9px 18px", borderRadius: 999,
+                border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
+                fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              }}
+            >
+              {L.landingHeroCta}
+            </button>
+          </>
         )}
       </section>
 
@@ -4961,6 +5042,7 @@ export default function App() {
   const [client, setClient] = useState(null); // { plan, subscribedUntil }
   const [account, setAccount] = useState(null); // { id, email, name }
   const [authNext, setAuthNext] = useState(null); // resume action after sign-in
+  const [signupRole, setSignupRole] = useState(null); // v3.12.25: role pre-picked from a landing button, locks the signup role
   const subscribed = !!(client && client.subscribedUntil > Date.now());
   const [pendingUnlock, setPendingUnlock] = useState(null);
   const unlockedIds = client?.unlocks || [];
@@ -5155,7 +5237,7 @@ export default function App() {
 
   async function activatePlan(plan, acct = account) {
     if (!acct) {
-      setAuthNext({ type: "plan", plan });
+      setAuthNext({ type: "plan", plan }); setSignupRole(null);
       setView("signin");
       window.scrollTo(0, 0);
       return;
@@ -5229,7 +5311,7 @@ export default function App() {
   async function activateAidePro() {
     // v3.12.17 — guests must sign in first
     if (!account) {
-      setAuthNext({ type: "aidepro" });
+      setAuthNext({ type: "aidepro" }); setSignupRole(null);
       setView("signin");
       window.scrollTo(0, 0);
       return;
@@ -5250,7 +5332,7 @@ export default function App() {
   async function activateSingleUnlock(acct = account) {
     if (!pendingUnlock) return;
     if (!acct) {
-      setAuthNext({ type: "unlock" });
+      setAuthNext({ type: "unlock" }); setSignupRole(null);
       setView("signin");
       window.scrollTo(0, 0);
       return;
@@ -5406,7 +5488,7 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => { setView("signin"); window.scrollTo(0, 0); }}
+              <button type="button" onClick={() => { setSignupRole(null); setView("signin"); window.scrollTo(0, 0); }}
                 style={{
                   padding: "5px 14px", borderRadius: 999, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
                   border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
@@ -5486,7 +5568,7 @@ export default function App() {
         {view === "home" ? (
           <HomeLandingView
             isSignedIn={!!account}
-            onSignIn={() => { setView("signin"); window.scrollTo(0, 0); }}
+            onSignIn={(r) => { setSignupRole(r || null); setView("signin"); window.scrollTo(0, 0); }}
             onPickCategory={(cat) => { setCategory(cat); setView("directory"); window.scrollTo(0, 0); }}
           />
         ) : view === "auth" ? (
@@ -5505,8 +5587,10 @@ export default function App() {
           />
         ) : view === "signin" ? (
           <PhoneAuthView
-            onBack={() => { setAuthNext(null); setView("directory"); }}
+            initialRole={signupRole}
+            onBack={() => { setAuthNext(null); setSignupRole(null); setView("directory"); }}
             onDone={async (acct) => {
+              setSignupRole(null); // v3.12.25: clear pre-picked role after use
               setAccount(acct);
               ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               // v3.8.2: clear any leftover filters/search from a prior session
