@@ -199,10 +199,32 @@ const STRINGS = {
     demoText: "Demo checkout: no real payment is collected in this prototype. In the live version, this button opens Stripe's secure payment page — accepting cards from any country, Apple Pay, Google Pay, Alipay (支付宝), and WeChat Pay (微信支付).",
     activate: "Activate demo membership", popular: "MOST POPULAR", back: "← Back",
     benefitsTitle: "Every membership includes:",
-    benefit1: "Unlimited caregiver contacts",
+    benefit1: "Unlock verified caregiver contacts — $9.99 per 3 reveals",
     benefit2: "Free replacement matching if your caregiver becomes unavailable",
     benefit3: "Post care requests — let caregivers come to you",
     benefit4: "Write and read verified reviews",
+    // v3.13.0 — client pricing: $19.99/yr membership + $9.99 per 3 contact reveals
+    memName: "Annual Membership", memPrice: "$19.99", memPer: "/year",
+    memBlurb: "Join for a year, then unlock caregiver contacts in packs of 3.",
+    packName: "3 Contact Reveals", packPrice: "$9.99", packPer: "/ 3 contacts",
+    packBlurb: "Reveal up to 3 caregivers' phone & email. Buy again anytime for 3 more.",
+    creditsLabel: "Contacts left", contactsRevealedLabel: "Contacts revealed",
+    needMembershipTitle: "Join to contact caregivers",
+    needMembershipSub: "A $19.99 / year membership lets you unlock caregiver contact info.",
+    needContactsTitle: "Buy contact reveals",
+    needContactsSub: "$9.99 unlocks 3 caregivers' phone & email — one reveal is used per caregiver.",
+    buyMembershipBtn: "Join for $19.99 / year", buyContactsBtn: "Buy 3 contacts — $9.99",
+    revealUses: "Reveal contact (uses 1)", contactsLeftInline: "reveals left",
+    lockedNeedMember: "Join a membership to view caregiver contacts.",
+    lockedNeedContacts: "You're out of reveals — buy 3 more for $9.99.",
+    tMembership: "Membership active — welcome! 🎉", tContacts: "3 contact reveals added ✓",
+    tRevealFail: "Couldn't reveal — please try again.",
+    payWithLabel: "Pay with", payCard: "💳 Card (demo)", payPaypal: "PayPal",
+    paypalNote: "PayPal shown for demo. Live checkout uses your PayPal business account.",
+    referBanner: "❤️ Refer this website to friends and family — help more families find trusted care.",
+    referShareBtn: "Share", referCopied: "Link copied ✓",
+    marqueeAide: "🎉 First 100 home aide joiners get FREE membership! · Join now and get listed.",
+    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     suName: "Single Unlock", suPrice: "$4.99", suPer: " one-time",
     suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
     featuredBadge: "★ Featured",
@@ -436,10 +458,32 @@ const STRINGS = {
     demoText: "示範結帳：本原型不會收取任何費用。正式版將開啟 Stripe 安全付款頁面 — 支援各國信用卡、Apple Pay、Google Pay、支付寶與微信支付。",
     activate: "啟用示範會員", popular: "最受歡迎", back: "← 返回",
     benefitsTitle: "所有會員方案皆包含：",
-    benefit1: "無限次聯繫照護者",
+    benefit1: "解鎖經驗證照護者的聯絡方式 — 每 3 筆 $9.99",
     benefit2: "照護者無法繼續時，免費重新配對",
     benefit3: "發布照護徵求 — 讓照護者主動聯繫您",
     benefit4: "撰寫並查看真實評價",
+    // v3.13.0
+    memName: "年度會員", memPrice: "$19.99", memPer: "/年",
+    memBlurb: "先加入一年會員，再以每 3 筆為單位解鎖照護者聯絡方式。",
+    packName: "3 筆聯絡解鎖", packPrice: "$9.99", packPer: "／3 筆",
+    packBlurb: "解鎖最多 3 位照護者的電話與電郵。用完可隨時再購買 3 筆。",
+    creditsLabel: "剩餘解鎖次數", contactsRevealedLabel: "已解鎖聯絡方式",
+    needMembershipTitle: "加入會員以聯繫照護者",
+    needMembershipSub: "$19.99／年的會員資格可讓您解鎖照護者聯絡方式。",
+    needContactsTitle: "購買聯絡解鎖",
+    needContactsSub: "$9.99 可解鎖 3 位照護者的電話與電郵 — 每位照護者使用一次解鎖。",
+    buyMembershipBtn: "加入會員 $19.99／年", buyContactsBtn: "購買 3 筆聯絡 — $9.99",
+    revealUses: "顯示聯絡方式（使用 1 次）", contactsLeftInline: "次剩餘",
+    lockedNeedMember: "請先加入會員以查看照護者聯絡方式。",
+    lockedNeedContacts: "解鎖次數已用完 — 以 $9.99 再購買 3 筆。",
+    tMembership: "會員已啟用 — 歡迎加入！🎉", tContacts: "已新增 3 筆聯絡解鎖 ✓",
+    tRevealFail: "無法顯示 — 請再試一次。",
+    payWithLabel: "付款方式", payCard: "💳 信用卡（示範）", payPaypal: "PayPal",
+    paypalNote: "PayPal 為示範按鈕。正式版將使用您的 PayPal 商業帳戶。",
+    referBanner: "❤️ 把本網站推薦給親友 — 幫助更多家庭找到可信賴的照護。",
+    referShareBtn: "分享", referCopied: "連結已複製 ✓",
+    marqueeAide: "🎉 前 100 位加入的家政員享免費會員！· 立即加入並上架。",
+    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     suName: "單次解鎖", suPrice: "$4.99", suPer: " 一次性",
     suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
     featuredBadge: "★ 精選",
@@ -599,6 +643,264 @@ const STRINGS = {
     tJobLive: "您的徵求已發布！🎉", tJobUpd: "徵求已更新 ✓", tJobRem: "徵求已刪除。",
     tMember: "會員已啟用 — 聯絡方式已解鎖 ✓",
   },
+  zhCN: {
+    tagline: "家家通 · 全方位可信赖的居家照护",
+    heroTitle: "用心照护，安享日常",
+    heroText: "从长者陪伴、备餐、行动辅助，到儿童照护与课后看顾 — 为您的家人找到值得信赖的照护者。",
+    join: "+ 看护注册",
+    tabAides: "🔍 寻找看护", tabJobs: "📋 征求看护",
+    browseFree: "浏览完全免费。", membersContact: "会员可直接联系任何看护。",
+    seePlans: "查看会员方案", memberActive: "会员 — 到期日",
+    findTitle: "为您的家人找到合适的看护",
+    findSub: "先输入邮递区号，再依服务、时薪与年龄筛选。",
+    searchPh: "输入需要照护地区的邮递区号（例：11354）",
+    radiusLbl: "范围：", radiusExact: "同邮区",
+    maxRate: "时薪上限", ageFrom: "年龄从", ageTo: "至",
+    clearFilters: "清除所有筛选", allServices: "全部服务",
+    availableSuffix: "位看护", loadingAides: "载入中…",
+    noAidesTitle: "目前还没有看护加入",
+    noAidesSub: "成为第一位 — 点选「看护注册」建立档案。",
+    noMatchTitle: "没有符合的结果",
+    noMatchSub: "请尝试其他城市、服务或关键字。",
+    viewProfile: "查看档案与联络方式", showLess: "收起", editBtn: "✎ 编辑",
+    ageLbl: "年龄", yrsExp: "年经验", speaks: "语言：", certified: "证照：",
+    contactLbl: "联络方式：", contactPerson: "联络",
+    lockedLine: "联络方式：(•••) •••-•••• — 会员可直接致电或发邮件给任何看护。",
+    viewContact: "显示联络资讯", contactHidden: "联络资讯已隐藏 — 点击显示",
+    unlock: "解锁联络方式",
+    pinPrompt: "请输入 4 位数 PIN 码以继续",
+    confirm: "确认", cancel: "取消", pinBad: "PIN 码不正确。",
+    regTitle: "建立看护档案",
+    regSub: "只需填写一次 — 您附近的家庭就能找到您。",
+    updTitle: "更新您的档案",
+    updSub: "修改以下内容 — 储存后立即生效。",
+    selfie: "自拍照片", retake: "重拍", processing: "处理中…",
+    cameraNote: "手机上会开启前置镜头。",
+    lName: "姓名", lPhone: "电话", lEmail: "电子邮件", lCity: "城市", lZip: "邮递区号",
+    lAge: "年龄", lYrs: "经验年数", lRate: "时薪（美元）", lLang: "会说的语言",
+    lServices: "提供的服务", lCerts: "证照", lAbout: "自我介绍",
+    manageProfile: "我是照护者？管理我的档案 ✎",
+    aideLoginTitle: "管理我的档案",
+    aideLoginSub: "请输入注册时使用的电话号码与 4 位数 PIN 码。",
+    aideLoginBtn: "开启我的档案",
+    aideLoginErr: "找不到符合该电话与 PIN 码的档案。",
+    pendingEdit: "⏳ 您的档案正在审核中 — 家庭目前看不到，但您可以更新内容，我们将一并审核。",
+    lCertPhoto: "证照照片（选填）",
+    certPhotoNote: "仅供家家通验证使用 — 不会公开显示。",
+    certUpload: "上传证照照片",
+    certRetake: "重新上传",
+    lPin: "4 位数 PIN 码（日后编辑或删除档案时需要）",
+    lPinJob: "4 位数 PIN 码（日后编辑或删除贴文时需要）",
+    publish: "发布我的档案", save: "储存变更", saving: "储存中…",
+    noteShared: "注意：此示范版的档案对所有使用者可见。",
+    errReq: "姓名、电话与城市为必填。",
+    errPhoto: "请上传照片 — 家庭希望看到看护的样子。",
+    errZip: "请输入 5 位数邮递区号 — 家庭以邮递区号搜寻附近的看护。",
+    errPin: "请设定 4 位数 PIN 码，以便日后编辑。",
+    errSave: "储存失败，请再试一次。",
+    errJobReq: "标题、称呼、电话与城市为必填。",
+    jobsIntro: "家庭在此发布需求 — 看护会直接与您联系。",
+    postBtn: "+ 发布征求", loadingJobs: "载入中…",
+    noJobsTitle: "目前没有征求资讯",
+    noJobsSub: "需要照护？发布征求，让看护主动联系您。",
+    openSuffix: "则征求", viewDetails: "查看详情与联络方式", postedOn: "发布于",
+    jfTitle: "发布照护征求", jfUpd: "更新征求内容",
+    jfSub: "描述您的需求 — 有兴趣的看护会直接联系您。",
+    lTitle: "标题", lYourName: "您的称呼", lSchedule: "需要的时段",
+    lOffered: "提供时薪", lDetails: "详细说明",
+    detailsPh: "说明家人的照护需求、语言偏好、居家环境等。请勿填写详细住址。",
+    publishJob: "发布征求",
+    jobShared: "您的贴文（含姓名与电话）将对所有使用者公开，方便看护与您联系。请勿填写详细住址。",
+    plTitle: "成为会员",
+    plSub: "浏览永远免费。成为会员即可解锁所有看护的电话与邮件 — 无论您在本地，或在外州、海外为家人安排照护。",
+    demoText: "示范结帐：本原型不会收取任何费用。正式版将开启 Stripe 安全付款页面 — 支援各国信用卡、Apple Pay、Google Pay、支付宝与微信支付。",
+    activate: "启用示范会员", popular: "最受欢迎", back: "← 返回",
+    benefitsTitle: "所有会员方案皆包含：",
+    benefit1: "解锁经验证照护者的联络方式 — 每 3 笔 $9.99",
+    benefit2: "照护者无法继续时，免费重新配对",
+    benefit3: "发布照护征求 — 让照护者主动联系您",
+    benefit4: "撰写并查看真实评价",
+    // v3.13.0
+    memName: "年度会员", memPrice: "$19.99", memPer: "/年",
+    memBlurb: "先加入一年会员，再以每 3 笔为单位解锁照护者联络方式。",
+    packName: "3 笔联络解锁", packPrice: "$9.99", packPer: "／3 笔",
+    packBlurb: "解锁最多 3 位照护者的电话与电邮。用完可随时再购买 3 笔。",
+    creditsLabel: "剩余解锁次数", contactsRevealedLabel: "已解锁联络方式",
+    needMembershipTitle: "加入会员以联系照护者",
+    needMembershipSub: "$19.99／年的会员资格可让您解锁照护者联络方式。",
+    needContactsTitle: "购买联络解锁",
+    needContactsSub: "$9.99 可解锁 3 位照护者的电话与电邮 — 每位照护者使用一次解锁。",
+    buyMembershipBtn: "加入会员 $19.99／年", buyContactsBtn: "购买 3 笔联络 — $9.99",
+    revealUses: "显示联络方式（使用 1 次）", contactsLeftInline: "次剩余",
+    lockedNeedMember: "请先加入会员以查看照护者联络方式。",
+    lockedNeedContacts: "解锁次数已用完 — 以 $9.99 再购买 3 笔。",
+    tMembership: "会员已启用 — 欢迎加入！🎉", tContacts: "已新增 3 笔联络解锁 ✓",
+    tRevealFail: "无法显示 — 请再试一次。",
+    payWithLabel: "付款方式", payCard: "💳 信用卡（示范）", payPaypal: "PayPal",
+    paypalNote: "PayPal 为示范按钮。正式版将使用您的 PayPal 商业帐户。",
+    referBanner: "❤️ 把本网站推荐给亲友 — 帮助更多家庭找到可信赖的照护。",
+    referShareBtn: "分享", referCopied: "连结已复制 ✓",
+    marqueeAide: "🎉 前 100 位加入的家政员享免费会员！· 立即加入并上架。",
+    langEnglish: "English", langZhTW: "繁体中文", langZhCN: "简体中文", langEs: "Español",
+    suName: "单次解锁", suPrice: "$4.99", suPer: " 一次性",
+    suBlurb: "还不想加入会员？单次解锁这位照护者的完整档案与联络方式。",
+    featuredBadge: "★ 精选",
+    teaserName: "已验证照护者",
+    tabAgencies: "🏛️ 照护机构",
+    noAgencies: "目前尚无机构伙伴。",
+    advertiseLine: "您是持牌居家照护机构？欢迎在家家通刊登广告 — 请联系 support@kakatong.app。",
+    medicaidTeaser: "家人可能符合 Medicaid 资格？查看持牌机构",
+    partnersTitle: "Medicaid 与持牌机构伙伴",
+    partnersSub: "您的家人可能符合 Medicaid 居家照护资格？这些持牌机构可协助您确认资格、提出申请并获得保险给付的照护。",
+    learnPartnersTitle: "Kakatong Learn 学习伙伴",
+    learnPartnersSub: "经过验证的补习班、升学考试准备、中文学校及程式设计课程 — 值得信赖的学习伙伴。",
+    kidsPartnersTitle: "Kakatong Kids 儿童伙伴",
+    kidsPartnersSub: "经过验证的音乐、游泳、武术、舞蹈及艺术课程 — 值得信赖的儿童活动伙伴。",
+    learnTabLabel: "伙伴", kidsTabLabel: "伙伴",
+    sponsoredTag: "赞助", partnerCall: "致电", partnerSite: "网站",
+    postFeeTitle: "征求发布费",
+    postFeeNote: "每则征求一次性收费 $9.99。示范结帐 — 原型不会实际收费；正式版将使用 Stripe 安全付款页面。",
+    payPublish: "支付 $9.99 并发布",
+    aideProLocked: "客户联络方式仅限 Aide Pro 会员查看。",
+    aideProBtn: "成为 Aide Pro — 每月 $14.99（示范）",
+    aideProSignInFirst: "请先登入以查看客户联络方式",
+    aideProAidesOnly: "Aide Pro 仅供照护者（aide 角色）使用。请以照护者身份注册或联系客服。",
+    tAidePro: "Aide Pro 已启用 — 客户联络方式已解锁 ✓",
+    tUnlocked: "已解锁照护者 ✓",
+    plan_monthly: "月缴", plan_quarterly: "季缴（3 个月）", plan_annual: "年缴", plan_week_pass: "一周通行证",
+    blurb_monthly: "完整功能，随时取消。",
+    blurb_week_pass: "一周通行证 — 无限查看照护者与机构联络方式。",
+    blurb_quarterly: "省 17% — 最受欢迎。",
+    blurb_annual: "最划算 — 省 37%。",
+    lServicesNeeded: "需要的服务",
+    grpSenior: "长者照护", grpChild: "儿童与家庭", grpHome: "家务协助", grpExtended: "进阶照护",
+    authTitle: "会员帐号",
+    authSub: "建立免费帐号，您的会员资格即可在任何装置上使用。",
+    signUp: "建立帐号", signIn: "登入",
+    lEmailAddr: "电子邮件", lPassword: "密码（6 位以上）",
+    authToLogin: "已有帐号？登入",
+    authToSignup: "新用户？建立帐号",
+    authErr: "登入失败 — 请检查电子邮件与密码。",
+    authConfirm: "帐号已建立 — 请点击确认邮件后再登入。",
+    signOut: "登出", tSignedIn: "欢迎 ✓",
+    disclaimerTitle: "联系这位照护者之前，请注意：",
+    disclaimerLead: "家家通 (Kakatong) 是一个资讯平台与市集，并非仲介公司、雇主或人力派遣机构。在雇用任何人之前，您需自行进行必要的查核与判断。",
+    disclaimerPoint1: "亲自面试照护者并查核推荐人",
+    disclaimerPoint2: "确认证照、工作许可与身份文件",
+    disclaimerPoint3: "建议进行专业背景调查",
+    disclaimerPoint4: "以书面确认薪资、班表与工作内容",
+    disclaimerPoint5: "家家通不介入您与照护者之间的雇用、薪资或服务关系，亦不对因此产生的任何争议、伤害、损失或损害承担责任",
+    disclaimerCheck: "我了解并同意 — 我将自行负责筛选与雇用决定",
+    disclaimerAgree: "我同意 — 显示联络资讯",
+    disclaimerCancel: "取消",
+    disclaimerFooter: "完整条款：kakatong.app/terms",
+    myAccount: "我的帐户",
+    myAccountTitle: "帐户与会员资讯",
+    accountInfoLabel: "帐户资讯",
+    membershipLabel: "会员资格",
+    daysLeftLabel: "剩余天数",
+    unlocksUsedLabel: "已使用解锁",
+    noActivePlan: "尚无会员方案",
+    planUpgrade: "查看会员方案",
+    updateProfile: "更新个人资料",
+    saveChanges: "储存变更",
+    nameLabel: "姓名", emailLabel: "电子邮件", phoneLabel: "电话",
+    tProfileSaved: "个人资料已更新 ✓",
+    expiresLabel: "到期日",
+    membershipActive: "有效",
+    membershipExpired: "已过期 — 续订以继续存取",
+    phoneAuthTitle: "以手机号码登入",
+    phoneAuthSub: "我们会发送 6 位数验证码。您的帐号可在任何装置使用。",
+    lPhoneNumber: "手机号码",
+    lVerifyCode: "6 位数验证码",
+    lSetPin: "设定 6 位数 PIN 码",
+    lConfirmPin: "确认 PIN 码",
+    lEnterPin: "输入您的 PIN 码",
+    phoneAuthSend: "发送验证码",
+    phoneAuthContinue: "继续",
+    phoneAuthVerify: "验证",
+    phoneAuthResend: "没收到？重新发送",
+    phoneAuthBad: "验证码错误或已过期，请再试一次。",
+    phoneAuthWrongPin: "手机或 PIN 码错误。",
+    phoneAuthPinMismatch: "两次输入的 PIN 码不同。",
+    phoneAuthPinLen: "PIN 码必须为 6 位数。",
+    phoneAuthSendErr: "无法发送验证码，请检查手机号码。",
+    phoneAuthPhoneBad: "请输入有效的手机号码。",
+    phoneAuthNewUser: "欢迎！请简单介绍一下您。",
+    phoneAuthReturning: "欢迎回来",
+    phoneAuthRolePrompt: "我是…",
+    roleMember: "寻找照护的家庭",
+    roleAide: "照护者 / 家政员",
+    roleAgency: "居家照护机构",
+    roleRequired: "请先选择您的身分以继续。",
+    signingUpAs: "注册身分",
+    landingRolePrompt: "第一次使用？请选择您的身分开始：",
+    phoneAuthFinish: "完成",
+    signInBtn: "登入",
+    // Home landing (v3.10)
+    landingHeroTitle: "一个平台，满足每个家庭的需求",
+    landingHeroSub: "家家通 Kakatong 连结家庭与经过验证的照护员、家教与教练 — 都来自您熟悉信赖的社区。",
+    landingHeroCta: "已有帐号？登入",
+    pickCategoryTitle: "您今天想找什么？",
+    pickCategorySub: "选择类别，浏览附近经过验证的服务提供者。",
+    landingCareTag: "值得信赖的照护 — 陪伴每一个重要时刻。",
+    landingCareItems: ["家政、长者照护", "育儿、褓姆", "陪伴、短期照护"],
+    landingLearnTag: "因材施教的家教与老师。",
+    landingLearnItems: ["学科补习、升学考试准备", "音乐理论、语言学习", "大学申请辅导"],
+    landingKidsTag: "课后、周末 — 快乐学习，健康成长。",
+    landingKidsItems: ["钢琴、小提琴、舞蹈", "游泳、运动教练", "美术、绘画、武术"],
+    landingBrowse: "浏览",
+    howItWorksTitle: "家家通如何运作",
+    qrShareTitle: "分享家家通 Kakatong",
+    qrShareSub: "用手机扫描 QR 码即可造访 kakatong.app",
+    step1Title: "浏览经过验证的服务者",
+    step1Sub: "以邮递区号、语言和时薪搜寻。每位服务者皆经身份与证照查核。",
+    step2Title: "直接联系",
+    step2Sub: "以电话或讯息直接联系，无中介抽成。",
+    step3Title: "以您的条件雇用",
+    step3Sub: "由您决定薪资、起始时间，以及合作长度。",
+    agencyReports: "机构报告",
+    agencyMyProfile: "我的档案",
+    agencyProfileTitle: "机构档案",
+    agencyProfileSub: "更新您机构的公开资讯，会员家庭可见。",
+    agencyProfileSaved: "档案已更新 ✓",
+    agencyProfileNotFound: "此帐户未建立机构档案。请联系 support@kakatong.app 协助设置。",
+    agencyLocked: "已认证居家照护机构",
+    agencyLockedSub: "会员与家政员 Pro 可查看联络方式。",
+    agencyUnlockBtn: "🔒 解锁机构联络资讯",
+    agencyDashTitle: "机构报告",
+    agencyDashSub: "寻找照护的家庭 — 过去 30 天的真实活动数据。",
+    hotAides: "热门家政员 — 过去 30 天",
+    hotAidesSub: "家庭最常浏览和联系的照护者。",
+    marketDemand: "寻找照护的区域",
+    marketDemandSub: "家庭搜寻最多的 ZIP 邮区。",
+    tblRank: "排名", tblAide: "家政员", tblLocation: "地区",
+    tblViews: "浏览", tblContacts: "联系", tblRate: "联系率",
+    tblZip: "邮区", tblSearches: "搜寻次数", tblResults: "平均结果",
+    reportEmpty: "过去 30 天暂无活动数据。",
+    upgradeCta: "🔒 解锁完整报告 — 查看所有热门家政员与搜寻数据",
+    upgradeBtn: "升级查看完整报告",
+    demoSeedBtn: "产生示范资料",
+    demoSeedDone: "已新增示范事件数：",
+    demoSeedFail: "产生失败 — 请查看主控台。",
+    hiredBtn: "✓ 我已聘用这位照护者",
+    hireFormLabel: "您的称呼（将与您日后的评价一同显示）",
+    hireConfirm: "确认聘用",
+    tHired: "🎉 恭喜配对成功！欢迎随时留下评价。",
+    hiredBadge: "✓ 透过家家通聘用",
+    reviews: "评价", writeReview: "撰写评价",
+    commentPh: "服务如何？守时、照护品质、沟通…",
+    submitReview: "送出评价", noReviews: "目前还没有评价。",
+    errReview: "请选择星等并填写称呼。",
+    tReview: "感谢您 — 评价已发布 ✓",
+    faqTitle: "常见问题", faqClientTitle: "给家庭（客户）", faqAideTitle: "给照护者", faqLink: "常见问题", whyMembership: "为何要加入会员？",
+    fPrivacy: "隐私政策", fTerms: "服务条款", fBackup: "备份（测试用）",
+    fCopy: "© 2026 Kakatong 家家通。家庭须自行负责审核与聘用决定。",
+    tProfileLive: "您的档案已送出审核 — 通过验证后将显示于名录中 ✓",
+    verifiedBadge: "✓ 已验证", tProfileUpd: "档案已更新 ✓", tProfileRem: "档案已删除。",
+    tJobLive: "您的征求已发布！🎉", tJobUpd: "征求已更新 ✓", tJobRem: "征求已删除。",
+    tMember: "会员已启用 — 联络方式已解锁 ✓",
+  },
   es: {
     tagline: "家家通 · Cuidado a domicilio de confianza para toda necesidad",
     heroTitle: "Manos que cuidan la vida diaria",
@@ -672,7 +974,28 @@ const STRINGS = {
     demoText: "Pago de demostración: este prototipo no cobra nada. En la versión real se abrirá la página segura de Stripe — tarjetas de cualquier país, Apple Pay, Google Pay, Alipay y WeChat Pay.",
     activate: "Activar membresía demo", popular: "MÁS POPULAR", back: "← Volver",
     benefitsTitle: "Toda membresía incluye:",
-    benefit1: "Contactos ilimitados con cuidadores",
+    benefit1: "Desbloquee contactos de cuidadores verificados — $9.99 por 3",
+    memName: "Membresía Anual", memPrice: "$19.99", memPer: "/año",
+    memBlurb: "Únase por un año y desbloquee contactos de cuidadores en paquetes de 3.",
+    packName: "3 Contactos", packPrice: "$9.99", packPer: "/ 3 contactos",
+    packBlurb: "Revele teléfono y correo de hasta 3 cuidadores. Compre otros 3 cuando quiera.",
+    creditsLabel: "Contactos restantes", contactsRevealedLabel: "Contactos revelados",
+    needMembershipTitle: "Únase para contactar cuidadores",
+    needMembershipSub: "Una membresía de $19.99/año le permite desbloquear contactos de cuidadores.",
+    needContactsTitle: "Comprar contactos",
+    needContactsSub: "$9.99 desbloquea 3 cuidadores — se usa una revelación por cuidador.",
+    buyMembershipBtn: "Únase por $19.99/año", buyContactsBtn: "Comprar 3 contactos — $9.99",
+    revealUses: "Ver contacto (usa 1)", contactsLeftInline: "restantes",
+    lockedNeedMember: "Únase a una membresía para ver contactos de cuidadores.",
+    lockedNeedContacts: "Sin revelaciones — compre 3 más por $9.99.",
+    tMembership: "¡Membresía activa — bienvenido! 🎉", tContacts: "3 contactos añadidos ✓",
+    tRevealFail: "No se pudo revelar — intente de nuevo.",
+    payWithLabel: "Pagar con", payCard: "💳 Tarjeta (demo)", payPaypal: "PayPal",
+    paypalNote: "PayPal se muestra como demo. El pago real usa su cuenta comercial de PayPal.",
+    referBanner: "❤️ Recomiende este sitio a amigos y familia — ayude a más familias a encontrar cuidado.",
+    referShareBtn: "Compartir", referCopied: "Enlace copiado ✓",
+    marqueeAide: "🎉 ¡Los primeros 100 auxiliares reciben membresía GRATIS! · Únase ahora.",
+    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     benefit2: "Reemplazo gratuito si su cuidador deja de estar disponible",
     benefit3: "Publique solicitudes — deje que los cuidadores lo contacten",
     benefit4: "Escriba y lea reseñas verificadas",
@@ -910,7 +1233,13 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.12.26"; // ← bumped on every code update
+const APP_VERSION = "v3.13.0"; // ← bumped on every code update
+// v3.13.0: (1) 中文 split into 繁體(zh) + 简体(zhCN); 4-language switcher.
+//   (2) PayPal added as a payment method in checkout. (3) Referral banner.
+//   (4) Scrolling promo marquee (first 100 aides free membership). (5) NEW client
+//   pricing: $19.99/yr Annual Membership + $9.99 per 3 contact reveals (metered);
+//   single-unlock and week-pass removed. Needs members.contact_credits column
+//   (run v3130_contact_credits.sql).
 // v3.12.26: admin-assisted PIN reset. Admin Members tab has a "🔑 PIN" button
 //   per user that sets a new temporary PIN via the admin_reset_pin SECURITY
 //   DEFINER RPC (run v31226_admin_reset_pin.sql). Works for every role.
@@ -2096,7 +2425,9 @@ function LegalDisclaimerModal({ open, onAgree, onCancel }) {
   );
 }
 
-function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
+function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, onNeedMembership, onNeedContacts, onConsumeReveal, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
+  // v3.13.0: membership still gates general features; contact reveals are metered.
+  const subscribed = isMember;
   const { L, ts } = useLang();
   const [hireOpen, setHireOpen] = useState(false);
   const [hireName, setHireName] = useState(hireDefault || "");
@@ -2141,12 +2472,21 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
     setContactRevealed(true);
   }
 
-  // v3.12.7: gate the reveal on the legal disclaimer.
-  // We remember the ack in localStorage — once per browser is enough.
+  // v3.13.0: after the disclaimer, spend a contact credit (unless this aide was
+  // already unlocked). If out of credits, route the client to buy a $9.99 pack.
+  async function commitReveal() {
+    if (!isUnlocked) {
+      const ok = await onConsumeReveal(aide);
+      if (!ok) { onNeedContacts(); return; }
+    }
+    doRevealContact();
+  }
+
+  // v3.12.7: gate the reveal on the legal disclaimer (once per browser).
   function requestRevealContact() {
     let acked = false;
     try { acked = localStorage.getItem("kk_disclaimer_ack_v1") === "1"; } catch (e) { /* ignore */ }
-    if (acked) { doRevealContact(); return; }
+    if (acked) { commitReveal(); return; }
     setShowDisclaimer(true);
   }
 
@@ -2207,7 +2547,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
             memberSession,
           });
           setShowDisclaimer(false);
-          doRevealContact();
+          commitReveal();
         }}
       />
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
@@ -2255,54 +2595,41 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
             </p>
           )}
           {aide.bio && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{aide.bio}</p>}
-          {subscribed ? (
-            contactRevealed ? (
-              <p style={{ margin: 0 }}>
-                <strong>{L.contactLbl}</strong>{" "}
-                <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
-                {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
-              </p>
-            ) : (
-              <div style={{ padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
-                <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>
-                  {L.contactHidden}
-                </p>
-                <button
-                  type="button"
-                  onClick={requestRevealContact}
-                  style={{
-                    padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary,
-                    color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-                  }}
-                >
-                  📞 {L.viewContact}
-                </button>
-              </div>
-            )
-          ) : (
+          {/* v3.13.0: metered contact reveals ($9.99 per 3), gated by membership */}
+          {!isMember ? (
             <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
-                🔒 {L.lockedLine}
-              </p>
-              <button
-                type="button"
+              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>🔒 {L.lockedNeedMember}</p>
+              <button type="button"
                 onClick={async () => {
-                  await trackContactReveal({
-                    caregiverId:   aide.id,
-                    caregiverName: aide.name,
-                    profileViewId: currentViewId,
-                    searchQueryId,
-                    wasSubscribed: false,
-                    memberSession,
-                  });
-                  onRequireSub();
+                  await trackContactReveal({ caregiverId: aide.id, caregiverName: aide.name, profileViewId: currentViewId, searchQueryId, wasSubscribed: false, memberSession });
+                  onNeedMembership();
                 }}
-                style={{
-                  padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber,
-                  color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
-                }}
-              >
-                {L.unlock}
+                style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
+                {L.buyMembershipBtn}
+              </button>
+            </div>
+          ) : (isUnlocked || contactRevealed) ? (
+            <p style={{ margin: 0 }}>
+              <strong>{L.contactLbl}</strong>{" "}
+              <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
+              {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
+            </p>
+          ) : credits > 0 ? (
+            <div style={{ padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
+              <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>
+                {L.contactHidden} · <strong style={{ color: T.primary }}>{credits} {L.contactsLeftInline}</strong>
+              </p>
+              <button type="button" onClick={requestRevealContact}
+                style={{ padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+                📞 {L.revealUses}
+              </button>
+            </div>
+          ) : (
+            <div style={{ padding: 12, background: "#FFF8E7", borderRadius: 10, border: `1px solid ${T.amber}` }}>
+              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>🔒 {L.lockedNeedContacts}</p>
+              <button type="button" onClick={onNeedContacts}
+                style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
+                {L.buyContactsBtn}
               </button>
             </div>
           )}
@@ -2378,7 +2705,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
                 </div>
               </div>
             ) : (
-              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onRequireSub())}
+              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onNeedMembership())}
                 style={{ marginTop: 4, padding: "10px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
                 {subscribed ? L.writeReview : "🔒 " + L.writeReview}
               </button>
@@ -2401,7 +2728,7 @@ function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = 
                 wasSubscribed: false,
                 memberSession,
               });
-              onRequireSub();
+              onNeedMembership();
               return;
             }
             if (!expanded) {
@@ -2911,9 +3238,12 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
 //   • $19.99 week pass (unlimited access to all aides AND agencies for 7 days)
 // Legacy monthly/quarterly/annual subscribers keep access until their existing
 // subscribed_until expires (grandfathered via the same field).
+// v3.13.0: single annual membership. Contact reveals are metered separately
+// (CONTACT_PACK: $9.99 per 3 reveals) — see buyContactPack / consumeReveal.
 const PLANS = [
-  { id: "week_pass", name: "Week Pass", price: "$19.99", per: "/week", days: 7, blurb: "Unlimited access to home aides and agencies for 7 days.", featured: true },
+  { id: "annual", name: "Annual Membership", price: "$19.99", per: "/year", days: 365, featured: true },
 ];
+const CONTACT_PACK = { price: "$9.99", credits: 3 }; // one purchase = 3 contact reveals
 
 function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, onSignOut }) {
   const { L } = useLang();
@@ -2998,10 +3328,15 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
       </div>
 
       {/* Usage stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
         <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
           <div style={{ fontSize: 26, fontWeight: 800, color: T.primary }}>{unlocksUsed}</div>
-          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.unlocksUsedLabel}</div>
+          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.contactsRevealedLabel}</div>
+        </div>
+        {/* v3.13.0: remaining contact reveals */}
+        <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: T.amber }}>{client?.contactCredits || 0}</div>
+          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.creditsLabel}</div>
         </div>
         {isActive && (
           <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
@@ -3085,106 +3420,87 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
   );
 }
 
-function PlansView({ onActivate, onBack, singleUnlock, onSingleUnlock }) {
+// v3.13.0: adaptive paywall.
+//   • Not a member  -> show the $19.99/yr Annual Membership.
+//   • Member w/o reveals -> show the $9.99 / 3-contacts pack.
+// intent: "membership" | "contacts" (which the caller wants to buy first).
+function PlansView({ isMember, credits, intent, onBuyMembership, onBuyContacts, onBack }) {
   const { L } = useLang();
-  const [selected, setSelected] = useState(null);
+  const [method, setMethod] = useState("card"); // v3.13.0: card | paypal (demo)
+  const showContacts = isMember || intent === "contacts";
+  const primaryIsContacts = isMember; // members buy contacts; guests join first
+
+  const PayBox = ({ label, price, per, onPay, note }) => (
+    <div style={{ border: `2px solid ${T.primary}`, borderRadius: 14, padding: 16, marginBottom: 14, background: "#fff" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+        <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{label}</span>
+        <span>
+          <span style={{ fontSize: 22, fontWeight: 800, color: T.primary }}>{price}</span>
+          <span style={{ fontSize: 13, color: T.inkSoft }}>{per}</span>
+        </span>
+      </div>
+      {note && <div style={{ fontSize: 13.5, color: T.inkSoft, marginBottom: 12 }}>{note}</div>}
+      {/* payment method selector (v3.13.0 — includes PayPal) */}
+      <div style={{ fontSize: 11.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, marginBottom: 6 }}>{L.payWithLabel.toUpperCase()}</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {[["card", L.payCard, "#fff", T.ink], ["paypal", L.payPaypal, "#FFC439", "#003087"]].map(([id, lbl, bg, fg]) => (
+          <button key={id} type="button" onClick={() => setMethod(id)}
+            style={{
+              flex: 1, padding: "10px 12px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
+              fontSize: 14, fontWeight: 800, color: fg, background: bg,
+              border: `2px solid ${method === id ? T.primary : T.line}`,
+            }}>
+            {id === "paypal" ? "Pay" : ""}{id === "paypal" ? <span style={{ color: "#009cde" }}>Pal</span> : lbl}
+          </button>
+        ))}
+      </div>
+      <p style={{ fontSize: 12, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.5 }}>
+        {method === "paypal" ? L.paypalNote : L.demoText}
+      </p>
+      <button type="button" onClick={onPay}
+        style={{
+          width: "100%", padding: "14px", borderRadius: 12, border: "none",
+          background: method === "paypal" ? "#FFC439" : T.primary,
+          color: method === "paypal" ? "#003087" : "#fff",
+          fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+        }}>
+        {method === "paypal" ? "PayPal · " : ""}{label} · {price}
+      </button>
+    </div>
+  );
+
   return (
     <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}` }}>
-      <button
-        type="button"
-        onClick={onBack}
-        style={{
-          marginBottom: 16, padding: "8px 14px", borderRadius: 999,
-          border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
-          fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-        }}
-      >
+      <button type="button" onClick={onBack}
+        style={{ marginBottom: 16, padding: "8px 14px", borderRadius: 999, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
         {L.back}
       </button>
       <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
-        {L.plTitle}
+        {primaryIsContacts ? L.needContactsTitle : L.needMembershipTitle}
       </h2>
       <p style={{ margin: "0 0 20px", fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>
-        {L.plSub}
+        {primaryIsContacts ? L.needContactsSub : L.needMembershipSub}
       </p>
 
-      <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 16px", marginBottom: 18 }}>
-        <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 6 }}>{L.benefitsTitle}</div>
-        {[L.benefit1, L.benefit2, L.benefit3, L.benefit4].map((b) => (
-          <div key={b} style={{ fontSize: 14, color: T.inkSoft, marginBottom: 4 }}>✓ {b}</div>
-        ))}
-      </div>
-
-      {singleUnlock && (
-        <div style={{ border: `2px solid ${T.amber}`, borderRadius: 14, padding: 16, marginBottom: 14, background: "#FFFDF7" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{L.suName}</span>
-            <span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>{L.suPrice}</span>
-              <span style={{ fontSize: 13, color: T.inkSoft }}>{L.suPer}</span>
-            </span>
-          </div>
-          <div style={{ fontSize: 13.5, color: T.inkSoft, marginTop: 4, marginBottom: 10 }}>{L.suBlurb}</div>
-          <button
-            type="button"
-            onClick={onSingleUnlock}
-            style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 15.5, cursor: "pointer", fontFamily: "inherit" }}
-          >
-            {L.suName} ✓
-          </button>
+      {isMember && (
+        <div style={{ padding: "10px 14px", borderRadius: 10, background: "#EFF3EC", border: `1px solid ${T.primary}`, marginBottom: 16, fontSize: 13.5, color: T.ink, fontWeight: 700 }}>
+          ✓ {L.memName} · {L.creditsLabel}: {credits}
         </div>
       )}
 
-      <div style={{ display: "grid", gap: 12 }}>
-        {PLANS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setSelected(p)}
-            style={{
-              textAlign: "left", padding: "16px", borderRadius: 14, cursor: "pointer", fontFamily: "inherit",
-              border: `2px solid ${selected?.id === p.id ? T.primary : p.featured ? T.amber : T.line}`,
-              background: selected?.id === p.id ? "#EFF6F3" : "#fff",
-              position: "relative",
-            }}
-          >
-            {p.featured && (
-              <span style={{ position: "absolute", top: -10, right: 14, background: T.amber, color: "#3A2A08", fontSize: 11.5, fontWeight: 800, padding: "3px 10px", borderRadius: 999 }}>
-                {L.popular}
-              </span>
-            )}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{L["plan_" + p.id]}</span>
-              <span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>{p.price}</span>
-                <span style={{ fontSize: 13, color: T.inkSoft }}>{p.per}</span>
-              </span>
-            </div>
-            <div style={{ fontSize: 13.5, color: T.inkSoft, marginTop: 4 }}>{L["blurb_" + p.id]}</div>
-          </button>
-        ))}
-      </div>
-
-      {selected && (
-        <div style={{ marginTop: 18, padding: 16, background: T.surface, borderRadius: 14, border: `1px solid ${T.line}` }}>
-          <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
-            {L["plan_" + selected.id]} — {selected.price}{selected.per}
+      {/* Members buy contacts; guests join membership first */}
+      {primaryIsContacts ? (
+        <PayBox label={L.packName} price={CONTACT_PACK.price} per={L.packPer} note={L.packBlurb} onPay={onBuyContacts} />
+      ) : (
+        <>
+          <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 16px", marginBottom: 16 }}>
+            <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 6 }}>{L.benefitsTitle}</div>
+            {[L.benefit1, L.benefit2, L.benefit3, L.benefit4].map((b) => (
+              <div key={b} style={{ fontSize: 14, color: T.inkSoft, marginBottom: 4 }}>✓ {b}</div>
+            ))}
           </div>
-          <p style={{ fontSize: 13.5, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.5 }}>
-            {L.demoText}
-          </p>
-          <button
-            type="button"
-            onClick={() => onActivate(selected)}
-            style={{
-              width: "100%", padding: "14px", borderRadius: 12, border: "none",
-              background: T.primary, color: "#fff", fontSize: 16.5, fontWeight: 800,
-              cursor: "pointer", fontFamily: "inherit",
-            }}
-          >
-            {L.activate}
-          </button>
-        </div>
+          <PayBox label={L.memName} price={L.memPrice} per={L.memPer} note={L.memBlurb} onPay={onBuyMembership} />
+        </>
       )}
     </div>
   );
@@ -3227,6 +3543,24 @@ const FAQ = {
       ["評價如何幫助我賺更多？", "評價優良的照護者會最先被聯繫，也能有底氣開出較高時薪。每服務好一個家庭，都會在您的檔案上累積永久的口碑 — 這是您在平台上最有價值的資產。"],
       ["我的收入需要被抽成嗎？", "不需要。家庭依雙方議定的時薪直接付款給您，家家通不從您的時薪中抽取任何費用。"],
       ["「已驗證」標章對我有什麼意義？", "驗證代表您的身分與所列資格已經過審核 — 通過驗證的照護者獲得家庭聯繫的機會顯著更多。請保持檔案上的證照資訊最新，發揮最大效益。"],
+    ],
+  },
+  zhCN: {
+    client: [
+      ["浏览是免费的吗？", "是的。任何人都可以免费搜寻及浏览所有经验证的照护者档案。成为会员后，即可解锁完整档案与每位照护者的直接联络方式（电话与电子邮件）。"],
+      ["已经请到人了，为什么还要续会员？", "因为照护需求会变化。会员在照护者因生病、时间冲突或离职而无法继续时，可免费重新配对。您也可以发布紧急替补需求，并随需求变化（增加时数、喘息照护、术后照护）联系任何照护者。会员资格是您的安全网，不只是一次性的搜寻。"],
+      ["照护者有经过验证吗？", "名录中的每位照护者都经过家家通审核后才会显示 — 这就是 ✓ 已验证标章的意义。我们仍建议家庭亲自面谈并查核推荐人；平台提供评价与工具协助您做好把关。"],
+      ["时薪由谁决定？", "由您与照护者直接商定，中间没有仲介抽成 — 照护者通常比仲介工资赚得多，而家庭往往比仲介收费付得少。"],
+      ["我住在外州或海外，可以为父母安排照护吗？", "当然可以 — 这正是家家通的核心服务之一。输入家人居住地的邮递区号搜寻，以中文、英文或西班牙文浏览经验证的档案，从世界任何地方联系照护者。"],
+      ["如果照护者不合适怎么办？", "只要会员资格有效，随时回来即可 — 免费联系新的照护者或发布征求。会员永远不必从零开始，这份持续保障正是家庭续会的最大原因。"],
+    ],
+    aide: [
+      ["注册成为照护者要收费吗？", "不用。建立档案完全免费，通过验证后刊登也免费。"],
+      ["我要怎么找到客户？", "两个管道：您所在地区的家庭搜寻时会看到您的验证档案；您也可以浏览「征求看护」版面，直接联系发布需求的家庭。"],
+      ["找到工作后，为什么还要保持档案有效？", "因为每份工作终会结束 — 时间表变动、家庭搬迁、照护需求改变。保持档案活跃并累积好评，下一位客户会在目前工作结束前找到您，避免收入中断。把档案当作您长期经营的店面，而不是一次性的广告。"],
+      ["评价如何帮助我赚更多？", "评价优良的照护者会最先被联系，也能有底气开出较高时薪。每服务好一个家庭，都会在您的档案上累积永久的口碑 — 这是您在平台上最有价值的资产。"],
+      ["我的收入需要被抽成吗？", "不需要。家庭依双方议定的时薪直接付款给您，家家通不从您的时薪中抽取任何费用。"],
+      ["「已验证」标章对我有什么意义？", "验证代表您的身分与所列资格已经过审核 — 通过验证的照护者获得家庭联系的机会显著更多。请保持档案上的证照资讯最新，发挥最大效益。"],
     ],
   },
   es: {
@@ -5047,6 +5381,7 @@ export default function App() {
     } catch (e) { /* storage unavailable */ }
     try {
       const nav = (navigator.language || "").toLowerCase();
+      if (nav.startsWith("zh-cn") || nav.startsWith("zh-hans") || nav.startsWith("zh-sg")) return "zhCN";
       if (nav.startsWith("zh")) return "zh";
       if (nav.startsWith("es")) return "es";
     } catch (e) { /* no navigator */ }
@@ -5057,7 +5392,11 @@ export default function App() {
     try { localStorage.setItem("pcc_lang", id); } catch (e) { /* storage unavailable */ }
   };
   const L = STRINGS[lang];
-  const ts = (s) => (lang === "en" ? s : SERVICE_I18N[s]?.[lang] || s);
+  const ts = (s) => {
+    if (lang === "en") return s;
+    const lk = lang === "zhCN" ? "zh" : lang; // Simplified falls back to Traditional service dict
+    return SERVICE_I18N[s]?.[lk] || s;
+  };
   LANG_CURRENT = { lang, L, ts };
   const [view, setView] = useState("home"); // home | directory | register | postjob | plans | privacy | terms | backup
   const [category, setCategory] = useState(null); // v3.10: care | learn | kids — set from home landing
@@ -5082,9 +5421,11 @@ export default function App() {
   const [account, setAccount] = useState(null); // { id, email, name }
   const [authNext, setAuthNext] = useState(null); // resume action after sign-in
   const [signupRole, setSignupRole] = useState(null); // v3.12.25: role pre-picked from a landing button, locks the signup role
-  const subscribed = !!(client && client.subscribedUntil > Date.now());
-  const [pendingUnlock, setPendingUnlock] = useState(null);
+  const subscribed = !!(client && client.subscribedUntil > Date.now()); // v3.13.0: annual member
   const unlockedIds = client?.unlocks || [];
+  const contactCredits = client?.contactCredits || 0; // v3.13.0: remaining contact reveals
+  const [payIntent, setPayIntent] = useState("membership"); // v3.13.0: "membership" | "contacts"
+  const [showReferBanner, setShowReferBanner] = useState(true); // v3.13.0: referral banner dismissible
   const [aidePro, setAidePro] = useState(null);
   // v3.12.17 — Aide Pro requires signed-in + role=aide + valid Aide Pro subscription.
   // Prevents guest / client accounts from bypassing the paywall.
@@ -5151,6 +5492,7 @@ export default function App() {
               plan: m.plan,
               subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
               unlocks: m.unlocks || [],
+              contactCredits: m.contact_credits || 0,
             });
           }
         }
@@ -5314,9 +5656,8 @@ export default function App() {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* still activate in-session */ }
     setClient(rec);
-    setPendingUnlock(null);
     setView("directory");
-    showToast(L.tMember);
+    showToast(L.tMembership);
   }
 
   function signOut() {
@@ -5338,7 +5679,6 @@ export default function App() {
     setMaxAge("");
     setLastSearchId(null);
     setEditing(null);
-    setPendingUnlock(null);
     setAuthNext(null);
     setTab("aides");
     // v3.12.11 Fix 1: return to landing page instead of staying on profile/dashboard
@@ -5368,42 +5708,56 @@ export default function App() {
     showToast(L.tAidePro);
   }
 
-  async function activateSingleUnlock(acct = account) {
-    if (!pendingUnlock) return;
+  // v3.13.0: buy a $9.99 pack of 3 contact reveals (members only).
+  async function buyContactPack(acct = account) {
     if (!acct) {
-      setAuthNext({ type: "unlock" }); setSignupRole(null);
-      setView("signin");
-      window.scrollTo(0, 0);
+      setAuthNext({ type: "contacts" }); setSignupRole(null);
+      setView("signin"); window.scrollTo(0, 0);
       return;
     }
-    // v3.12.22: recover a missing account id before saving (see activatePlan).
     acct = await ensureAccountId(acct);
-    if (!acct || !acct.id) {
-      setAuthNext({ type: "unlock" }); // resume unlock after re-sign-in
-      handleMissingId(acct);
+    if (!acct || !acct.id) { setAuthNext({ type: "contacts" }); handleMissingId(acct); return; }
+    // must be an active annual member to buy contact packs
+    if (!(client && client.subscribedUntil > Date.now())) {
+      setPayIntent("membership"); setView("plans"); window.scrollTo(0, 0);
       return;
     }
-    const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
+    const rec = { ...(client || {}), contactCredits: (client?.contactCredits || 0) + CONTACT_PACK.credits };
     try {
-      // v3.12.21: send ONLY the field that actually changes for this action.
-      // name/email/phone live in user_profiles as source of truth (v3.12.15+).
-      // Sending fewer fields = less chance of hitting a constraint / type issue.
-      await saveMemberSubscription(acct.id, {
-        unlocks: rec.unlocks,
-      });
+      await saveMemberSubscription(acct.id, { contact_credits: rec.contactCredits });
     } catch (e) {
       const msg = (e && e.message) ? e.message : String(e);
-      showToast("Unlock save failed: " + msg.slice(0, 120));
-      console.error("saveMemberSubscription failed:", e);
+      showToast("Contacts save failed: " + msg.slice(0, 120));
       return;
     }
-    try {
-      localStorage.setItem("pcc_client", JSON.stringify(rec));
-    } catch (e) { /* keep in-session */ }
+    try { localStorage.setItem("pcc_client", JSON.stringify(rec)); } catch (e) { /* keep in-session */ }
     setClient(rec);
-    setPendingUnlock(null);
     setView("directory");
-    showToast(L.tUnlocked);
+    showToast(L.tContacts);
+  }
+
+  // v3.13.0: spend one contact credit to reveal an aide (persist). Returns bool.
+  async function consumeReveal(aide) {
+    if (!account) return false;
+    if ((client?.unlocks || []).includes(aide.id)) return true; // already unlocked — free
+    const credits = client?.contactCredits || 0;
+    if (credits <= 0) return false;
+    const acct = await ensureAccountId(account);
+    if (!acct || !acct.id) return false;
+    const rec = {
+      ...(client || {}),
+      unlocks: [...(client?.unlocks || []), aide.id],
+      contactCredits: credits - 1,
+    };
+    try {
+      await saveMemberSubscription(acct.id, { unlocks: rec.unlocks, contact_credits: rec.contactCredits });
+    } catch (e) {
+      showToast(L.tRevealFail);
+      return false;
+    }
+    try { localStorage.setItem("pcc_client", JSON.stringify(rec)); } catch (e) { /* keep in-session */ }
+    setClient(rec);
+    return true;
   }
 
   function showToast(msg) {
@@ -5464,6 +5818,36 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.surface, fontFamily: "'Avenir Next', 'Segoe UI', system-ui, sans-serif", color: T.ink }}>
+      {/* v3.13.0: marquee keyframes (inline styles can't declare @keyframes) */}
+      <style>{`@keyframes kkMarquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }`}</style>
+
+      {/* v3.13.0 (#4): scrolling promo — first 100 aides get free membership */}
+      <div style={{ background: T.amber, overflow: "hidden", whiteSpace: "nowrap" }}>
+        <div style={{ display: "inline-block", padding: "7px 0", color: "#3A2A08", fontSize: 13.5, fontWeight: 800, animation: "kkMarquee 18s linear infinite" }}>
+          {L.marqueeAide}　·　{L.marqueeAide}
+        </div>
+      </div>
+
+      {/* v3.13.0 (#3): referral banner (dismissible) */}
+      {showReferBanner && (
+        <div style={{ background: "#EFF3EC", borderBottom: `1px solid ${T.line}`, padding: "9px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{L.referBanner}</span>
+          <button type="button"
+            onClick={async () => {
+              const url = "https://kakatong.app";
+              try {
+                if (navigator.share) { await navigator.share({ title: "Kakatong 家家通", url }); }
+                else { await navigator.clipboard.writeText(url); showToast(L.referCopied); }
+              } catch (e) { try { await navigator.clipboard.writeText(url); showToast(L.referCopied); } catch (_) {} }
+            }}
+            style={{ padding: "6px 14px", borderRadius: 999, border: "none", background: T.primary, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+            🔗 {L.referShareBtn}
+          </button>
+          <button type="button" onClick={() => setShowReferBanner(false)}
+            style={{ background: "none", border: "none", color: T.inkSoft, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "0 4px" }} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
       {/* Header */}
       <header style={{ background: T.primaryDark, padding: "18px 20px 20px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
@@ -5536,13 +5920,14 @@ export default function App() {
                 {L.signInBtn}
               </button>
             )}
-            {[["en", "EN"], ["zh", "中文"], ["es", "ES"]].map(([id, label]) => (
+            {[["en", "EN"], ["zh", "繁"], ["zhCN", "简"], ["es", "ES"]].map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setLang(id)}
+                title={id === "zh" ? "繁體中文" : id === "zhCN" ? "简体中文" : label}
                 style={{
-                  padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                  padding: "5px 11px", borderRadius: 999, fontSize: 13, fontWeight: 700,
                   cursor: "pointer", fontFamily: "inherit",
                   border: `1.5px solid ${lang === id ? T.amber : "rgba(255,255,255,0.35)"}`,
                   background: lang === id ? T.amber : "transparent",
@@ -5620,7 +6005,7 @@ export default function App() {
               setAuthNext(null);
               showToast(L.tSignedIn);
               if (next && next.type === "plan") activatePlan(next.plan, acct);
-              else if (next && next.type === "unlock") activateSingleUnlock(acct);
+              else if (next && next.type === "contacts") buyContactPack(acct);
               else setView("directory");
             }}
           />
@@ -5648,6 +6033,7 @@ export default function App() {
                     plan: m.plan,
                     subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
                     unlocks: m.unlocks || [],
+                    contactCredits: m.contact_credits || 0,
                   });
                 }
               } catch (e) { /* not a subscriber yet — that's fine */ }
@@ -5659,8 +6045,8 @@ export default function App() {
                 activatePlan(next.plan, acct);
                 return;
               }
-              if (next && next.type === "unlock") {
-                activateSingleUnlock(acct);
+              if (next && next.type === "contacts") {
+                buyContactPack(acct);
                 return;
               }
               // Otherwise route by role
@@ -5747,7 +6133,14 @@ export default function App() {
             onCancel={() => { setJobEditing(null); setView("directory"); }}
           />
         ) : view === "plans" ? (
-          <PlansView onActivate={activatePlan} onBack={() => { setPendingUnlock(null); setView("directory"); }} singleUnlock={!!pendingUnlock} onSingleUnlock={activateSingleUnlock} />
+          <PlansView
+            isMember={subscribed}
+            credits={contactCredits}
+            intent={payIntent}
+            onBuyMembership={() => activatePlan(PLANS[0])}
+            onBuyContacts={buyContactPack}
+            onBack={() => setView("directory")}
+          />
         ) : view === "myaccount" ? (
           <MyAccountView
             account={account}
@@ -5771,7 +6164,7 @@ export default function App() {
                 console.error("profile save failed:", e);
               }
             }}
-            onUpgradePlan={() => { setView("plans"); window.scrollTo(0, 0); }}
+            onUpgradePlan={() => { setPayIntent(subscribed ? "contacts" : "membership"); setView("plans"); window.scrollTo(0, 0); }}
             onSignOut={signOut}
           />
         ) : view === "register" ? (
@@ -6005,7 +6398,7 @@ export default function App() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => { setPendingUnlock(null); setView("plans"); window.scrollTo(0, 0); }}
+                  onClick={() => { setPayIntent(subscribed ? "contacts" : "membership"); setView("plans"); window.scrollTo(0, 0); }}
                   style={{
                     padding: "9px 16px", borderRadius: 999, border: "none", background: T.amber,
                     color: "#3A2A08", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
@@ -6109,13 +6502,17 @@ export default function App() {
                   <AideCard
                     key={a.id}
                     aide={a}
-                    subscribed={subscribed || unlockedIds.includes(a.id)}
+                    isMember={subscribed}
+                    isUnlocked={unlockedIds.includes(a.id)}
+                    credits={contactCredits}
+                    onNeedMembership={() => { setPayIntent("membership"); setView("plans"); window.scrollTo(0, 0); }}
+                    onNeedContacts={() => { setPayIntent("contacts"); setView("plans"); window.scrollTo(0, 0); }}
+                    onConsumeReveal={consumeReveal}
                     reviews={reviews.filter((r) => r.caregiver_id === a.id)}
                     onAddReview={addReview}
                     hires={hires.filter((h) => h.caregiver_id === a.id)}
                     onHire={addHire}
                     hireDefault={account?.name || ""}
-                    onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
                     searchQueryId={lastSearchId}
