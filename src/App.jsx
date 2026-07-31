@@ -1282,7 +1282,8 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.5"; // ← bumped on every code update
+const APP_VERSION = "v3.13.6"; // ← bumped on every code update
+// v3.13.6: admin agency list now shows website + flags rows missing a phone.
 // v3.13.5: agency lists (admin + public) now sort alphabetically by name.
 // v3.13.3: Admin agency list adds a "🗂 All" button so you can see every
 //   category for a state at once (Care/Learn/Kids still filter individually).
@@ -5055,8 +5056,13 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                   {expired && <span style={{ color: T.danger, fontSize: 12, fontWeight: 800 }}> · EXPIRED — ad hidden</span>}
                 </div>
                 <div style={{ fontSize: 12.5, color: T.inkSoft }}>
-                  {a.areas} · {a.phone}{a.contact_name ? ` · ${a.contact_name}` : ""}{a.email ? ` · ${a.email}` : ""}
+                  {a.areas}{a.phone ? ` · ${a.phone}` : " · (no phone)"}{a.contact_name ? ` · ${a.contact_name}` : ""}{a.email ? ` · ${a.email}` : ""}
                 </div>
+                {a.website && (
+                  <div style={{ fontSize: 12.5, marginTop: 1 }}>
+                    <a href={a.website} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontWeight: 600 }}>{a.website}</a>
+                  </div>
+                )}
                 <div style={{ fontSize: 12.5, color: expired ? T.danger : T.inkSoft, fontWeight: 600 }}>
                   {a.monthly_fee ? `$${a.monthly_fee}/mo · ` : ""}{a.paid_until ? `paid until ${a.paid_until}` : "no billing date set"}
                 </div>
