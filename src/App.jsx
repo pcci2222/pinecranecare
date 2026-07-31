@@ -1272,7 +1272,9 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.2"; // ← bumped on every code update
+const APP_VERSION = "v3.13.3"; // ← bumped on every code update
+// v3.13.3: Admin agency list adds a "🗂 All" button so you can see every
+//   category for a state at once (Care/Learn/Kids still filter individually).
 // v3.13.2: Admin — agency list split into Care / Learn / Kids buttons (uses the
 //   agencies.vertical field, now editable in the agency form) and a by-State
 //   filter added to the Caregivers, Agencies, and Members tabs. Caregiver state
@@ -5007,17 +5009,17 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
           </div>
           {/* v3.13.2: category (Care / Learn / Kids) + state filter for the agency list */}
           <div style={{ display: "flex", gap: 8, margin: "6px 0 12px", flexWrap: "wrap", alignItems: "center" }}>
-            {[["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"]].map(([id, label]) => (
+            {[["all", "🗂 All"], ["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"]].map(([id, label]) => (
               <button key={id} type="button" onClick={() => setAgVertical(id)}
                 style={btn(agVertical === id ? T.primary : "#fff", agVertical === id ? "#fff" : T.ink, `1.5px solid ${agVertical === id ? T.primary : T.line}`)}>
-                {label} ({ags.filter((a) => (a.vertical || "care") === id).length})
+                {label} ({id === "all" ? ags.length : ags.filter((a) => (a.vertical || "care") === id).length})
               </button>
             ))}
             <span style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 800, color: T.inkSoft }}>STATE</span>
-            <StateFilter options={ags.filter((a) => (a.vertical || "care") === agVertical).map(stateOfRow)} />
+            <StateFilter options={ags.filter((a) => agVertical === "all" || (a.vertical || "care") === agVertical).map(stateOfRow)} />
           </div>
           {ags
-            .filter((a) => (a.vertical || "care") === agVertical && (stateFilter === "all" || stateOfRow(a) === stateFilter))
+            .filter((a) => (agVertical === "all" || (a.vertical || "care") === agVertical) && (stateFilter === "all" || stateOfRow(a) === stateFilter))
             .map((a) => {
             const today = new Date().toISOString().slice(0, 10);
             const expired = a.paid_until && a.paid_until < today;
