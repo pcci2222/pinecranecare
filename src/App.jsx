@@ -124,51 +124,6 @@ function isZipWithinRadius(aideZip, searchZip, miles) {
   return haversineMiles(a[0], a[1], s[0], s[1]) <= miles;
 }
 
-// v3.13.2: derive US state from a ZIP (first 3 digits → state) so admin can
-// filter caregivers by state without a schema change. Ranges are the standard
-// USPS SCF prefix allocations.
-const ZIP3_STATE = [
-  [5,5,"NY"],[6,9,"PR"],[10,27,"MA"],[28,29,"RI"],[30,38,"NH"],[39,49,"ME"],[50,59,"VT"],[60,69,"CT"],[70,89,"NJ"],
-  [100,149,"NY"],[150,196,"PA"],[197,199,"DE"],[200,205,"DC"],[206,219,"MD"],[220,246,"VA"],[247,268,"WV"],
-  [270,289,"NC"],[290,299,"SC"],[300,319,"GA"],[320,349,"FL"],[350,369,"AL"],[370,385,"TN"],[386,397,"MS"],
-  [398,399,"GA"],[400,427,"KY"],[430,459,"OH"],[460,479,"IN"],[480,499,"MI"],[500,528,"IA"],[530,549,"WI"],
-  [550,567,"MN"],[570,577,"SD"],[580,588,"ND"],[590,599,"MT"],[600,629,"IL"],[630,658,"MO"],[660,679,"KS"],
-  [680,693,"NE"],[700,714,"LA"],[716,729,"AR"],[730,749,"OK"],[750,799,"TX"],[800,816,"CO"],[820,831,"WY"],
-  [832,838,"ID"],[840,847,"UT"],[850,865,"AZ"],[870,884,"NM"],[885,885,"TX"],[889,898,"NV"],[900,961,"CA"],
-  [967,968,"HI"],[970,979,"OR"],[980,994,"WA"],[995,999,"AK"],
-];
-function zipToState(zip) {
-  const s = String(zip || "").replace(/\D/g, "");
-  if (s.length < 3) return "";
-  const p = parseInt(s.slice(0, 3), 10);
-  for (const [lo, hi, st] of ZIP3_STATE) if (p >= lo && p <= hi) return st;
-  return "";
-}
-const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
-
-// v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
-// bound so the family-side Age filter keeps working). ageBandLabel maps a stored
-// numeric age back to its display range.
-const AGE_RANGES = [[35, 40], [41, 45], [46, 50], [51, 55], [56, 60], [61, 200]];
-function ageBandLabel(age, L) {
-  const n = Number(age);
-  if (!n) return "";
-  for (const [lo, hi] of AGE_RANGES) {
-    if (n >= lo && n <= hi) return hi >= 200 ? `61 ${(L && L.ageAbove) || "and above"}` : `${lo}–${hi}`;
-  }
-  return String(age); // legacy exact age outside the bands
-}
-
-// v3.13.4: turn any email address inside a string into a clickable mailto link.
-function linkifyEmails(text) {
-  const re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-  return String(text || "").split(new RegExp("(" + re.source + ")", "g")).map((p, i) =>
-    re.test(p) && p.indexOf("@") > -1 && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(p)
-      ? <a key={i} href={"mailto:" + p} style={{ color: T.primary, fontWeight: 700 }}>{p}</a>
-      : p
-  );
-}
-
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
@@ -206,7 +161,6 @@ const STRINGS = {
     cameraNote: "On a phone, this opens your front camera.",
     lName: "Full name", lPhone: "Phone", lEmail: "Email", lCity: "City", lZip: "ZIP",
     lAge: "Age", lYrs: "Yrs experience", lRate: "Rate ($/hr)", lLang: "Languages spoken",
-    ageAbove: "and above", ageSelectPrompt: "Select age range",
     lServices: "Services you offer", lCerts: "Certifications", lAbout: "About you",
     manageProfile: "Caregiver? Manage my profile ✎",
     aideLoginTitle: "Manage my profile",
@@ -245,33 +199,11 @@ const STRINGS = {
     demoText: "Demo checkout: no real payment is collected in this prototype. In the live version, this button opens Stripe's secure payment page — accepting cards from any country, Apple Pay, Google Pay, Alipay (支付宝), and WeChat Pay (微信支付).",
     activate: "Activate demo membership", popular: "MOST POPULAR", back: "← Back",
     benefitsTitle: "Every membership includes:",
-    benefit1: "Unlock verified caregiver contacts — $9.99 per 3 reveals",
+    benefit1: "Unlimited caregiver contacts",
     benefit2: "Free replacement matching if your caregiver becomes unavailable",
     benefit3: "Post care requests — let caregivers come to you",
     benefit4: "Write and read verified reviews",
-    // v3.13.0 — client pricing: $19.99/yr membership + $9.99 per 3 contact reveals
-    memName: "Annual Membership", memPrice: "$19.99", memPer: "/year",
-    memBlurb: "Join for a year, then unlock caregiver contacts in packs of 3.",
-    packName: "3 Contact Reveals", packPrice: "$9.99", packPer: "/ 3 contacts",
-    packBlurb: "Reveal up to 3 caregivers' phone & email. Buy again anytime for 3 more.",
-    creditsLabel: "Contacts left", contactsRevealedLabel: "Contacts revealed",
-    needMembershipTitle: "Join to contact caregivers",
-    needMembershipSub: "A $19.99 / year membership lets you unlock caregiver contact info.",
-    needContactsTitle: "Buy contact reveals",
-    needContactsSub: "$9.99 unlocks 3 caregivers' phone & email — one reveal is used per caregiver.",
-    buyMembershipBtn: "Join for $19.99 / year", buyContactsBtn: "Buy 3 contacts — $9.99",
-    revealUses: "Reveal contact (uses 1)", contactsLeftInline: "reveals left",
-    lockedNeedMember: "Join a membership to view caregiver contacts.",
-    lockedNeedContacts: "You're out of reveals — buy 3 more for $9.99.",
-    tMembership: "Membership active — welcome! 🎉", tContacts: "3 contact reveals added ✓",
-    tRevealFail: "Couldn't reveal — please try again.",
-    payWithLabel: "Pay with", payCard: "💳 Card (demo)", payPaypal: "PayPal",
-    paypalNote: "PayPal shown for demo. Live checkout uses your PayPal business account.",
-    referBanner: "❤️ Refer this website to friends and family — help more families find trusted care.",
-    referShareBtn: "Share", referCopied: "Link copied ✓",
-    marqueeAide: "🎉 First 100 home aide joiners get FREE membership! · Join now and get listed.",
-    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
-    suName: "Single Unlock", suPrice: "$4.99", suPer: " one-time",
+    suName: "Single Unlock", suPrice: "$12.99", suPer: " one-time",
     suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
     featuredBadge: "★ Featured",
     teaserName: "Verified Caregiver",
@@ -292,13 +224,10 @@ const STRINGS = {
     payPublish: "Pay $9.99 & publish",
     aideProLocked: "Client contact info is available to Aide Pro members.",
     aideProBtn: "Become Aide Pro — $14.99/month (demo)",
-    aideProSignInFirst: "Sign in to access client contacts",
-    aideProAidesOnly: "Aide Pro is available only for caregivers (aide role). Sign up as an aide or contact support.",
     tAidePro: "Aide Pro active — client contacts unlocked ✓",
     tUnlocked: "Caregiver unlocked ✓",
-    plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual", plan_week_pass: "Week Pass",
+    plan_monthly: "Monthly", plan_quarterly: "3 Months", plan_annual: "Annual",
     blurb_monthly: "Full access, cancel anytime.",
-    blurb_week_pass: "One week pass — unlimited access to home aides and agencies.",
     blurb_quarterly: "Save 17% — most popular.",
     blurb_annual: "Best value — save 37%.",
     lServicesNeeded: "Services needed",
@@ -362,15 +291,12 @@ const STRINGS = {
     roleMember: "Family looking for care",
     roleAide: "Caregiver / Home aide",
     roleAgency: "Home-care agency",
-    roleRequired: "Please choose who you are to continue.",         // v3.12.25
-    signingUpAs: "Signing up as",                                    // v3.12.25
-    landingRolePrompt: "First time here? Get started as:",           // v3.12.25
     phoneAuthFinish: "Finish",
     signInBtn: "Sign in",
     // Home landing (v3.10)
     landingHeroTitle: "One trusted platform for every family need",
     landingHeroSub: "Kakatong 家家通 connects families with verified caregivers, tutors, and coaches — from the same community you know and trust.",
-    landingHeroCta: "Already have an account? Sign in",
+    landingHeroCta: "Sign in or create account",
     pickCategoryTitle: "What are you looking for today?",
     pickCategorySub: "Pick a category to browse verified providers near you.",
     landingCareTag: "Trusted caregivers for the moments that matter most.",
@@ -466,7 +392,6 @@ const STRINGS = {
     cameraNote: "手機上會開啟前置鏡頭。",
     lName: "姓名", lPhone: "電話", lEmail: "電子郵件", lCity: "城市", lZip: "郵遞區號",
     lAge: "年齡", lYrs: "經驗年數", lRate: "時薪（美元）", lLang: "會說的語言",
-    ageAbove: "歲以上", ageSelectPrompt: "選擇年齡範圍",
     lServices: "提供的服務", lCerts: "證照", lAbout: "自我介紹",
     manageProfile: "我是照護者？管理我的檔案 ✎",
     aideLoginTitle: "管理我的檔案",
@@ -505,33 +430,11 @@ const STRINGS = {
     demoText: "示範結帳：本原型不會收取任何費用。正式版將開啟 Stripe 安全付款頁面 — 支援各國信用卡、Apple Pay、Google Pay、支付寶與微信支付。",
     activate: "啟用示範會員", popular: "最受歡迎", back: "← 返回",
     benefitsTitle: "所有會員方案皆包含：",
-    benefit1: "解鎖經驗證照護者的聯絡方式 — 每 3 筆 $9.99",
+    benefit1: "無限次聯繫照護者",
     benefit2: "照護者無法繼續時，免費重新配對",
     benefit3: "發布照護徵求 — 讓照護者主動聯繫您",
     benefit4: "撰寫並查看真實評價",
-    // v3.13.0
-    memName: "年度會員", memPrice: "$19.99", memPer: "/年",
-    memBlurb: "先加入一年會員，再以每 3 筆為單位解鎖照護者聯絡方式。",
-    packName: "3 筆聯絡解鎖", packPrice: "$9.99", packPer: "／3 筆",
-    packBlurb: "解鎖最多 3 位照護者的電話與電郵。用完可隨時再購買 3 筆。",
-    creditsLabel: "剩餘解鎖次數", contactsRevealedLabel: "已解鎖聯絡方式",
-    needMembershipTitle: "加入會員以聯繫照護者",
-    needMembershipSub: "$19.99／年的會員資格可讓您解鎖照護者聯絡方式。",
-    needContactsTitle: "購買聯絡解鎖",
-    needContactsSub: "$9.99 可解鎖 3 位照護者的電話與電郵 — 每位照護者使用一次解鎖。",
-    buyMembershipBtn: "加入會員 $19.99／年", buyContactsBtn: "購買 3 筆聯絡 — $9.99",
-    revealUses: "顯示聯絡方式（使用 1 次）", contactsLeftInline: "次剩餘",
-    lockedNeedMember: "請先加入會員以查看照護者聯絡方式。",
-    lockedNeedContacts: "解鎖次數已用完 — 以 $9.99 再購買 3 筆。",
-    tMembership: "會員已啟用 — 歡迎加入！🎉", tContacts: "已新增 3 筆聯絡解鎖 ✓",
-    tRevealFail: "無法顯示 — 請再試一次。",
-    payWithLabel: "付款方式", payCard: "💳 信用卡（示範）", payPaypal: "PayPal",
-    paypalNote: "PayPal 為示範按鈕。正式版將使用您的 PayPal 商業帳戶。",
-    referBanner: "❤️ 把本網站推薦給親友 — 幫助更多家庭找到可信賴的照護。",
-    referShareBtn: "分享", referCopied: "連結已複製 ✓",
-    marqueeAide: "🎉 前 100 位加入的家政員享免費會員！· 立即加入並上架。",
-    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
-    suName: "單次解鎖", suPrice: "$4.99", suPer: " 一次性",
+    suName: "單次解鎖", suPrice: "$12.99", suPer: " 一次性",
     suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
     featuredBadge: "★ 精選",
     teaserName: "已驗證照護者",
@@ -552,13 +455,10 @@ const STRINGS = {
     payPublish: "支付 $9.99 並發布",
     aideProLocked: "客戶聯絡方式僅限 Aide Pro 會員查看。",
     aideProBtn: "成為 Aide Pro — 每月 $14.99（示範）",
-    aideProSignInFirst: "請先登入以查看客戶聯絡方式",
-    aideProAidesOnly: "Aide Pro 僅供照護者（aide 角色）使用。請以照護者身份註冊或聯繫客服。",
     tAidePro: "Aide Pro 已啟用 — 客戶聯絡方式已解鎖 ✓",
     tUnlocked: "已解鎖照護者 ✓",
-    plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳", plan_week_pass: "一週通行證",
+    plan_monthly: "月繳", plan_quarterly: "季繳（3 個月）", plan_annual: "年繳",
     blurb_monthly: "完整功能，隨時取消。",
-    blurb_week_pass: "一週通行證 — 無限查看照護者與機構聯絡方式。",
     blurb_quarterly: "省 17% — 最受歡迎。",
     blurb_annual: "最划算 — 省 37%。",
     lServicesNeeded: "需要的服務",
@@ -621,15 +521,12 @@ const STRINGS = {
     roleMember: "尋找照護的家庭",
     roleAide: "照護者 / 家政員",
     roleAgency: "居家照護機構",
-    roleRequired: "請先選擇您的身分以繼續。",
-    signingUpAs: "註冊身分",
-    landingRolePrompt: "第一次使用？請選擇您的身分開始：",
     phoneAuthFinish: "完成",
     signInBtn: "登入",
     // Home landing (v3.10)
     landingHeroTitle: "一個平台，滿足每個家庭的需求",
     landingHeroSub: "家家通 Kakatong 連結家庭與經過驗證的照護員、家教與教練 — 都來自您熟悉信賴的社區。",
-    landingHeroCta: "已有帳號？登入",
+    landingHeroCta: "登入或建立帳號",
     pickCategoryTitle: "您今天想找什麼？",
     pickCategorySub: "選擇類別，瀏覽附近經過驗證的服務提供者。",
     landingCareTag: "值得信賴的照護 — 陪伴每一個重要時刻。",
@@ -690,265 +587,6 @@ const STRINGS = {
     tJobLive: "您的徵求已發布！🎉", tJobUpd: "徵求已更新 ✓", tJobRem: "徵求已刪除。",
     tMember: "會員已啟用 — 聯絡方式已解鎖 ✓",
   },
-  zhCN: {
-    tagline: "家家通 · 全方位可信赖的居家照护",
-    heroTitle: "用心照护，安享日常",
-    heroText: "从长者陪伴、备餐、行动辅助，到儿童照护与课后看顾 — 为您的家人找到值得信赖的照护者。",
-    join: "+ 看护注册",
-    tabAides: "🔍 寻找看护", tabJobs: "📋 征求看护",
-    browseFree: "浏览完全免费。", membersContact: "会员可直接联系任何看护。",
-    seePlans: "查看会员方案", memberActive: "会员 — 到期日",
-    findTitle: "为您的家人找到合适的看护",
-    findSub: "先输入邮递区号，再依服务、时薪与年龄筛选。",
-    searchPh: "输入需要照护地区的邮递区号（例：11354）",
-    radiusLbl: "范围：", radiusExact: "同邮区",
-    maxRate: "时薪上限", ageFrom: "年龄从", ageTo: "至",
-    clearFilters: "清除所有筛选", allServices: "全部服务",
-    availableSuffix: "位看护", loadingAides: "载入中…",
-    noAidesTitle: "目前还没有看护加入",
-    noAidesSub: "成为第一位 — 点选「看护注册」建立档案。",
-    noMatchTitle: "没有符合的结果",
-    noMatchSub: "请尝试其他城市、服务或关键字。",
-    viewProfile: "查看档案与联络方式", showLess: "收起", editBtn: "✎ 编辑",
-    ageLbl: "年龄", yrsExp: "年经验", speaks: "语言：", certified: "证照：",
-    contactLbl: "联络方式：", contactPerson: "联络",
-    lockedLine: "联络方式：(•••) •••-•••• — 会员可直接致电或发邮件给任何看护。",
-    viewContact: "显示联络资讯", contactHidden: "联络资讯已隐藏 — 点击显示",
-    unlock: "解锁联络方式",
-    pinPrompt: "请输入 4 位数 PIN 码以继续",
-    confirm: "确认", cancel: "取消", pinBad: "PIN 码不正确。",
-    regTitle: "建立看护档案",
-    regSub: "只需填写一次 — 您附近的家庭就能找到您。",
-    updTitle: "更新您的档案",
-    updSub: "修改以下内容 — 储存后立即生效。",
-    selfie: "自拍照片", retake: "重拍", processing: "处理中…",
-    cameraNote: "手机上会开启前置镜头。",
-    lName: "姓名", lPhone: "电话", lEmail: "电子邮件", lCity: "城市", lZip: "邮递区号",
-    lAge: "年龄", lYrs: "经验年数", lRate: "时薪（美元）", lLang: "会说的语言",
-    ageAbove: "岁以上", ageSelectPrompt: "选择年龄范围",
-    lServices: "提供的服务", lCerts: "证照", lAbout: "自我介绍",
-    manageProfile: "我是照护者？管理我的档案 ✎",
-    aideLoginTitle: "管理我的档案",
-    aideLoginSub: "请输入注册时使用的电话号码与 4 位数 PIN 码。",
-    aideLoginBtn: "开启我的档案",
-    aideLoginErr: "找不到符合该电话与 PIN 码的档案。",
-    pendingEdit: "⏳ 您的档案正在审核中 — 家庭目前看不到，但您可以更新内容，我们将一并审核。",
-    lCertPhoto: "证照照片（选填）",
-    certPhotoNote: "仅供家家通验证使用 — 不会公开显示。",
-    certUpload: "上传证照照片",
-    certRetake: "重新上传",
-    lPin: "4 位数 PIN 码（日后编辑或删除档案时需要）",
-    lPinJob: "4 位数 PIN 码（日后编辑或删除贴文时需要）",
-    publish: "发布我的档案", save: "储存变更", saving: "储存中…",
-    noteShared: "注意：此示范版的档案对所有使用者可见。",
-    errReq: "姓名、电话与城市为必填。",
-    errPhoto: "请上传照片 — 家庭希望看到看护的样子。",
-    errZip: "请输入 5 位数邮递区号 — 家庭以邮递区号搜寻附近的看护。",
-    errPin: "请设定 4 位数 PIN 码，以便日后编辑。",
-    errSave: "储存失败，请再试一次。",
-    errJobReq: "标题、称呼、电话与城市为必填。",
-    jobsIntro: "家庭在此发布需求 — 看护会直接与您联系。",
-    postBtn: "+ 发布征求", loadingJobs: "载入中…",
-    noJobsTitle: "目前没有征求资讯",
-    noJobsSub: "需要照护？发布征求，让看护主动联系您。",
-    openSuffix: "则征求", viewDetails: "查看详情与联络方式", postedOn: "发布于",
-    jfTitle: "发布照护征求", jfUpd: "更新征求内容",
-    jfSub: "描述您的需求 — 有兴趣的看护会直接联系您。",
-    lTitle: "标题", lYourName: "您的称呼", lSchedule: "需要的时段",
-    lOffered: "提供时薪", lDetails: "详细说明",
-    detailsPh: "说明家人的照护需求、语言偏好、居家环境等。请勿填写详细住址。",
-    publishJob: "发布征求",
-    jobShared: "您的贴文（含姓名与电话）将对所有使用者公开，方便看护与您联系。请勿填写详细住址。",
-    plTitle: "成为会员",
-    plSub: "浏览永远免费。成为会员即可解锁所有看护的电话与邮件 — 无论您在本地，或在外州、海外为家人安排照护。",
-    demoText: "示范结帐：本原型不会收取任何费用。正式版将开启 Stripe 安全付款页面 — 支援各国信用卡、Apple Pay、Google Pay、支付宝与微信支付。",
-    activate: "启用示范会员", popular: "最受欢迎", back: "← 返回",
-    benefitsTitle: "所有会员方案皆包含：",
-    benefit1: "解锁经验证照护者的联络方式 — 每 3 笔 $9.99",
-    benefit2: "照护者无法继续时，免费重新配对",
-    benefit3: "发布照护征求 — 让照护者主动联系您",
-    benefit4: "撰写并查看真实评价",
-    // v3.13.0
-    memName: "年度会员", memPrice: "$19.99", memPer: "/年",
-    memBlurb: "先加入一年会员，再以每 3 笔为单位解锁照护者联络方式。",
-    packName: "3 笔联络解锁", packPrice: "$9.99", packPer: "／3 笔",
-    packBlurb: "解锁最多 3 位照护者的电话与电邮。用完可随时再购买 3 笔。",
-    creditsLabel: "剩余解锁次数", contactsRevealedLabel: "已解锁联络方式",
-    needMembershipTitle: "加入会员以联系照护者",
-    needMembershipSub: "$19.99／年的会员资格可让您解锁照护者联络方式。",
-    needContactsTitle: "购买联络解锁",
-    needContactsSub: "$9.99 可解锁 3 位照护者的电话与电邮 — 每位照护者使用一次解锁。",
-    buyMembershipBtn: "加入会员 $19.99／年", buyContactsBtn: "购买 3 笔联络 — $9.99",
-    revealUses: "显示联络方式（使用 1 次）", contactsLeftInline: "次剩余",
-    lockedNeedMember: "请先加入会员以查看照护者联络方式。",
-    lockedNeedContacts: "解锁次数已用完 — 以 $9.99 再购买 3 笔。",
-    tMembership: "会员已启用 — 欢迎加入！🎉", tContacts: "已新增 3 笔联络解锁 ✓",
-    tRevealFail: "无法显示 — 请再试一次。",
-    payWithLabel: "付款方式", payCard: "💳 信用卡（示范）", payPaypal: "PayPal",
-    paypalNote: "PayPal 为示范按钮。正式版将使用您的 PayPal 商业帐户。",
-    referBanner: "❤️ 把本网站推荐给亲友 — 帮助更多家庭找到可信赖的照护。",
-    referShareBtn: "分享", referCopied: "连结已复制 ✓",
-    marqueeAide: "🎉 前 100 位加入的家政员享免费会员！· 立即加入并上架。",
-    langEnglish: "English", langZhTW: "繁体中文", langZhCN: "简体中文", langEs: "Español",
-    suName: "单次解锁", suPrice: "$4.99", suPer: " 一次性",
-    suBlurb: "还不想加入会员？单次解锁这位照护者的完整档案与联络方式。",
-    featuredBadge: "★ 精选",
-    teaserName: "已验证照护者",
-    tabAgencies: "🏛️ 照护机构",
-    noAgencies: "目前尚无机构伙伴。",
-    advertiseLine: "您是持牌居家照护机构？欢迎在家家通刊登广告 — 请联系 support@kakatong.app。",
-    medicaidTeaser: "家人可能符合 Medicaid 资格？查看持牌机构",
-    partnersTitle: "Medicaid 与持牌机构伙伴",
-    partnersSub: "您的家人可能符合 Medicaid 居家照护资格？这些持牌机构可协助您确认资格、提出申请并获得保险给付的照护。",
-    learnPartnersTitle: "Kakatong Learn 学习伙伴",
-    learnPartnersSub: "经过验证的补习班、升学考试准备、中文学校及程式设计课程 — 值得信赖的学习伙伴。",
-    kidsPartnersTitle: "Kakatong Kids 儿童伙伴",
-    kidsPartnersSub: "经过验证的音乐、游泳、武术、舞蹈及艺术课程 — 值得信赖的儿童活动伙伴。",
-    learnTabLabel: "伙伴", kidsTabLabel: "伙伴",
-    sponsoredTag: "赞助", partnerCall: "致电", partnerSite: "网站",
-    postFeeTitle: "征求发布费",
-    postFeeNote: "每则征求一次性收费 $9.99。示范结帐 — 原型不会实际收费；正式版将使用 Stripe 安全付款页面。",
-    payPublish: "支付 $9.99 并发布",
-    aideProLocked: "客户联络方式仅限 Aide Pro 会员查看。",
-    aideProBtn: "成为 Aide Pro — 每月 $14.99（示范）",
-    aideProSignInFirst: "请先登入以查看客户联络方式",
-    aideProAidesOnly: "Aide Pro 仅供照护者（aide 角色）使用。请以照护者身份注册或联系客服。",
-    tAidePro: "Aide Pro 已启用 — 客户联络方式已解锁 ✓",
-    tUnlocked: "已解锁照护者 ✓",
-    plan_monthly: "月缴", plan_quarterly: "季缴（3 个月）", plan_annual: "年缴", plan_week_pass: "一周通行证",
-    blurb_monthly: "完整功能，随时取消。",
-    blurb_week_pass: "一周通行证 — 无限查看照护者与机构联络方式。",
-    blurb_quarterly: "省 17% — 最受欢迎。",
-    blurb_annual: "最划算 — 省 37%。",
-    lServicesNeeded: "需要的服务",
-    grpSenior: "长者照护", grpChild: "儿童与家庭", grpHome: "家务协助", grpExtended: "进阶照护",
-    authTitle: "会员帐号",
-    authSub: "建立免费帐号，您的会员资格即可在任何装置上使用。",
-    signUp: "建立帐号", signIn: "登入",
-    lEmailAddr: "电子邮件", lPassword: "密码（6 位以上）",
-    authToLogin: "已有帐号？登入",
-    authToSignup: "新用户？建立帐号",
-    authErr: "登入失败 — 请检查电子邮件与密码。",
-    authConfirm: "帐号已建立 — 请点击确认邮件后再登入。",
-    signOut: "登出", tSignedIn: "欢迎 ✓",
-    disclaimerTitle: "联系这位照护者之前，请注意：",
-    disclaimerLead: "家家通 (Kakatong) 是一个资讯平台与市集，并非仲介公司、雇主或人力派遣机构。在雇用任何人之前，您需自行进行必要的查核与判断。",
-    disclaimerPoint1: "亲自面试照护者并查核推荐人",
-    disclaimerPoint2: "确认证照、工作许可与身份文件",
-    disclaimerPoint3: "建议进行专业背景调查",
-    disclaimerPoint4: "以书面确认薪资、班表与工作内容",
-    disclaimerPoint5: "家家通不介入您与照护者之间的雇用、薪资或服务关系，亦不对因此产生的任何争议、伤害、损失或损害承担责任",
-    disclaimerCheck: "我了解并同意 — 我将自行负责筛选与雇用决定",
-    disclaimerAgree: "我同意 — 显示联络资讯",
-    disclaimerCancel: "取消",
-    disclaimerFooter: "完整条款：kakatong.app/terms",
-    myAccount: "我的帐户",
-    myAccountTitle: "帐户与会员资讯",
-    accountInfoLabel: "帐户资讯",
-    membershipLabel: "会员资格",
-    daysLeftLabel: "剩余天数",
-    unlocksUsedLabel: "已使用解锁",
-    noActivePlan: "尚无会员方案",
-    planUpgrade: "查看会员方案",
-    updateProfile: "更新个人资料",
-    saveChanges: "储存变更",
-    nameLabel: "姓名", emailLabel: "电子邮件", phoneLabel: "电话",
-    tProfileSaved: "个人资料已更新 ✓",
-    expiresLabel: "到期日",
-    membershipActive: "有效",
-    membershipExpired: "已过期 — 续订以继续存取",
-    phoneAuthTitle: "以手机号码登入",
-    phoneAuthSub: "我们会发送 6 位数验证码。您的帐号可在任何装置使用。",
-    lPhoneNumber: "手机号码",
-    lVerifyCode: "6 位数验证码",
-    lSetPin: "设定 6 位数 PIN 码",
-    lConfirmPin: "确认 PIN 码",
-    lEnterPin: "输入您的 PIN 码",
-    phoneAuthSend: "发送验证码",
-    phoneAuthContinue: "继续",
-    phoneAuthVerify: "验证",
-    phoneAuthResend: "没收到？重新发送",
-    phoneAuthBad: "验证码错误或已过期，请再试一次。",
-    phoneAuthWrongPin: "手机或 PIN 码错误。",
-    phoneAuthPinMismatch: "两次输入的 PIN 码不同。",
-    phoneAuthPinLen: "PIN 码必须为 6 位数。",
-    phoneAuthSendErr: "无法发送验证码，请检查手机号码。",
-    phoneAuthPhoneBad: "请输入有效的手机号码。",
-    phoneAuthNewUser: "欢迎！请简单介绍一下您。",
-    phoneAuthReturning: "欢迎回来",
-    phoneAuthRolePrompt: "我是…",
-    roleMember: "寻找照护的家庭",
-    roleAide: "照护者 / 家政员",
-    roleAgency: "居家照护机构",
-    roleRequired: "请先选择您的身分以继续。",
-    signingUpAs: "注册身分",
-    landingRolePrompt: "第一次使用？请选择您的身分开始：",
-    phoneAuthFinish: "完成",
-    signInBtn: "登入",
-    // Home landing (v3.10)
-    landingHeroTitle: "一个平台，满足每个家庭的需求",
-    landingHeroSub: "家家通 Kakatong 连结家庭与经过验证的照护员、家教与教练 — 都来自您熟悉信赖的社区。",
-    landingHeroCta: "已有帐号？登入",
-    pickCategoryTitle: "您今天想找什么？",
-    pickCategorySub: "选择类别，浏览附近经过验证的服务提供者。",
-    landingCareTag: "值得信赖的照护 — 陪伴每一个重要时刻。",
-    landingCareItems: ["家政、长者照护", "育儿、褓姆", "陪伴、短期照护"],
-    landingLearnTag: "因材施教的家教与老师。",
-    landingLearnItems: ["学科补习、升学考试准备", "音乐理论、语言学习", "大学申请辅导"],
-    landingKidsTag: "课后、周末 — 快乐学习，健康成长。",
-    landingKidsItems: ["钢琴、小提琴、舞蹈", "游泳、运动教练", "美术、绘画、武术"],
-    landingBrowse: "浏览",
-    howItWorksTitle: "家家通如何运作",
-    qrShareTitle: "分享家家通 Kakatong",
-    qrShareSub: "用手机扫描 QR 码即可造访 kakatong.app",
-    step1Title: "浏览经过验证的服务者",
-    step1Sub: "以邮递区号、语言和时薪搜寻。每位服务者皆经身份与证照查核。",
-    step2Title: "直接联系",
-    step2Sub: "以电话或讯息直接联系，无中介抽成。",
-    step3Title: "以您的条件雇用",
-    step3Sub: "由您决定薪资、起始时间，以及合作长度。",
-    agencyReports: "机构报告",
-    agencyMyProfile: "我的档案",
-    agencyProfileTitle: "机构档案",
-    agencyProfileSub: "更新您机构的公开资讯，会员家庭可见。",
-    agencyProfileSaved: "档案已更新 ✓",
-    agencyProfileNotFound: "此帐户未建立机构档案。请联系 support@kakatong.app 协助设置。",
-    agencyLocked: "已认证居家照护机构",
-    agencyLockedSub: "会员与家政员 Pro 可查看联络方式。",
-    agencyUnlockBtn: "🔒 解锁机构联络资讯",
-    agencyDashTitle: "机构报告",
-    agencyDashSub: "寻找照护的家庭 — 过去 30 天的真实活动数据。",
-    hotAides: "热门家政员 — 过去 30 天",
-    hotAidesSub: "家庭最常浏览和联系的照护者。",
-    marketDemand: "寻找照护的区域",
-    marketDemandSub: "家庭搜寻最多的 ZIP 邮区。",
-    tblRank: "排名", tblAide: "家政员", tblLocation: "地区",
-    tblViews: "浏览", tblContacts: "联系", tblRate: "联系率",
-    tblZip: "邮区", tblSearches: "搜寻次数", tblResults: "平均结果",
-    reportEmpty: "过去 30 天暂无活动数据。",
-    upgradeCta: "🔒 解锁完整报告 — 查看所有热门家政员与搜寻数据",
-    upgradeBtn: "升级查看完整报告",
-    demoSeedBtn: "产生示范资料",
-    demoSeedDone: "已新增示范事件数：",
-    demoSeedFail: "产生失败 — 请查看主控台。",
-    hiredBtn: "✓ 我已聘用这位照护者",
-    hireFormLabel: "您的称呼（将与您日后的评价一同显示）",
-    hireConfirm: "确认聘用",
-    tHired: "🎉 恭喜配对成功！欢迎随时留下评价。",
-    hiredBadge: "✓ 透过家家通聘用",
-    reviews: "评价", writeReview: "撰写评价",
-    commentPh: "服务如何？守时、照护品质、沟通…",
-    submitReview: "送出评价", noReviews: "目前还没有评价。",
-    errReview: "请选择星等并填写称呼。",
-    tReview: "感谢您 — 评价已发布 ✓",
-    faqTitle: "常见问题", faqClientTitle: "给家庭（客户）", faqAideTitle: "给照护者", faqLink: "常见问题", whyMembership: "为何要加入会员？",
-    fPrivacy: "隐私政策", fTerms: "服务条款", fBackup: "备份（测试用）",
-    fCopy: "© 2026 Kakatong 家家通。家庭须自行负责审核与聘用决定。",
-    tProfileLive: "您的档案已送出审核 — 通过验证后将显示于名录中 ✓",
-    verifiedBadge: "✓ 已验证", tProfileUpd: "档案已更新 ✓", tProfileRem: "档案已删除。",
-    tJobLive: "您的征求已发布！🎉", tJobUpd: "征求已更新 ✓", tJobRem: "征求已删除。",
-    tMember: "会员已启用 — 联络方式已解锁 ✓",
-  },
   es: {
     tagline: "家家通 · Cuidado a domicilio de confianza para toda necesidad",
     heroTitle: "Manos que cuidan la vida diaria",
@@ -984,7 +622,6 @@ const STRINGS = {
     cameraNote: "En el teléfono, abre la cámara frontal.",
     lName: "Nombre completo", lPhone: "Teléfono", lEmail: "Correo", lCity: "Ciudad", lZip: "Código postal",
     lAge: "Edad", lYrs: "Años de experiencia", lRate: "Tarifa ($/h)", lLang: "Idiomas",
-    ageAbove: "y más", ageSelectPrompt: "Seleccione rango de edad",
     lServices: "Servicios que ofrece", lCerts: "Certificaciones", lAbout: "Sobre usted",
     manageProfile: "¿Cuidador/a? Administrar mi perfil ✎",
     aideLoginTitle: "Administrar mi perfil",
@@ -1023,32 +660,11 @@ const STRINGS = {
     demoText: "Pago de demostración: este prototipo no cobra nada. En la versión real se abrirá la página segura de Stripe — tarjetas de cualquier país, Apple Pay, Google Pay, Alipay y WeChat Pay.",
     activate: "Activar membresía demo", popular: "MÁS POPULAR", back: "← Volver",
     benefitsTitle: "Toda membresía incluye:",
-    benefit1: "Desbloquee contactos de cuidadores verificados — $9.99 por 3",
-    memName: "Membresía Anual", memPrice: "$19.99", memPer: "/año",
-    memBlurb: "Únase por un año y desbloquee contactos de cuidadores en paquetes de 3.",
-    packName: "3 Contactos", packPrice: "$9.99", packPer: "/ 3 contactos",
-    packBlurb: "Revele teléfono y correo de hasta 3 cuidadores. Compre otros 3 cuando quiera.",
-    creditsLabel: "Contactos restantes", contactsRevealedLabel: "Contactos revelados",
-    needMembershipTitle: "Únase para contactar cuidadores",
-    needMembershipSub: "Una membresía de $19.99/año le permite desbloquear contactos de cuidadores.",
-    needContactsTitle: "Comprar contactos",
-    needContactsSub: "$9.99 desbloquea 3 cuidadores — se usa una revelación por cuidador.",
-    buyMembershipBtn: "Únase por $19.99/año", buyContactsBtn: "Comprar 3 contactos — $9.99",
-    revealUses: "Ver contacto (usa 1)", contactsLeftInline: "restantes",
-    lockedNeedMember: "Únase a una membresía para ver contactos de cuidadores.",
-    lockedNeedContacts: "Sin revelaciones — compre 3 más por $9.99.",
-    tMembership: "¡Membresía activa — bienvenido! 🎉", tContacts: "3 contactos añadidos ✓",
-    tRevealFail: "No se pudo revelar — intente de nuevo.",
-    payWithLabel: "Pagar con", payCard: "💳 Tarjeta (demo)", payPaypal: "PayPal",
-    paypalNote: "PayPal se muestra como demo. El pago real usa su cuenta comercial de PayPal.",
-    referBanner: "❤️ Recomiende este sitio a amigos y familia — ayude a más familias a encontrar cuidado.",
-    referShareBtn: "Compartir", referCopied: "Enlace copiado ✓",
-    marqueeAide: "🎉 ¡Los primeros 100 auxiliares reciben membresía GRATIS! · Únase ahora.",
-    langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
+    benefit1: "Contactos ilimitados con cuidadores",
     benefit2: "Reemplazo gratuito si su cuidador deja de estar disponible",
     benefit3: "Publique solicitudes — deje que los cuidadores lo contacten",
     benefit4: "Escriba y lea reseñas verificadas",
-    suName: "Desbloqueo Único", suPrice: "$4.99", suPer: " pago único",
+    suName: "Desbloqueo Único", suPrice: "$12.99", suPer: " pago único",
     suBlurb: "¿No está listo para una membresía? Desbloquee el perfil completo y contacto de este cuidador.",
     featuredBadge: "★ Destacado",
     teaserName: "Cuidador Verificado",
@@ -1069,13 +685,10 @@ const STRINGS = {
     payPublish: "Pagar $9.99 y publicar",
     aideProLocked: "El contacto del cliente está disponible para miembros Aide Pro.",
     aideProBtn: "Hazte Aide Pro — $14.99/mes (demo)",
-    aideProSignInFirst: "Inicia sesión para acceder a los contactos del cliente",
-    aideProAidesOnly: "Aide Pro es solo para cuidadores (rol aide). Regístrate como cuidador o contacta a soporte.",
     tAidePro: "Aide Pro activo — contactos de clientes desbloqueados ✓",
     tUnlocked: "Cuidador desbloqueado ✓",
-    plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual", plan_week_pass: "Pase Semanal",
+    plan_monthly: "Mensual", plan_quarterly: "3 meses", plan_annual: "Anual",
     blurb_monthly: "Acceso total, cancele cuando quiera.",
-    blurb_week_pass: "Pase semanal — acceso ilimitado a cuidadores y agencias.",
     blurb_quarterly: "Ahorre 17% — el más popular.",
     blurb_annual: "Mejor precio — ahorre 37%.",
     lServicesNeeded: "Servicios necesarios",
@@ -1138,15 +751,12 @@ const STRINGS = {
     roleMember: "Familia que busca cuidado",
     roleAide: "Cuidador/a / Auxiliar",
     roleAgency: "Agencia de cuidado en el hogar",
-    roleRequired: "Por favor elija quién es usted para continuar.",
-    signingUpAs: "Registrándose como",
-    landingRolePrompt: "¿Primera vez? Comience como:",
     phoneAuthFinish: "Finalizar",
     signInBtn: "Iniciar sesión",
     // Home landing (v3.10)
     landingHeroTitle: "Una plataforma confiable para las necesidades de toda familia",
     landingHeroSub: "Kakatong 家家通 conecta a familias con cuidadores, tutores y entrenadores verificados — de la misma comunidad que usted conoce.",
-    landingHeroCta: "¿Ya tiene cuenta? Inicie sesión",
+    landingHeroCta: "Iniciar sesión o crear cuenta",
     pickCategoryTitle: "¿Qué busca hoy?",
     pickCategorySub: "Elija una categoría para ver proveedores verificados cerca de usted.",
     landingCareTag: "Cuidadores de confianza para los momentos importantes.",
@@ -1282,53 +892,7 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.6"; // ← bumped on every code update
-// v3.13.6: admin agency list now shows website + flags rows missing a phone.
-// v3.13.5: agency lists (admin + public) now sort alphabetically by name.
-// v3.13.3: Admin agency list adds a "🗂 All" button so you can see every
-//   category for a state at once (Care/Learn/Kids still filter individually).
-// v3.13.4: email touch-ups — on-screen addresses (support@ / info@ / privacy@)
-//   are now clickable mailto links (legal pages, advertise line, agency-not-found),
-//   and the footer shows a Contact line (support@ + info@). No email is SENT by
-//   the app yet — that comes with the payment backend (bill@ for receipts, etc.).
-// v3.13.2: Admin — agency list split into Care / Learn / Kids buttons (uses the
-//   agencies.vertical field, now editable in the agency form) and a by-State
-//   filter added to the Caregivers, Agencies, and Members tabs. Caregiver state
-//   is derived from ZIP; agencies/members use a state column.
-//   Run v3132_agency_vertical_state.sql.
-// v3.13.1: home-aide profile age is now a range picker (35–40, 41–45, 46–50,
-//   51–55, 56–60, 61 and above) instead of a typed number. Stored as the band's
-//   lower bound so the family Age filter still works; card shows the range.
-// v3.13.0: (1) 中文 split into 繁體(zh) + 简体(zhCN); 4-language switcher.
-//   (2) PayPal added as a payment method in checkout. (3) Referral banner.
-//   (4) Scrolling promo marquee (first 100 aides free membership). (5) NEW client
-//   pricing: $19.99/yr Annual Membership + $9.99 per 3 contact reveals (metered);
-//   single-unlock and week-pass removed. Needs members.contact_credits column
-//   (run v3130_contact_credits.sql).
-// v3.12.26: admin-assisted PIN reset. Admin Members tab has a "🔑 PIN" button
-//   per user that sets a new temporary PIN via the admin_reset_pin SECURITY
-//   DEFINER RPC (run v31226_admin_reset_pin.sql). Works for every role.
-// v3.12.25: role-first signup. Three colored role buttons on the landing hero
-//   (Family / Home Aide / Agency) each launch a sign-up with the role LOCKED, and
-//   the signup picker no longer defaults to client — a first-time aide can't be
-//   created as a client anymore. Admin fix: converting a member to Home Aide now
-//   seeds a PENDING caregiver profile (the public aide directory is built from the
-//   caregivers table, not the role field), so they enter the approval queue instead
-//   of staying invisible.
-// v3.12.24: heal or clear an id-less session at page load (see the mount
-//   effect), so a stale pre-fix session is resolved before checkout instead
-//   of interrupting a purchase. Footer should read v3.12.24.
-// v3.12.22: fixes "saveMemberSubscription: userId is required" on checkout.
-//   Root cause: sign-in returned an account with no id when the RPC didn't
-//   surface out_user_id, so every members write (subscription, unlock, member
-//   row) silently failed. Now the id is guaranteed at sign-in (phone fallback)
-//   and recovered at checkout for older sessions. See fetchProfileByPhone /
-//   ensureAccountId.
-// v3.12.23: widen id recovery — resolveUserIdByPhone tries multiple phone
-//   formats across BOTH user_profiles and members; when an in-memory account
-//   has no phone to recover from, handleMissingId clears the stale session and
-//   routes to a clean sign-in (preserving the pending purchase). Verify the
-//   footer reads v3.12.23 to confirm this build is live.
+const APP_VERSION = "v3.12.15"; // ← bumped on every code update
 
 const SUPABASE_URL = "https://vypbvydettsihtbelqhx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tF0jsQrFs27d2RObzbH2WQ_k8AYRWF6";
@@ -1566,15 +1130,7 @@ async function signupWithPin(phone, pin, name, role) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Sign up failed");
   const row = Array.isArray(d) ? d[0] : d;
-  // v3.12.22: tolerate id under alternate column names, then fall back to a
-  // phone lookup so account.id is NEVER undefined (see fetchProfileByPhone).
-  let id = row.out_user_id || row.user_id || row.id || null;
-  if (!id) {
-    const prof = await fetchProfileByPhone(toE164(phone));
-    id = prof && prof.user_id ? prof.user_id : null;
-  }
-  if (!id) throw new Error("Account created but its ID could not be resolved. Please sign in again.");
-  return { id, role: row.out_role || role, name: row.out_display_name || name || "", phone: row.out_phone || toE164(phone) };
+  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || name || "", phone: row.out_phone };
 }
 
 async function signinWithPin(phone, pin) {
@@ -1586,16 +1142,7 @@ async function signinWithPin(phone, pin) {
   const d = await r.json();
   if (!r.ok) throw new Error(d.message || d.msg || "Wrong phone or PIN");
   const row = Array.isArray(d) ? d[0] : d;
-  // v3.12.22: tolerate id under alternate column names, then fall back to a
-  // phone lookup so account.id is NEVER undefined. A missing id here is what
-  // caused "saveMemberSubscription: userId is required" on checkout.
-  let id = row.out_user_id || row.user_id || row.id || null;
-  if (!id) {
-    const prof = await fetchProfileByPhone(toE164(phone));
-    id = prof && prof.user_id ? prof.user_id : null;
-  }
-  if (!id) throw new Error("Signed in, but your account ID could not be resolved. Please contact support.");
-  return { id, role: row.out_role, name: row.out_display_name || "", phone: row.out_phone || toE164(phone) };
+  return { id: row.out_user_id, role: row.out_role, name: row.out_display_name || "", phone: row.out_phone };
 }
 
 // Fetch this user's role/name from user_profiles
@@ -1607,63 +1154,6 @@ async function fetchUserProfile(userId) {
   if (!r.ok) return null;
   const rows = await r.json();
   return rows[0] || null;
-}
-
-// v3.12.22: resolve a user_id from a phone number.
-// Used as a fallback when signin_with_pin / signup_with_pin return a row
-// without out_user_id — without a user_id, every members-table write fails
-// with "userId is required" and the whole paywall silently breaks.
-//
-// Robust to phone-format drift and to which table the person lives in:
-//   • tries several phone spellings (E.164, 11-digit, 10-digit)
-//   • searches BOTH user_profiles and members
-// Returns a normalized { user_id, role, display_name, phone } or null.
-async function resolveUserIdByPhone(rawPhone) {
-  const digits = (rawPhone || "").replace(/\D/g, "");
-  if (!digits) return null;
-  const last10 = digits.slice(-10);
-  // candidate spellings the phone might be stored as
-  const candidates = Array.from(new Set([
-    toE164(rawPhone),                 // +1XXXXXXXXXX
-    "+" + digits,                     // +<asTyped>
-    digits,                           // 1XXXXXXXXXX or XXXXXXXXXX
-    last10,                           // XXXXXXXXXX
-    "+1" + last10,                    // normalized US E.164
-  ].filter(Boolean)));
-  const inList = "(" + candidates.map((c) => `"${c}"`).join(",") + ")";
-
-  // 1) user_profiles — the auth source of truth
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?phone=in.${encodeURIComponent(inList)}&select=user_id,role,display_name,phone&limit=1`,
-      { headers: sbHeaders }
-    );
-    if (r.ok) {
-      const rows = await r.json();
-      if (rows[0] && rows[0].user_id) return rows[0];
-    }
-  } catch (e) { /* fall through */ }
-
-  // 2) members — has user_id too; covers users not (yet) in user_profiles
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/members?phone=in.${encodeURIComponent(inList)}&select=user_id,role,name,phone&limit=1`,
-      { headers: sbHeaders }
-    );
-    if (r.ok) {
-      const rows = await r.json();
-      if (rows[0] && rows[0].user_id) {
-        return { user_id: rows[0].user_id, role: rows[0].role, display_name: rows[0].name, phone: rows[0].phone };
-      }
-    }
-  } catch (e) { /* fall through */ }
-
-  return null;
-}
-
-// Back-compat thin wrapper (older call sites).
-async function fetchProfileByPhone(phoneE164) {
-  return resolveUserIdByPhone(phoneE164);
 }
 
 // Create or update this user's profile (first-time role picker, name edits)
@@ -1683,42 +1173,6 @@ async function upsertUserProfile(profile) {
   }
   const rows = await r.json();
   return rows[0];
-}
-
-// v3.12.16: admin RPC bypasses RLS on user_profiles table so admin edits
-// to name/role/phone from the Members tab actually persist. Calls a
-// SECURITY DEFINER Postgres function created via v31216_admin_rpc.sql.
-async function adminUpdateUserProfile({ user_id, display_name, role, phone }) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_user_profile`, {
-    method: "POST",
-    headers: { ...sbHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      p_user_id:      user_id,
-      p_display_name: display_name,
-      p_role:         role,
-      p_phone:        phone,
-    }),
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error("Admin profile update failed: " + t);
-  }
-  return true;
-}
-
-// v3.12.26: admin-assisted PIN reset via SECURITY DEFINER RPC (bypasses RLS,
-// re-hashes with bcrypt). Requires v31226_admin_reset_pin.sql to be installed.
-async function adminResetPin(userId, newPin) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_pin`, {
-    method: "POST",
-    headers: { ...sbHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_user_id: userId, p_new_pin: newPin }),
-  });
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error("PIN reset failed: " + t);
-  }
-  return true;
 }
 
 async function authSignup(email, password, name) {
@@ -1882,62 +1336,6 @@ async function upsertMember(row) {
   return (await r.json())[0];
 }
 
-// v3.12.20: saveMemberSubscription updates a member row's subscription fields.
-// Tries PATCH first (works around RLS policies that block INSERT/UPSERT).
-// Falls back to POST/upsert if the row doesn't exist yet.
-// v3.12.21: surfaces the actual Postgres error in the thrown message so the
-// UI can show a specific reason instead of "Save failed — please try again".
-async function saveMemberSubscription(userId, fields) {
-  if (!userId) throw new Error("saveMemberSubscription: userId is required");
-
-  // First — try PATCH on the existing row by user_id
-  let patchStatus = 0;
-  let patchBody = "";
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/members?user_id=eq.${encodeURIComponent(userId)}`,
-      {
-        method: "PATCH",
-        headers: { ...sbHeaders, Prefer: "return=representation" },
-        body: JSON.stringify(fields),
-      }
-    );
-    patchStatus = r.status;
-    patchBody = await r.text();
-    if (r.ok) {
-      const arr = patchBody ? JSON.parse(patchBody) : [];
-      if (arr && arr.length) return arr[0]; // updated existing row
-      // r.ok with 0 rows means row didn't exist — fall through to insert
-    } else {
-      console.warn("[KJC] PATCH members failed:", patchStatus, patchBody);
-    }
-  } catch (e) {
-    console.warn("[KJC] PATCH members threw:", e);
-  }
-
-  // Fallback — INSERT a new row (Postgres will error if row already exists
-  // and there is a unique constraint; but if PATCH returned 0 rows, there
-  // was no matching row, so INSERT is the right action).
-  try {
-    const insertR = await fetch(`${SUPABASE_URL}/rest/v1/members`, {
-      method: "POST",
-      headers: { ...sbHeaders, Prefer: "return=representation" },
-      body: JSON.stringify({ user_id: userId, ...fields }),
-    });
-    if (!insertR.ok) {
-      const errBody = await insertR.text();
-      throw new Error(`members INSERT failed (${insertR.status}): ${errBody}`);
-    }
-    const insertArr = await insertR.json();
-    return insertArr[0];
-  } catch (e) {
-    // Surface both attempts so we know what actually went wrong
-    throw new Error(
-      `save failed. PATCH status=${patchStatus} body=${patchBody.slice(0, 300)}; INSERT error=${e.message || e}`
-    );
-  }
-}
-
 // v3.12.12: after every sign-in, ensure a members row exists for this user
 // so admin can see and manage ALL signed-in users — not only paying subscribers.
 // v3.12.13: no longer overwrites existing rows. Returns the current row so
@@ -2021,9 +1419,7 @@ const loadAgencies = async (category) => {
     const vertical = (category === "learn" || category === "kids") ? category : "care";
     const rows = await sbSelect("agencies", `&active=eq.true&vertical=eq.${vertical}`);
     const today = new Date().toISOString().slice(0, 10);
-    return rows
-      .filter((a) => !a.paid_until || a.paid_until >= today)
-      .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+    return rows.filter((a) => !a.paid_until || a.paid_until >= today);
   } catch (e) { return []; }
 };
 
@@ -2257,17 +1653,7 @@ function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
         <Field label={L.lAge}>
-          {/* v3.13.1: age is now a 5-year range picker (stored as the band's lower bound) */}
-          <select
-            style={{ ...inputStyle, cursor: "pointer" }}
-            value={(() => { const n = Number(form.age); const b = AGE_RANGES.find(([lo, hi]) => n >= lo && n <= hi); return b ? String(b[0]) : ""; })()}
-            onChange={(e) => set("age", e.target.value)}
-          >
-            <option value="">{L.ageSelectPrompt}</option>
-            {AGE_RANGES.map(([lo, hi]) => (
-              <option key={lo} value={lo}>{hi >= 200 ? `61 ${L.ageAbove}` : `${lo}–${hi}`}</option>
-            ))}
-          </select>
+          <input style={inputStyle} inputMode="numeric" value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="45" />
         </Field>
         <Field label={L.lYrs}>
           <input style={inputStyle} inputMode="numeric" value={form.years} onChange={(e) => set("years", e.target.value)} placeholder="5" />
@@ -2502,9 +1888,7 @@ function LegalDisclaimerModal({ open, onAgree, onCancel }) {
   );
 }
 
-function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, onNeedMembership, onNeedContacts, onConsumeReveal, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
-  // v3.13.0: membership still gates general features; contact reveals are metered.
-  const subscribed = isMember;
+function AideCard({ aide, onDelete, onEdit, subscribed, onRequireSub, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
   const { L, ts } = useLang();
   const [hireOpen, setHireOpen] = useState(false);
   const [hireName, setHireName] = useState(hireDefault || "");
@@ -2549,21 +1933,12 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
     setContactRevealed(true);
   }
 
-  // v3.13.0: after the disclaimer, spend a contact credit (unless this aide was
-  // already unlocked). If out of credits, route the client to buy a $9.99 pack.
-  async function commitReveal() {
-    if (!isUnlocked) {
-      const ok = await onConsumeReveal(aide);
-      if (!ok) { onNeedContacts(); return; }
-    }
-    doRevealContact();
-  }
-
-  // v3.12.7: gate the reveal on the legal disclaimer (once per browser).
+  // v3.12.7: gate the reveal on the legal disclaimer.
+  // We remember the ack in localStorage — once per browser is enough.
   function requestRevealContact() {
     let acked = false;
     try { acked = localStorage.getItem("kk_disclaimer_ack_v1") === "1"; } catch (e) { /* ignore */ }
-    if (acked) { commitReveal(); return; }
+    if (acked) { doRevealContact(); return; }
     setShowDisclaimer(true);
   }
 
@@ -2624,7 +1999,7 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             memberSession,
           });
           setShowDisclaimer(false);
-          commitReveal();
+          doRevealContact();
         }}
       />
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
@@ -2643,7 +2018,7 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             {avg && <span style={{ color: T.amber, fontWeight: 800, fontSize: 14.5, marginLeft: 8 }}>★ {avg} ({reviews.length})</span>}
           </div>
           <div style={{ fontSize: 14, color: T.inkSoft }}>
-            {aide.city}{aide.age ? ` · ${L.ageLbl} ${ageBandLabel(aide.age, L)}` : ""}{aide.years ? ` · ${aide.years} ${L.yrsExp}` : ""}{aide.rate ? ` · $${aide.rate}/hr` : ""}
+            {aide.city}{aide.age ? ` · ${L.ageLbl} ${aide.age}` : ""}{aide.years ? ` · ${aide.years} ${L.yrsExp}` : ""}{aide.rate ? ` · $${aide.rate}/hr` : ""}
           </div>
           {aide.languages && (
             <div style={{ fontSize: 13.5, color: T.primary, fontWeight: 600 }}>{L.speaks} {aide.languages}</div>
@@ -2672,41 +2047,54 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             </p>
           )}
           {aide.bio && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{aide.bio}</p>}
-          {/* v3.13.0: metered contact reveals ($9.99 per 3), gated by membership */}
-          {!isMember ? (
-            <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>🔒 {L.lockedNeedMember}</p>
-              <button type="button"
-                onClick={async () => {
-                  await trackContactReveal({ caregiverId: aide.id, caregiverName: aide.name, profileViewId: currentViewId, searchQueryId, wasSubscribed: false, memberSession });
-                  onNeedMembership();
-                }}
-                style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
-                {L.buyMembershipBtn}
-              </button>
-            </div>
-          ) : (isUnlocked || contactRevealed) ? (
-            <p style={{ margin: 0 }}>
-              <strong>{L.contactLbl}</strong>{" "}
-              <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
-              {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
-            </p>
-          ) : credits > 0 ? (
-            <div style={{ padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>
-                {L.contactHidden} · <strong style={{ color: T.primary }}>{credits} {L.contactsLeftInline}</strong>
+          {subscribed ? (
+            contactRevealed ? (
+              <p style={{ margin: 0 }}>
+                <strong>{L.contactLbl}</strong>{" "}
+                <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
+                {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
               </p>
-              <button type="button" onClick={requestRevealContact}
-                style={{ padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
-                📞 {L.revealUses}
-              </button>
-            </div>
+            ) : (
+              <div style={{ padding: 12, background: "#EFF6F3", borderRadius: 10, border: `1px solid ${T.primary}` }}>
+                <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>
+                  {L.contactHidden}
+                </p>
+                <button
+                  type="button"
+                  onClick={requestRevealContact}
+                  style={{
+                    padding: "9px 14px", borderRadius: 10, border: "none", background: T.primary,
+                    color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  📞 {L.viewContact}
+                </button>
+              </div>
+            )
           ) : (
-            <div style={{ padding: 12, background: "#FFF8E7", borderRadius: 10, border: `1px solid ${T.amber}` }}>
-              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>🔒 {L.lockedNeedContacts}</p>
-              <button type="button" onClick={onNeedContacts}
-                style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
-                {L.buyContactsBtn}
+            <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
+              <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
+                🔒 {L.lockedLine}
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  await trackContactReveal({
+                    caregiverId:   aide.id,
+                    caregiverName: aide.name,
+                    profileViewId: currentViewId,
+                    searchQueryId,
+                    wasSubscribed: false,
+                    memberSession,
+                  });
+                  onRequireSub();
+                }}
+                style={{
+                  padding: "10px 16px", borderRadius: 10, border: "none", background: T.amber,
+                  color: "#3A2A08", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {L.unlock}
               </button>
             </div>
           )}
@@ -2782,7 +2170,7 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
                 </div>
               </div>
             ) : (
-              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onNeedMembership())}
+              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onRequireSub())}
                 style={{ marginTop: 4, padding: "10px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
                 {subscribed ? L.writeReview : "🔒 " + L.writeReview}
               </button>
@@ -2805,7 +2193,7 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
                 wasSubscribed: false,
                 memberSession,
               });
-              onNeedMembership();
+              onRequireSub();
               return;
             }
             if (!expanded) {
@@ -3178,7 +2566,7 @@ function JobForm({ onSaved, onCancel, initial }) {
   );
 }
 
-function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
+function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup }) {
   const { L, ts } = useLang();
   const [expanded, setExpanded] = useState(false);
   const [pinAction, setPinAction] = useState(null);
@@ -3234,27 +2622,18 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
           ) : (
             <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
               <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>
-                🔒 <strong>{L.contactPerson} {job.name}: (•••) •••-••••</strong>
-                {" "}—{" "}
-                {/* v3.12.17: message adapts to sign-in status and role */}
-                {!account
-                  ? L.aideProSignInFirst
-                  : account.role !== "aide"
-                    ? L.aideProAidesOnly
-                    : L.aideProLocked}
+                🔒 <strong>{L.contactPerson} {job.name}: (•••) •••-••••</strong> — {L.aideProLocked}
               </p>
-              {(!account || account.role === "aide") && (
-                <button
-                  type="button"
-                  onClick={onAideProSignup}
-                  style={{
-                    padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary,
-                    color: "#fff", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
-                  }}
-                >
-                  {!account ? L.signIn : L.aideProBtn}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={onAideProSignup}
+                style={{
+                  padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary,
+                  color: "#fff", fontWeight: 800, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                {L.aideProBtn}
+              </button>
             </div>
           )}
         </div>
@@ -3309,18 +2688,11 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
 }
 
 // ---------- Subscription plans ----------
-// ---------- Subscription plans ----------
-// v3.12.18: pivoted to a two-option pricing model:
-//   • $4.99 single unlock (see one aide's contact)
-//   • $19.99 week pass (unlimited access to all aides AND agencies for 7 days)
-// Legacy monthly/quarterly/annual subscribers keep access until their existing
-// subscribed_until expires (grandfathered via the same field).
-// v3.13.0: single annual membership. Contact reveals are metered separately
-// (CONTACT_PACK: $9.99 per 3 reveals) — see buyContactPack / consumeReveal.
 const PLANS = [
-  { id: "annual", name: "Annual Membership", price: "$19.99", per: "/year", days: 365, featured: true },
+  { id: "monthly", name: "Monthly", price: "$19.99", per: "/month", months: 1, blurb: "Full access, cancel anytime." },
+  { id: "quarterly", name: "3 Months", price: "$49.99", per: "/3 months", months: 3, blurb: "Save 17% — most popular.", featured: true },
+  { id: "annual", name: "Annual", price: "$149.99", per: "/year", months: 12, blurb: "Best value — save 37%." },
 ];
-const CONTACT_PACK = { price: "$9.99", credits: 3 }; // one purchase = 3 contact reveals
 
 function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, onSignOut }) {
   const { L } = useLang();
@@ -3405,15 +2777,10 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
       </div>
 
       {/* Usage stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
         <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
           <div style={{ fontSize: 26, fontWeight: 800, color: T.primary }}>{unlocksUsed}</div>
-          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.contactsRevealedLabel}</div>
-        </div>
-        {/* v3.13.0: remaining contact reveals */}
-        <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: T.amber }}>{client?.contactCredits || 0}</div>
-          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.creditsLabel}</div>
+          <div style={{ fontSize: 12, color: T.inkSoft, marginTop: 4 }}>{L.unlocksUsedLabel}</div>
         </div>
         {isActive && (
           <div style={{ padding: "14px 16px", background: T.surface, borderRadius: 10, textAlign: "center" }}>
@@ -3497,87 +2864,106 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
   );
 }
 
-// v3.13.0: adaptive paywall.
-//   • Not a member  -> show the $19.99/yr Annual Membership.
-//   • Member w/o reveals -> show the $9.99 / 3-contacts pack.
-// intent: "membership" | "contacts" (which the caller wants to buy first).
-function PlansView({ isMember, credits, intent, onBuyMembership, onBuyContacts, onBack }) {
+function PlansView({ onActivate, onBack, singleUnlock, onSingleUnlock }) {
   const { L } = useLang();
-  const [method, setMethod] = useState("card"); // v3.13.0: card | paypal (demo)
-  const showContacts = isMember || intent === "contacts";
-  const primaryIsContacts = isMember; // members buy contacts; guests join first
-
-  const PayBox = ({ label, price, per, onPay, note }) => (
-    <div style={{ border: `2px solid ${T.primary}`, borderRadius: 14, padding: 16, marginBottom: 14, background: "#fff" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-        <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{label}</span>
-        <span>
-          <span style={{ fontSize: 22, fontWeight: 800, color: T.primary }}>{price}</span>
-          <span style={{ fontSize: 13, color: T.inkSoft }}>{per}</span>
-        </span>
-      </div>
-      {note && <div style={{ fontSize: 13.5, color: T.inkSoft, marginBottom: 12 }}>{note}</div>}
-      {/* payment method selector (v3.13.0 — includes PayPal) */}
-      <div style={{ fontSize: 11.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, marginBottom: 6 }}>{L.payWithLabel.toUpperCase()}</div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        {[["card", L.payCard, "#fff", T.ink], ["paypal", L.payPaypal, "#FFC439", "#003087"]].map(([id, lbl, bg, fg]) => (
-          <button key={id} type="button" onClick={() => setMethod(id)}
-            style={{
-              flex: 1, padding: "10px 12px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit",
-              fontSize: 14, fontWeight: 800, color: fg, background: bg,
-              border: `2px solid ${method === id ? T.primary : T.line}`,
-            }}>
-            {id === "paypal" ? "Pay" : ""}{id === "paypal" ? <span style={{ color: "#009cde" }}>Pal</span> : lbl}
-          </button>
-        ))}
-      </div>
-      <p style={{ fontSize: 12, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.5 }}>
-        {method === "paypal" ? L.paypalNote : L.demoText}
-      </p>
-      <button type="button" onClick={onPay}
-        style={{
-          width: "100%", padding: "14px", borderRadius: 12, border: "none",
-          background: method === "paypal" ? "#FFC439" : T.primary,
-          color: method === "paypal" ? "#003087" : "#fff",
-          fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-        }}>
-        {method === "paypal" ? "PayPal · " : ""}{label} · {price}
-      </button>
-    </div>
-  );
-
+  const [selected, setSelected] = useState(null);
   return (
     <div style={{ background: T.card, borderRadius: 16, padding: "24px 20px", border: `1px solid ${T.line}` }}>
-      <button type="button" onClick={onBack}
-        style={{ marginBottom: 16, padding: "8px 14px", borderRadius: 999, border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+      <button
+        type="button"
+        onClick={onBack}
+        style={{
+          marginBottom: 16, padding: "8px 14px", borderRadius: 999,
+          border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
+          fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        }}
+      >
         {L.back}
       </button>
       <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
-        {primaryIsContacts ? L.needContactsTitle : L.needMembershipTitle}
+        {L.plTitle}
       </h2>
       <p style={{ margin: "0 0 20px", fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>
-        {primaryIsContacts ? L.needContactsSub : L.needMembershipSub}
+        {L.plSub}
       </p>
 
-      {isMember && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, background: "#EFF3EC", border: `1px solid ${T.primary}`, marginBottom: 16, fontSize: 13.5, color: T.ink, fontWeight: 700 }}>
-          ✓ {L.memName} · {L.creditsLabel}: {credits}
+      <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 16px", marginBottom: 18 }}>
+        <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 6 }}>{L.benefitsTitle}</div>
+        {[L.benefit1, L.benefit2, L.benefit3, L.benefit4].map((b) => (
+          <div key={b} style={{ fontSize: 14, color: T.inkSoft, marginBottom: 4 }}>✓ {b}</div>
+        ))}
+      </div>
+
+      {singleUnlock && (
+        <div style={{ border: `2px solid ${T.amber}`, borderRadius: 14, padding: 16, marginBottom: 14, background: "#FFFDF7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{L.suName}</span>
+            <span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>{L.suPrice}</span>
+              <span style={{ fontSize: 13, color: T.inkSoft }}>{L.suPer}</span>
+            </span>
+          </div>
+          <div style={{ fontSize: 13.5, color: T.inkSoft, marginTop: 4, marginBottom: 10 }}>{L.suBlurb}</div>
+          <button
+            type="button"
+            onClick={onSingleUnlock}
+            style={{ width: "100%", padding: "12px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 15.5, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            {L.suName} ✓
+          </button>
         </div>
       )}
 
-      {/* Members buy contacts; guests join membership first */}
-      {primaryIsContacts ? (
-        <PayBox label={L.packName} price={CONTACT_PACK.price} per={L.packPer} note={L.packBlurb} onPay={onBuyContacts} />
-      ) : (
-        <>
-          <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.line}`, padding: "12px 16px", marginBottom: 16 }}>
-            <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 6 }}>{L.benefitsTitle}</div>
-            {[L.benefit1, L.benefit2, L.benefit3, L.benefit4].map((b) => (
-              <div key={b} style={{ fontSize: 14, color: T.inkSoft, marginBottom: 4 }}>✓ {b}</div>
-            ))}
+      <div style={{ display: "grid", gap: 12 }}>
+        {PLANS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => setSelected(p)}
+            style={{
+              textAlign: "left", padding: "16px", borderRadius: 14, cursor: "pointer", fontFamily: "inherit",
+              border: `2px solid ${selected?.id === p.id ? T.primary : p.featured ? T.amber : T.line}`,
+              background: selected?.id === p.id ? "#EFF6F3" : "#fff",
+              position: "relative",
+            }}
+          >
+            {p.featured && (
+              <span style={{ position: "absolute", top: -10, right: 14, background: T.amber, color: "#3A2A08", fontSize: 11.5, fontWeight: 800, padding: "3px 10px", borderRadius: 999 }}>
+                {L.popular}
+              </span>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{ fontSize: 17, fontWeight: 800, color: T.ink }}>{L["plan_" + p.id]}</span>
+              <span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: T.primary }}>{p.price}</span>
+                <span style={{ fontSize: 13, color: T.inkSoft }}>{p.per}</span>
+              </span>
+            </div>
+            <div style={{ fontSize: 13.5, color: T.inkSoft, marginTop: 4 }}>{L["blurb_" + p.id]}</div>
+          </button>
+        ))}
+      </div>
+
+      {selected && (
+        <div style={{ marginTop: 18, padding: 16, background: T.surface, borderRadius: 14, border: `1px solid ${T.line}` }}>
+          <div style={{ fontSize: 15.5, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
+            {L["plan_" + selected.id]} — {selected.price}{selected.per}
           </div>
-          <PayBox label={L.memName} price={L.memPrice} per={L.memPer} note={L.memBlurb} onPay={onBuyMembership} />
-        </>
+          <p style={{ fontSize: 13.5, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.5 }}>
+            {L.demoText}
+          </p>
+          <button
+            type="button"
+            onClick={() => onActivate(selected)}
+            style={{
+              width: "100%", padding: "14px", borderRadius: 12, border: "none",
+              background: T.primary, color: "#fff", fontSize: 16.5, fontWeight: 800,
+              cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            {L.activate}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -3620,24 +3006,6 @@ const FAQ = {
       ["評價如何幫助我賺更多？", "評價優良的照護者會最先被聯繫，也能有底氣開出較高時薪。每服務好一個家庭，都會在您的檔案上累積永久的口碑 — 這是您在平台上最有價值的資產。"],
       ["我的收入需要被抽成嗎？", "不需要。家庭依雙方議定的時薪直接付款給您，家家通不從您的時薪中抽取任何費用。"],
       ["「已驗證」標章對我有什麼意義？", "驗證代表您的身分與所列資格已經過審核 — 通過驗證的照護者獲得家庭聯繫的機會顯著更多。請保持檔案上的證照資訊最新，發揮最大效益。"],
-    ],
-  },
-  zhCN: {
-    client: [
-      ["浏览是免费的吗？", "是的。任何人都可以免费搜寻及浏览所有经验证的照护者档案。成为会员后，即可解锁完整档案与每位照护者的直接联络方式（电话与电子邮件）。"],
-      ["已经请到人了，为什么还要续会员？", "因为照护需求会变化。会员在照护者因生病、时间冲突或离职而无法继续时，可免费重新配对。您也可以发布紧急替补需求，并随需求变化（增加时数、喘息照护、术后照护）联系任何照护者。会员资格是您的安全网，不只是一次性的搜寻。"],
-      ["照护者有经过验证吗？", "名录中的每位照护者都经过家家通审核后才会显示 — 这就是 ✓ 已验证标章的意义。我们仍建议家庭亲自面谈并查核推荐人；平台提供评价与工具协助您做好把关。"],
-      ["时薪由谁决定？", "由您与照护者直接商定，中间没有仲介抽成 — 照护者通常比仲介工资赚得多，而家庭往往比仲介收费付得少。"],
-      ["我住在外州或海外，可以为父母安排照护吗？", "当然可以 — 这正是家家通的核心服务之一。输入家人居住地的邮递区号搜寻，以中文、英文或西班牙文浏览经验证的档案，从世界任何地方联系照护者。"],
-      ["如果照护者不合适怎么办？", "只要会员资格有效，随时回来即可 — 免费联系新的照护者或发布征求。会员永远不必从零开始，这份持续保障正是家庭续会的最大原因。"],
-    ],
-    aide: [
-      ["注册成为照护者要收费吗？", "不用。建立档案完全免费，通过验证后刊登也免费。"],
-      ["我要怎么找到客户？", "两个管道：您所在地区的家庭搜寻时会看到您的验证档案；您也可以浏览「征求看护」版面，直接联系发布需求的家庭。"],
-      ["找到工作后，为什么还要保持档案有效？", "因为每份工作终会结束 — 时间表变动、家庭搬迁、照护需求改变。保持档案活跃并累积好评，下一位客户会在目前工作结束前找到您，避免收入中断。把档案当作您长期经营的店面，而不是一次性的广告。"],
-      ["评价如何帮助我赚更多？", "评价优良的照护者会最先被联系，也能有底气开出较高时薪。每服务好一个家庭，都会在您的档案上累积永久的口碑 — 这是您在平台上最有价值的资产。"],
-      ["我的收入需要被抽成吗？", "不需要。家庭依双方议定的时薪直接付款给您，家家通不从您的时薪中抽取任何费用。"],
-      ["「已验证」标章对我有什么意义？", "验证代表您的身分与所列资格已经过审核 — 通过验证的照护者获得家庭联系的机会显著更多。请保持档案上的证照资讯最新，发挥最大效益。"],
     ],
   },
   es: {
@@ -3793,7 +3161,7 @@ function AuthView({ onDone, onBack }) {
 }
 
 // ---------- Phone Sign In (v3.4) — PIN-based, one flow for all roles ----------
-function PhoneAuthView({ onDone, onBack, initialRole }) {
+function PhoneAuthView({ onDone, onBack }) {
   const { L } = useLang();
   // Steps: "phone" -> "signin" (returning) or "signup" (new)
   const [step, setStep] = useState("phone");
@@ -3801,11 +3169,7 @@ function PhoneAuthView({ onDone, onBack, initialRole }) {
   const [pin, setPin] = useState("");
   const [pin2, setPin2] = useState("");
   const [name, setName] = useState("");
-  // v3.12.25: role comes pre-selected from the landing role buttons. No silent
-  // default to "member" — a new user must have an explicit role, so first-time
-  // aides can no longer be created as clients by skipping the picker.
-  const [role, setRole] = useState(initialRole || null);
-  const roleLocked = !!initialRole;
+  const [role, setRole] = useState("member");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -3848,7 +3212,6 @@ function PhoneAuthView({ onDone, onBack, initialRole }) {
 
   async function handleSignup() {
     if (!name.trim()) { setErr(L.authErr); return; }
-    if (!role) { setErr(L.roleRequired); return; }   // v3.12.25: role is mandatory
     if (pin.length !== PIN_LENGTH) { setErr(L.phoneAuthPinLen); return; }
     if (pin !== pin2) { setErr(L.phoneAuthPinMismatch); return; }
     setBusy(true); setErr("");
@@ -3919,14 +3282,11 @@ function PhoneAuthView({ onDone, onBack, initialRole }) {
     );
   }
 
-  // v3.12.25: each role has its own accent color (matches the landing buttons).
   const roleOptions = [
-    ["member", L.roleMember, T.primary],
-    ["aide",   L.roleAide,   "#3F6795"],
-    ["agency", L.roleAgency, "#D97848"],
+    ["member", L.roleMember],
+    ["aide",   L.roleAide],
+    ["agency", L.roleAgency],
   ];
-  const lockedLabel = (roleOptions.find((r) => r[0] === role) || [])[1];
-  const lockedColor = (roleOptions.find((r) => r[0] === role) || [])[2] || T.primary;
   return (
     <div style={card}>
       <h2 style={{ margin: "0 0 6px", fontSize: 24, color: T.ink, fontFamily: "Georgia, 'Times New Roman', serif" }}>
@@ -3950,35 +3310,22 @@ function PhoneAuthView({ onDone, onBack, initialRole }) {
           onChange={(e) => { setPin2(e.target.value.replace(/\D/g, "")); setErr(""); }}
           placeholder={"\u2022".repeat(PIN_LENGTH)} />
       </Field>
-      {roleLocked ? (
-        /* v3.12.25: role came pre-selected from a landing button \u2014 confirm, don't re-ask */
-        <div style={{
-          margin: "0 0 14px", padding: "12px 14px", borderRadius: 10,
-          border: `2px solid ${lockedColor}`, background: "#fff",
-          display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <span style={{ width: 12, height: 12, borderRadius: 999, background: lockedColor, flexShrink: 0 }} />
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>{L.signingUpAs}:</span>
-          <strong style={{ fontSize: 15, color: T.ink }}>{lockedLabel}</strong>
+      <Field label={L.phoneAuthRolePrompt} required>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {roleOptions.map(([id, label]) => (
+            <button key={id} type="button" onClick={() => setRole(id)}
+              style={{
+                padding: "12px 14px", borderRadius: 10, textAlign: "left",
+                border: `2px solid ${role === id ? T.primary : T.line}`,
+                background: role === id ? "#EFF6F3" : "#fff",
+                color: T.ink, fontSize: 15, fontWeight: role === id ? 700 : 500,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>
+              {role === id ? "\u25CF " : "\u25CB "}{label}
+            </button>
+          ))}
         </div>
-      ) : (
-        <Field label={L.phoneAuthRolePrompt} required>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {roleOptions.map(([id, label, color]) => (
-              <button key={id} type="button" onClick={() => { setRole(id); setErr(""); }}
-                style={{
-                  padding: "12px 14px", borderRadius: 10, textAlign: "left",
-                  border: `2px solid ${role === id ? color : T.line}`,
-                  background: role === id ? color : "#fff",
-                  color: role === id ? "#fff" : T.ink, fontSize: 15, fontWeight: role === id ? 800 : 500,
-                  cursor: "pointer", fontFamily: "inherit",
-                }}>
-                {role === id ? "\u25CF " : "\u25CB "}{label}
-              </button>
-            ))}
-          </div>
-        </Field>
-      )}
+      </Field>
       {err && <p style={{ color: T.danger, fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{err}</p>}
       <button type="button" onClick={handleSignup} disabled={busy} style={{ ...primary, width: "100%" }}>
         {busy ? L.saving : L.phoneAuthFinish}
@@ -4077,7 +3424,7 @@ function AgencyProfileView({ account, onBack }) {
         <p style={{ color: T.inkSoft }}>Loading…</p>
       ) : notFound ? (
         <div style={{ padding: "18px 20px", background: "#FFF8E7", borderRadius: 12, border: `2px solid ${T.amber}`, color: "#6B5A2A" }}>
-          {linkifyEmails(L.agencyProfileNotFound)}
+          {L.agencyProfileNotFound}
         </div>
       ) : (
         <>
@@ -4351,31 +3698,13 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   const [editMemPhone, setEditMemPhone] = useState(""); // v3.12.12
   const [acks, setAcks] = useState([]);
   const [msg, setMsg] = useState("");
-  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" });
+  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
   const [agEditId, setAgEditId] = useState(null);
   const [dbPing, setDbPing] = useState(null); // null=checking, number=ms, "error"=down
   const [jobsCount, setJobsCount] = useState(0);
   const [revsCount, setRevsCount] = useState(0);
   const [hiresCount, setHiresCount] = useState(0);
-  // v3.13.2: admin filters — agency vertical (Care/Learn/Kids) + by-state across tabs
-  const [agVertical, setAgVertical] = useState("care"); // care | learn | kids
-  const [stateFilter, setStateFilter] = useState("all");
-  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" };
-
-  // v3.13.2: state of a row per tab (caregivers derive from ZIP; agencies/members use a state field)
-  const stateOfCaregiver = (r) => zipToState(r.zip);
-  const stateOfRow = (r) => r.state || zipToState(r.zip) || "";
-  // build the state dropdown from whatever states actually appear in the data
-  function StateFilter({ options }) {
-    const list = Array.from(new Set(options.filter(Boolean))).sort();
-    return (
-      <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}
-        style={{ ...inputStyle, maxWidth: 200, padding: "8px 10px", cursor: "pointer" }}>
-        <option value="all">All states</option>
-        {list.map((s) => <option key={s} value={s}>{s}</option>)}
-      </select>
-    );
-  }
+  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" };
 
   async function refresh() {
     setMsg("");
@@ -4513,7 +3842,6 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       name: a.name || "", phone: a.phone || "", website: a.website || "", areas: a.areas || "",
       blurb: a.blurb || "", contact_name: a.contact_name || "", email: a.email || "",
       monthly_fee: a.monthly_fee != null ? String(a.monthly_fee) : "", paid_until: a.paid_until || "",
-      vertical: a.vertical || "care", state: a.state || "",
     });
     setMsg("");
   }
@@ -4558,15 +3886,8 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       {msg && <p style={{ fontSize: 13.5, fontWeight: 600, color: T.primary, margin: "0 0 10px" }}>{msg}</p>}
 
       {tab === "caregivers" ? (
-        <>
-          <div style={{ marginBottom: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>State:</span>
-            <StateFilter options={rows.map(stateOfCaregiver)} />
-          </div>
-          {(() => {
-            const cg = rows.filter((r) => stateFilter === "all" || stateOfCaregiver(r) === stateFilter);
-            return cg.length === 0 ? <p style={{ color: T.inkSoft }}>No caregiver records for this state.</p> :
-            cg.map((r) => (
+        rows.length === 0 ? <p style={{ color: T.inkSoft }}>No caregiver records.</p> :
+        rows.map((r) => (
           <div key={r.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: r.approved ? "transparent" : "#FCF4E3", borderRadius: 8, marginBottom: 4 }}>
             <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: T.surface, flexShrink: 0 }}>
               {r.photo_url && <img src={r.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
@@ -4597,9 +3918,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
             </button>
             <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("caregivers", r.id, r.name)}>✕</button>
           </div>
-            ));
-          })()}
-        </>
+        ))
       ) : tab === "status" ? (
         <div>
           {(() => {
@@ -4706,11 +4025,6 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
               </button>
             ))}
           </div>
-          {/* v3.13.2: by-state filter (uses member.state where set) */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, marginRight: 4 }}>STATE</span>
-            <StateFilter options={mems.map(stateOfRow)} />
-          </div>
           {/* Plan-status filter chips */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, alignSelf: "center", marginRight: 4 }}>PLAN</span>
@@ -4737,8 +4051,6 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                   if (memRole === "client") { if (m.role && m.role !== "member") return false; }
                   else if (memRole === "aide")   { if (m.role !== "aide")   return false; }
                   else if (memRole === "agency") { if (m.role !== "agency") return false; }
-                  // v3.13.2: by-state filter
-                  if (stateFilter !== "all" && stateOfRow(m) !== stateFilter) return false;
                   // Plan-status filter
                   const until = m.subscribed_until ? new Date(m.subscribed_until).getTime() : 0;
                   if (memFilter === "active") return until > Date.now();
@@ -4809,40 +4121,22 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                           <>
                             <button type="button" style={btn(T.primary, "#fff")} onClick={async () => {
                               try {
-                                // v3.12.16: use SECURITY DEFINER RPC to bypass RLS
-                                // on user_profiles (browser anon key can't UPDATE directly).
+                                // v3.12.15: update BOTH tables — user_profiles is the source
+                                // of truth for auth (name/role read by signin_with_pin RPC),
+                                // members is for admin analytics and subscription state.
+                                // If we only update members, admin edits don't stick because
+                                // auth re-reads from user_profiles on every sign-in.
                                 if (m.user_id) {
                                   try {
-                                    await adminUpdateUserProfile({
+                                    await upsertUserProfile({
                                       user_id: m.user_id,
                                       display_name: editMemName,
                                       role: editMemRole,
                                       phone: editMemPhone,
                                     });
                                   } catch (e) {
-                                    console.warn("[KJC] admin_update_user_profile failed:", e);
-                                    setMsg("Auth update failed — admin RPC may not be installed. Run v31216_admin_rpc.sql.");
+                                    console.warn("[KJC] user_profiles update failed:", e);
                                   }
-                                }
-                                // v3.12.25: role alone doesn't list an aide — the public
-                                // directory is built from the caregivers table. When admin
-                                // converts someone to Home Aide, seed a PENDING caregiver
-                                // profile so they enter the approval queue instead of being
-                                // invisible. It stays hidden until completed + approved.
-                                let aideNote = "";
-                                if (editMemRole === "aide" && m.role !== "aide") {
-                                  try {
-                                    const existingCg = await findCaregiverByPhone(editMemPhone || m.phone || "");
-                                    if (!existingCg) {
-                                      await sbInsert("caregivers", {
-                                        ...aideToDb({ name: editMemName || m.name || "", phone: editMemPhone || m.phone || "" }),
-                                        approved: false,
-                                      });
-                                      aideNote = " · Pending aide profile created — open the Caregivers tab to add services / ZIP / rate, then Approve so they appear in the directory.";
-                                    } else {
-                                      aideNote = " · This person already has a caregiver profile" + (existingCg.approved ? " (already listed)." : " — approve it in the Caregivers tab to list them.");
-                                    }
-                                  } catch (e) { console.warn("[KJC] aide profile seed failed:", e); }
                                 }
                                 await patch("members", m.id, {
                                   name: editMemName,
@@ -4850,7 +4144,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                                   phone: editMemPhone,
                                   role: editMemRole,
                                 });
-                                setMsg("Member updated (auth + subscription tables synced)" + aideNote);
+                                setMsg("Member updated (auth + subscription tables synced)");
                                 setEditMemId(null);
                               } catch (e) { setMsg("Update failed"); }
                             }}>Save</button>
@@ -4870,27 +4164,6 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                                 setEditMemRole(m.role || "member");
                               }}>
                               ✎
-                            </button>
-                            {/* v3.12.26: admin-assisted PIN reset (any role) */}
-                            <button
-                              type="button"
-                              title="Reset this user's PIN"
-                              style={btn("#fff", "#3F6795", `1.5px solid ${T.line}`)}
-                              onClick={async () => {
-                                if (!m.user_id) { setMsg("No auth account (user_id) on this member — can't reset PIN."); return; }
-                                const entered = window.prompt(`Set a new temporary ${PIN_LENGTH}-digit PIN for ${m.name || m.phone || "this user"}:`);
-                                if (entered == null) return;
-                                const pin = entered.replace(/\D/g, "");
-                                if (pin.length < 4) { setMsg("PIN must be at least 4 digits."); return; }
-                                try {
-                                  await adminResetPin(m.user_id, pin);
-                                  setMsg(`PIN reset for ${m.name || m.phone}. Temporary PIN: ${pin} — tell them to sign in with it.`);
-                                } catch (e) {
-                                  console.warn("[KJC] admin_reset_pin failed:", e);
-                                  setMsg("PIN reset failed — is the RPC installed? Run v31226_admin_reset_pin.sql.");
-                                }
-                              }}>
-                              🔑 PIN
                             </button>
                             <button
                               type="button"
@@ -4992,18 +4265,6 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
           <div style={{ background: T.surface, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${T.line}` }}>
             <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 8 }}>{agEditId ? "✎ Editing agency — save to apply changes" : "Add agency ad (after they've paid)"}</div>
             <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Agency name *" value={agForm.name} onChange={(e) => setAgForm({ ...agForm, name: e.target.value })} />
-            {/* v3.13.2: category (Care/Learn/Kids) + state */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-              <select style={{ ...inputStyle, cursor: "pointer" }} value={agForm.vertical} onChange={(e) => setAgForm({ ...agForm, vertical: e.target.value })}>
-                <option value="care">Kakatong Care</option>
-                <option value="learn">Kakatong Learn</option>
-                <option value="kids">Kakatong Kids</option>
-              </select>
-              <select style={{ ...inputStyle, cursor: "pointer" }} value={agForm.state} onChange={(e) => setAgForm({ ...agForm, state: e.target.value })}>
-                <option value="">State…</option>
-                {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
               <input style={inputStyle} placeholder="Phone" value={agForm.phone} onChange={(e) => setAgForm({ ...agForm, phone: e.target.value })} />
               <input style={inputStyle} placeholder="Website (https://…)" value={agForm.website} onChange={(e) => setAgForm({ ...agForm, website: e.target.value })} />
@@ -5025,22 +4286,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
               )}
             </div>
           </div>
-          {/* v3.13.2: category (Care / Learn / Kids) + state filter for the agency list */}
-          <div style={{ display: "flex", gap: 8, margin: "6px 0 12px", flexWrap: "wrap", alignItems: "center" }}>
-            {[["all", "🗂 All"], ["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"]].map(([id, label]) => (
-              <button key={id} type="button" onClick={() => setAgVertical(id)}
-                style={btn(agVertical === id ? T.primary : "#fff", agVertical === id ? "#fff" : T.ink, `1.5px solid ${agVertical === id ? T.primary : T.line}`)}>
-                {label} ({id === "all" ? ags.length : ags.filter((a) => (a.vertical || "care") === id).length})
-              </button>
-            ))}
-            <span style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 800, color: T.inkSoft }}>STATE</span>
-            <StateFilter options={ags.filter((a) => agVertical === "all" || (a.vertical || "care") === agVertical).map(stateOfRow)} />
-          </div>
-          {ags
-            .filter((a) => (agVertical === "all" || (a.vertical || "care") === agVertical) && (stateFilter === "all" || stateOfRow(a) === stateFilter))
-            .slice()
-            .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }))
-            .map((a) => {
+          {ags.map((a) => {
             const today = new Date().toISOString().slice(0, 10);
             const expired = a.paid_until && a.paid_until < today;
             const renew = () => {
@@ -5056,13 +4302,8 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                   {expired && <span style={{ color: T.danger, fontSize: 12, fontWeight: 800 }}> · EXPIRED — ad hidden</span>}
                 </div>
                 <div style={{ fontSize: 12.5, color: T.inkSoft }}>
-                  {a.areas}{a.phone ? ` · ${a.phone}` : " · (no phone)"}{a.contact_name ? ` · ${a.contact_name}` : ""}{a.email ? ` · ${a.email}` : ""}
+                  {a.areas} · {a.phone}{a.contact_name ? ` · ${a.contact_name}` : ""}{a.email ? ` · ${a.email}` : ""}
                 </div>
-                {a.website && (
-                  <div style={{ fontSize: 12.5, marginTop: 1 }}>
-                    <a href={a.website} target="_blank" rel="noopener noreferrer" style={{ color: T.primary, fontWeight: 600 }}>{a.website}</a>
-                  </div>
-                )}
                 <div style={{ fontSize: 12.5, color: expired ? T.danger : T.inkSoft, fontWeight: 600 }}>
                   {a.monthly_fee ? `$${a.monthly_fee}/mo · ` : ""}{a.paid_until ? `paid until ${a.paid_until}` : "no billing date set"}
                 </div>
@@ -5141,7 +4382,7 @@ function LegalPage({ kind, onBack }) {
       {doc.sections.map(([heading, body]) => (
         <div key={heading} style={{ marginBottom: 18 }}>
           <h3 style={{ margin: "0 0 6px", fontSize: 17, color: T.ink }}>{heading}</h3>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: T.inkSoft }}>{linkifyEmails(body)}</p>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: T.inkSoft }}>{body}</p>
         </div>
       ))}
     </div>
@@ -5312,41 +4553,17 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
           {L.landingHeroSub}
         </p>
         {!isSignedIn && (
-          <>
-            {/* v3.12.25: role-preselected sign-up. Each button locks the correct role
-                so a first-time aide can never be created as a client by mistake. */}
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: T.inkSoft, letterSpacing: 0.3, margin: "22px 0 10px" }}>
-              {L.landingRolePrompt}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", maxWidth: 620, margin: "0 auto" }}>
-              {[
-                ["member", L.roleMember, T.primary],
-                ["aide",   L.roleAide,   "#3F6795"],
-                ["agency", L.roleAgency, "#D97848"],
-              ].map(([id, label, color]) => (
-                <button key={id} type="button" onClick={() => onSignIn(id)}
-                  style={{
-                    flex: "1 1 170px", minWidth: 150, padding: "13px 16px", borderRadius: 12,
-                    border: "none", background: color, color: "#fff",
-                    fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                  }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => onSignIn(null)}
-              style={{
-                marginTop: 14, padding: "9px 18px", borderRadius: 999,
-                border: `1.5px solid ${T.line}`, background: "#fff", color: T.ink,
-                fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-              }}
-            >
-              {L.landingHeroCta}
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={onSignIn}
+            style={{
+              marginTop: 20, padding: "11px 22px", borderRadius: 999,
+              border: "none", background: T.amber, color: "#3A2A08",
+              fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            {L.landingHeroCta}
+          </button>
         )}
       </section>
 
@@ -5525,7 +4742,6 @@ export default function App() {
     } catch (e) { /* storage unavailable */ }
     try {
       const nav = (navigator.language || "").toLowerCase();
-      if (nav.startsWith("zh-cn") || nav.startsWith("zh-hans") || nav.startsWith("zh-sg")) return "zhCN";
       if (nav.startsWith("zh")) return "zh";
       if (nav.startsWith("es")) return "es";
     } catch (e) { /* no navigator */ }
@@ -5536,11 +4752,7 @@ export default function App() {
     try { localStorage.setItem("pcc_lang", id); } catch (e) { /* storage unavailable */ }
   };
   const L = STRINGS[lang];
-  const ts = (s) => {
-    if (lang === "en") return s;
-    const lk = lang === "zhCN" ? "zh" : lang; // Simplified falls back to Traditional service dict
-    return SERVICE_I18N[s]?.[lk] || s;
-  };
+  const ts = (s) => (lang === "en" ? s : SERVICE_I18N[s]?.[lang] || s);
   LANG_CURRENT = { lang, L, ts };
   const [view, setView] = useState("home"); // home | directory | register | postjob | plans | privacy | terms | backup
   const [category, setCategory] = useState(null); // v3.10: care | learn | kids — set from home landing
@@ -5564,21 +4776,11 @@ export default function App() {
   const [client, setClient] = useState(null); // { plan, subscribedUntil }
   const [account, setAccount] = useState(null); // { id, email, name }
   const [authNext, setAuthNext] = useState(null); // resume action after sign-in
-  const [signupRole, setSignupRole] = useState(null); // v3.12.25: role pre-picked from a landing button, locks the signup role
-  const subscribed = !!(client && client.subscribedUntil > Date.now()); // v3.13.0: annual member
+  const subscribed = !!(client && client.subscribedUntil > Date.now());
+  const [pendingUnlock, setPendingUnlock] = useState(null);
   const unlockedIds = client?.unlocks || [];
-  const contactCredits = client?.contactCredits || 0; // v3.13.0: remaining contact reveals
-  const [payIntent, setPayIntent] = useState("membership"); // v3.13.0: "membership" | "contacts"
-  const [showReferBanner, setShowReferBanner] = useState(true); // v3.13.0: referral banner dismissible
   const [aidePro, setAidePro] = useState(null);
-  // v3.12.17 — Aide Pro requires signed-in + role=aide + valid Aide Pro subscription.
-  // Prevents guest / client accounts from bypassing the paywall.
-  const isAidePro = !!(
-    account &&
-    account.role === "aide" &&
-    aidePro &&
-    aidePro.proUntil > Date.now()
-  );
+  const isAidePro = !!(aidePro && aidePro.proUntil > Date.now());
   const [pendingCount, setPendingCount] = useState(0); // v3.8: caregivers awaiting approval
 
   // v3.8.5 — aides can't see the aides directory (own competitors); pick a valid tab
@@ -5611,32 +4813,17 @@ export default function App() {
       let signedIn = false;
       try {
         const sess = JSON.parse(localStorage.getItem("pcc_session") || "null");
-        let user = sess && sess.user ? sess.user : null;
-        // v3.12.24: heal (or discard) a session that's missing its id at LOAD
-        // time — before the user can reach checkout — so a stale pre-fix session
-        // never interrupts a purchase mid-flow. Recover the id from the phone if
-        // possible; otherwise clear the broken session and start signed-out.
-        if (user && !user.id) {
-          const repaired = await ensureAccountId(user);
-          if (repaired && repaired.id) {
-            user = repaired;
-          } else {
-            try { localStorage.removeItem("pcc_session"); } catch (e) { /* ignore */ }
-            user = null;
-          }
-        }
-        if (user && user.id) {
+        if (sess && sess.user && sess.user.id) {
           signedIn = true;
           // PIN and phone sessions carry a role already; email sessions do not
-          setAccount(user);
-          ensureMemberRow(user); // v3.12.12: keep members table in sync (fire and forget)
-          const m = await fetchMember(user.id);
+          setAccount(sess.user);
+          ensureMemberRow(sess.user); // v3.12.12: keep members table in sync (fire and forget)
+          const m = await fetchMember(sess.user.id);
           if (m) {
             setClient({
               plan: m.plan,
               subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
               unlocks: m.unlocks || [],
-              contactCredits: m.contact_credits || 0,
             });
           }
         }
@@ -5709,99 +4896,42 @@ export default function App() {
     showToast(L.tJobRem);
   }
 
-  // v3.12.22: guarantee an account has a usable id. If it's missing (older
-  // session, or an RPC that didn't return out_user_id), resolve it from the
-  // phone number, then persist the repair to state + localStorage so every
-  // later action (save subscription, unlock, profile) works this visit.
-  async function ensureAccountId(acct) {
-    if (!acct) return acct;
-    if (acct.id) return acct;
-    console.warn("[KJC] account missing id, attempting recovery:", acct);
-    const prof = await resolveUserIdByPhone(acct.phone || "");
-    if (!prof || !prof.user_id) {
-      // Distinguish the two failure modes for support/debugging.
-      console.error(
-        "[KJC] id recovery FAILED. account.phone =", acct.phone,
-        "— either no phone on the signed-in account, or no matching row in user_profiles/members."
-      );
-      return acct; // still no id — caller handles
-    }
-    const repaired = {
-      ...acct,
-      id: prof.user_id,
-      role: acct.role || prof.role,
-      name: acct.name || prof.display_name || "",
-      phone: acct.phone || prof.phone || "",
-    };
-    console.info("[KJC] account id recovered:", repaired.id);
-    setAccount(repaired);
-    try {
-      const sess = JSON.parse(localStorage.getItem("pcc_session") || "null") || {};
-      sess.user = repaired;
-      localStorage.setItem("pcc_session", JSON.stringify(sess));
-    } catch (e) { /* non-fatal */ }
-    return repaired;
-  }
-
-  // v3.12.22: when an account id can't be recovered, route the user to a clean
-  // re-sign-in (which runs the hardened signinWithPin and re-establishes the id)
-  // rather than leaving them stuck on a dead checkout button.
-  function handleMissingId(acct) {
-    if (!acct || !acct.phone) {
-      // No phone on the in-memory account (stale pre-fix session) — the only
-      // reliable repair is a fresh sign-in. Clear the broken session and route.
-      try { localStorage.removeItem("pcc_session"); } catch (e) { /* ignore */ }
-      setAccount(null);
-      showToast("Please sign in again to finish — your session needs a refresh.");
-      setView("signin");
-      window.scrollTo(0, 0);
-      return;
-    }
-    showToast("We couldn't match your account to your phone (" + acct.phone + "). Please contact support.");
-  }
-
   async function activatePlan(plan, acct = account) {
     if (!acct) {
-      setAuthNext({ type: "plan", plan }); setSignupRole(null);
+      setAuthNext({ type: "plan", plan });
       setView("signin");
       window.scrollTo(0, 0);
-      return;
-    }
-    // v3.12.22: recover a missing account id (e.g. a session stored before the
-    // sign-in id fix) before we try to save, so checkout doesn't dead-end.
-    acct = await ensureAccountId(acct);
-    if (!acct || !acct.id) {
-      setAuthNext({ type: "plan", plan }); // resume checkout after re-sign-in
-      handleMissingId(acct);
       return;
     }
     const rec = {
       ...(client || {}),
       plan: plan.name,
-      // v3.12.18: support both days-based (week_pass) and months-based (legacy monthly/quarterly/annual)
-      subscribedUntil: Date.now()
-        + (plan.days   ? plan.days   * 24 * 3600 * 1000 : 0)
-        + (plan.months ? plan.months * 30 * 24 * 3600 * 1000 : 0),
+      subscribedUntil: Date.now() + plan.months * 30 * 24 * 3600 * 1000,
       activatedAt: Date.now(),
     };
     try {
-      // v3.12.21: send ONLY the fields that change for a plan activation.
-      await saveMemberSubscription(acct.id, {
+      await upsertMember({
+        user_id: acct.id,
+        email: acct.email || null,
+        phone: acct.phone || null,
+        name: acct.name || null,
         plan: rec.plan,
         subscribed_until: new Date(rec.subscribedUntil).toISOString(),
+        unlocks: rec.unlocks || [],
       });
     } catch (e) {
-      const msg = (e && e.message) ? e.message : String(e);
-      showToast("Plan save failed: " + msg.slice(0, 120));
-      console.error("saveMemberSubscription failed:", e);
+      // Surface member-save failures so we notice them (v3.5.1)
+      showToast("Save failed — please try again");
+      console.error("upsertMember failed:", e);
       return;
     }
     try {
       localStorage.setItem("pcc_client", JSON.stringify(rec));
     } catch (e) { /* still activate in-session */ }
     setClient(rec);
+    setPendingUnlock(null);
     setView("directory");
-    showToast(L.tMembership);
+    showToast(L.tMember);
   }
 
   function signOut() {
@@ -5823,6 +4953,7 @@ export default function App() {
     setMaxAge("");
     setLastSearchId(null);
     setEditing(null);
+    setPendingUnlock(null);
     setAuthNext(null);
     setTab("aides");
     // v3.12.11 Fix 1: return to landing page instead of staying on profile/dashboard
@@ -5832,18 +4963,6 @@ export default function App() {
   }
 
   async function activateAidePro() {
-    // v3.12.17 — guests must sign in first
-    if (!account) {
-      setAuthNext({ type: "aidepro" }); setSignupRole(null);
-      setView("signin");
-      window.scrollTo(0, 0);
-      return;
-    }
-    // v3.12.17 — Aide Pro is aides-only. Clients and agencies can't purchase it.
-    if (account.role !== "aide") {
-      showToast(L.aideProAidesOnly);
-      return;
-    }
     const rec = { proUntil: Date.now() + 30 * 24 * 3600 * 1000, activatedAt: Date.now() };
     try {
       localStorage.setItem("pcc_aidepro", JSON.stringify(rec));
@@ -5852,56 +4971,37 @@ export default function App() {
     showToast(L.tAidePro);
   }
 
-  // v3.13.0: buy a $9.99 pack of 3 contact reveals (members only).
-  async function buyContactPack(acct = account) {
+  async function activateSingleUnlock(acct = account) {
+    if (!pendingUnlock) return;
     if (!acct) {
-      setAuthNext({ type: "contacts" }); setSignupRole(null);
-      setView("signin"); window.scrollTo(0, 0);
+      setAuthNext({ type: "unlock" });
+      setView("signin");
+      window.scrollTo(0, 0);
       return;
     }
-    acct = await ensureAccountId(acct);
-    if (!acct || !acct.id) { setAuthNext({ type: "contacts" }); handleMissingId(acct); return; }
-    // must be an active annual member to buy contact packs
-    if (!(client && client.subscribedUntil > Date.now())) {
-      setPayIntent("membership"); setView("plans"); window.scrollTo(0, 0);
-      return;
-    }
-    const rec = { ...(client || {}), contactCredits: (client?.contactCredits || 0) + CONTACT_PACK.credits };
+    const rec = { ...(client || {}), unlocks: [...(client?.unlocks || []), pendingUnlock] };
     try {
-      await saveMemberSubscription(acct.id, { contact_credits: rec.contactCredits });
+      await upsertMember({
+        user_id: acct.id,
+        email: acct.email || null,
+        phone: acct.phone || null,
+        name: acct.name || null,
+        plan: rec.plan || null,
+        subscribed_until: rec.subscribedUntil ? new Date(rec.subscribedUntil).toISOString() : null,
+        unlocks: rec.unlocks,
+      });
     } catch (e) {
-      const msg = (e && e.message) ? e.message : String(e);
-      showToast("Contacts save failed: " + msg.slice(0, 120));
+      showToast("Save failed — please try again");
+      console.error("upsertMember failed:", e);
       return;
     }
-    try { localStorage.setItem("pcc_client", JSON.stringify(rec)); } catch (e) { /* keep in-session */ }
+    try {
+      localStorage.setItem("pcc_client", JSON.stringify(rec));
+    } catch (e) { /* keep in-session */ }
     setClient(rec);
+    setPendingUnlock(null);
     setView("directory");
-    showToast(L.tContacts);
-  }
-
-  // v3.13.0: spend one contact credit to reveal an aide (persist). Returns bool.
-  async function consumeReveal(aide) {
-    if (!account) return false;
-    if ((client?.unlocks || []).includes(aide.id)) return true; // already unlocked — free
-    const credits = client?.contactCredits || 0;
-    if (credits <= 0) return false;
-    const acct = await ensureAccountId(account);
-    if (!acct || !acct.id) return false;
-    const rec = {
-      ...(client || {}),
-      unlocks: [...(client?.unlocks || []), aide.id],
-      contactCredits: credits - 1,
-    };
-    try {
-      await saveMemberSubscription(acct.id, { unlocks: rec.unlocks, contact_credits: rec.contactCredits });
-    } catch (e) {
-      showToast(L.tRevealFail);
-      return false;
-    }
-    try { localStorage.setItem("pcc_client", JSON.stringify(rec)); } catch (e) { /* keep in-session */ }
-    setClient(rec);
-    return true;
+    showToast(L.tUnlocked);
   }
 
   function showToast(msg) {
@@ -5962,36 +5062,6 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: T.surface, fontFamily: "'Avenir Next', 'Segoe UI', system-ui, sans-serif", color: T.ink }}>
-      {/* v3.13.0: marquee keyframes (inline styles can't declare @keyframes) */}
-      <style>{`@keyframes kkMarquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }`}</style>
-
-      {/* v3.13.0 (#4): scrolling promo — first 100 aides get free membership */}
-      <div style={{ background: T.amber, overflow: "hidden", whiteSpace: "nowrap" }}>
-        <div style={{ display: "inline-block", padding: "7px 0", color: "#3A2A08", fontSize: 13.5, fontWeight: 800, animation: "kkMarquee 18s linear infinite" }}>
-          {L.marqueeAide}　·　{L.marqueeAide}
-        </div>
-      </div>
-
-      {/* v3.13.0 (#3): referral banner (dismissible) */}
-      {showReferBanner && (
-        <div style={{ background: "#EFF3EC", borderBottom: `1px solid ${T.line}`, padding: "9px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 13.5, color: T.ink, fontWeight: 600 }}>{L.referBanner}</span>
-          <button type="button"
-            onClick={async () => {
-              const url = "https://kakatong.app";
-              try {
-                if (navigator.share) { await navigator.share({ title: "Kakatong 家家通", url }); }
-                else { await navigator.clipboard.writeText(url); showToast(L.referCopied); }
-              } catch (e) { try { await navigator.clipboard.writeText(url); showToast(L.referCopied); } catch (_) {} }
-            }}
-            style={{ padding: "6px 14px", borderRadius: 999, border: "none", background: T.primary, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-            🔗 {L.referShareBtn}
-          </button>
-          <button type="button" onClick={() => setShowReferBanner(false)}
-            style={{ background: "none", border: "none", color: T.inkSoft, fontSize: 18, lineHeight: 1, cursor: "pointer", padding: "0 4px" }} aria-label="Dismiss">×</button>
-        </div>
-      )}
-
       {/* Header */}
       <header style={{ background: T.primaryDark, padding: "18px 20px 20px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
@@ -6055,7 +5125,7 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => { setSignupRole(null); setView("signin"); window.scrollTo(0, 0); }}
+              <button type="button" onClick={() => { setView("signin"); window.scrollTo(0, 0); }}
                 style={{
                   padding: "5px 14px", borderRadius: 999, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
                   border: `1.5px solid ${T.amber}`, background: T.amber, color: "#3A2A08",
@@ -6064,14 +5134,13 @@ export default function App() {
                 {L.signInBtn}
               </button>
             )}
-            {[["en", "EN"], ["zh", "繁"], ["zhCN", "简"], ["es", "ES"]].map(([id, label]) => (
+            {[["en", "EN"], ["zh", "中文"], ["es", "ES"]].map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setLang(id)}
-                title={id === "zh" ? "繁體中文" : id === "zhCN" ? "简体中文" : label}
                 style={{
-                  padding: "5px 11px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                  padding: "5px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
                   cursor: "pointer", fontFamily: "inherit",
                   border: `1.5px solid ${lang === id ? T.amber : "rgba(255,255,255,0.35)"}`,
                   background: lang === id ? T.amber : "transparent",
@@ -6136,7 +5205,7 @@ export default function App() {
         {view === "home" ? (
           <HomeLandingView
             isSignedIn={!!account}
-            onSignIn={(r) => { setSignupRole(r || null); setView("signin"); window.scrollTo(0, 0); }}
+            onSignIn={() => { setView("signin"); window.scrollTo(0, 0); }}
             onPickCategory={(cat) => { setCategory(cat); setView("directory"); window.scrollTo(0, 0); }}
           />
         ) : view === "auth" ? (
@@ -6149,16 +5218,14 @@ export default function App() {
               setAuthNext(null);
               showToast(L.tSignedIn);
               if (next && next.type === "plan") activatePlan(next.plan, acct);
-              else if (next && next.type === "contacts") buyContactPack(acct);
+              else if (next && next.type === "unlock") activateSingleUnlock(acct);
               else setView("directory");
             }}
           />
         ) : view === "signin" ? (
           <PhoneAuthView
-            initialRole={signupRole}
-            onBack={() => { setAuthNext(null); setSignupRole(null); setView("directory"); }}
+            onBack={() => { setAuthNext(null); setView("directory"); }}
             onDone={async (acct) => {
-              setSignupRole(null); // v3.12.25: clear pre-picked role after use
               setAccount(acct);
               ensureMemberRow(acct); // v3.12.12: ensure admin can see this user
               // v3.8.2: clear any leftover filters/search from a prior session
@@ -6177,7 +5244,6 @@ export default function App() {
                     plan: m.plan,
                     subscribedUntil: m.subscribed_until ? Date.parse(m.subscribed_until) : 0,
                     unlocks: m.unlocks || [],
-                    contactCredits: m.contact_credits || 0,
                   });
                 }
               } catch (e) { /* not a subscriber yet — that's fine */ }
@@ -6189,8 +5255,8 @@ export default function App() {
                 activatePlan(next.plan, acct);
                 return;
               }
-              if (next && next.type === "contacts") {
-                buyContactPack(acct);
+              if (next && next.type === "unlock") {
+                activateSingleUnlock(acct);
                 return;
               }
               // Otherwise route by role
@@ -6277,14 +5343,7 @@ export default function App() {
             onCancel={() => { setJobEditing(null); setView("directory"); }}
           />
         ) : view === "plans" ? (
-          <PlansView
-            isMember={subscribed}
-            credits={contactCredits}
-            intent={payIntent}
-            onBuyMembership={() => activatePlan(PLANS[0])}
-            onBuyContacts={buyContactPack}
-            onBack={() => setView("directory")}
-          />
+          <PlansView onActivate={activatePlan} onBack={() => { setPendingUnlock(null); setView("directory"); }} singleUnlock={!!pendingUnlock} onSingleUnlock={activateSingleUnlock} />
         ) : view === "myaccount" ? (
           <MyAccountView
             account={account}
@@ -6308,7 +5367,7 @@ export default function App() {
                 console.error("profile save failed:", e);
               }
             }}
-            onUpgradePlan={() => { setPayIntent(subscribed ? "contacts" : "membership"); setView("plans"); window.scrollTo(0, 0); }}
+            onUpgradePlan={() => { setView("plans"); window.scrollTo(0, 0); }}
             onSignOut={signOut}
           />
         ) : view === "register" ? (
@@ -6421,7 +5480,6 @@ export default function App() {
                         key={j.id}
                         job={j}
                         aidePro={isAidePro}
-                        account={account}
                         onAideProSignup={activateAidePro}
                         onDelete={handleDeleteJob}
                         onEdit={(rec) => { setJobEditing(rec); setView("postjob"); window.scrollTo(0, 0); }}
@@ -6491,7 +5549,7 @@ export default function App() {
                   </div>
                   );
                 })}
-                <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{linkifyEmails(L.advertiseLine)}</p>
+                <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{L.advertiseLine}</p>
               </>
             ) : (
             <>
@@ -6542,7 +5600,7 @@ export default function App() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => { setPayIntent(subscribed ? "contacts" : "membership"); setView("plans"); window.scrollTo(0, 0); }}
+                  onClick={() => { setPendingUnlock(null); setView("plans"); window.scrollTo(0, 0); }}
                   style={{
                     padding: "9px 16px", borderRadius: 999, border: "none", background: T.amber,
                     color: "#3A2A08", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
@@ -6646,17 +5704,13 @@ export default function App() {
                   <AideCard
                     key={a.id}
                     aide={a}
-                    isMember={subscribed}
-                    isUnlocked={unlockedIds.includes(a.id)}
-                    credits={contactCredits}
-                    onNeedMembership={() => { setPayIntent("membership"); setView("plans"); window.scrollTo(0, 0); }}
-                    onNeedContacts={() => { setPayIntent("contacts"); setView("plans"); window.scrollTo(0, 0); }}
-                    onConsumeReveal={consumeReveal}
+                    subscribed={subscribed || unlockedIds.includes(a.id)}
                     reviews={reviews.filter((r) => r.caregiver_id === a.id)}
                     onAddReview={addReview}
                     hires={hires.filter((h) => h.caregiver_id === a.id)}
                     onHire={addHire}
                     hireDefault={account?.name || ""}
+                    onRequireSub={() => { setPendingUnlock(a.id); setView("plans"); window.scrollTo(0, 0); }}
                     onDelete={handleDelete}
                     onEdit={(rec) => { setEditing(rec); setView("register"); window.scrollTo(0, 0); }}
                     searchQueryId={lastSearchId}
@@ -6731,14 +5785,7 @@ export default function App() {
             )}
           </button>
         </div>
-        {/* v3.13.4: general contact — clickable mailto links */}
-        <p style={{ margin: "10px 0 0", fontSize: 12.5, color: T.inkSoft }}>
-          {L.contactLbl}{" "}
-          <a href="mailto:support@kakatong.app" style={{ color: T.primary, fontWeight: 700 }}>support@kakatong.app</a>
-          {" · "}
-          <a href="mailto:info@kakatong.app" style={{ color: T.primary, fontWeight: 700 }}>info@kakatong.app</a>
-        </p>
-        <p style={{ margin: "6px 0 0", fontSize: 12.5, color: T.inkSoft }}>
+        <p style={{ margin: "8px 0 0", fontSize: 12.5, color: T.inkSoft }}>
           {L.fCopy} · {APP_VERSION}
         </p>
       </footer>
