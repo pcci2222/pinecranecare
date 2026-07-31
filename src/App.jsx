@@ -124,6 +124,19 @@ function isZipWithinRadius(aideZip, searchZip, miles) {
   return haversineMiles(a[0], a[1], s[0], s[1]) <= miles;
 }
 
+// v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
+// bound so the family-side Age filter keeps working). ageBandLabel maps a stored
+// numeric age back to its display range.
+const AGE_RANGES = [[35, 40], [41, 45], [46, 50], [51, 55], [56, 60], [61, 200]];
+function ageBandLabel(age, L) {
+  const n = Number(age);
+  if (!n) return "";
+  for (const [lo, hi] of AGE_RANGES) {
+    if (n >= lo && n <= hi) return hi >= 200 ? `61 ${(L && L.ageAbove) || "and above"}` : `${lo}–${hi}`;
+  }
+  return String(age); // legacy exact age outside the bands
+}
+
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
@@ -161,6 +174,7 @@ const STRINGS = {
     cameraNote: "On a phone, this opens your front camera.",
     lName: "Full name", lPhone: "Phone", lEmail: "Email", lCity: "City", lZip: "ZIP",
     lAge: "Age", lYrs: "Yrs experience", lRate: "Rate ($/hr)", lLang: "Languages spoken",
+    ageAbove: "and above", ageSelectPrompt: "Select age range",
     lServices: "Services you offer", lCerts: "Certifications", lAbout: "About you",
     manageProfile: "Caregiver? Manage my profile ✎",
     aideLoginTitle: "Manage my profile",
@@ -420,6 +434,7 @@ const STRINGS = {
     cameraNote: "手機上會開啟前置鏡頭。",
     lName: "姓名", lPhone: "電話", lEmail: "電子郵件", lCity: "城市", lZip: "郵遞區號",
     lAge: "年齡", lYrs: "經驗年數", lRate: "時薪（美元）", lLang: "會說的語言",
+    ageAbove: "歲以上", ageSelectPrompt: "選擇年齡範圍",
     lServices: "提供的服務", lCerts: "證照", lAbout: "自我介紹",
     manageProfile: "我是照護者？管理我的檔案 ✎",
     aideLoginTitle: "管理我的檔案",
@@ -678,6 +693,7 @@ const STRINGS = {
     cameraNote: "手机上会开启前置镜头。",
     lName: "姓名", lPhone: "电话", lEmail: "电子邮件", lCity: "城市", lZip: "邮递区号",
     lAge: "年龄", lYrs: "经验年数", lRate: "时薪（美元）", lLang: "会说的语言",
+    ageAbove: "岁以上", ageSelectPrompt: "选择年龄范围",
     lServices: "提供的服务", lCerts: "证照", lAbout: "自我介绍",
     manageProfile: "我是照护者？管理我的档案 ✎",
     aideLoginTitle: "管理我的档案",
@@ -936,6 +952,7 @@ const STRINGS = {
     cameraNote: "En el teléfono, abre la cámara frontal.",
     lName: "Nombre completo", lPhone: "Teléfono", lEmail: "Correo", lCity: "Ciudad", lZip: "Código postal",
     lAge: "Edad", lYrs: "Años de experiencia", lRate: "Tarifa ($/h)", lLang: "Idiomas",
+    ageAbove: "y más", ageSelectPrompt: "Seleccione rango de edad",
     lServices: "Servicios que ofrece", lCerts: "Certificaciones", lAbout: "Sobre usted",
     manageProfile: "¿Cuidador/a? Administrar mi perfil ✎",
     aideLoginTitle: "Administrar mi perfil",
@@ -1233,7 +1250,10 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.0"; // ← bumped on every code update
+const APP_VERSION = "v3.13.1"; // ← bumped on every code update
+// v3.13.1: home-aide profile age is now a range picker (35–40, 41–45, 46–50,
+//   51–55, 56–60, 61 and above) instead of a typed number. Stored as the band's
+//   lower bound so the family Age filter still works; card shows the range.
 // v3.13.0: (1) 中文 split into 繁體(zh) + 简体(zhCN); 4-language switcher.
 //   (2) PayPal added as a payment method in checkout. (3) Referral banner.
 //   (4) Scrolling promo marquee (first 100 aides free membership). (5) NEW client
@@ -2190,7 +2210,17 @@ function RegisterForm({ onSaved, onCancel, initial, hidePin = false }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
         <Field label={L.lAge}>
-          <input style={inputStyle} inputMode="numeric" value={form.age} onChange={(e) => set("age", e.target.value)} placeholder="45" />
+          {/* v3.13.1: age is now a 5-year range picker (stored as the band's lower bound) */}
+          <select
+            style={{ ...inputStyle, cursor: "pointer" }}
+            value={(() => { const n = Number(form.age); const b = AGE_RANGES.find(([lo, hi]) => n >= lo && n <= hi); return b ? String(b[0]) : ""; })()}
+            onChange={(e) => set("age", e.target.value)}
+          >
+            <option value="">{L.ageSelectPrompt}</option>
+            {AGE_RANGES.map(([lo, hi]) => (
+              <option key={lo} value={lo}>{hi >= 200 ? `61 ${L.ageAbove}` : `${lo}–${hi}`}</option>
+            ))}
+          </select>
         </Field>
         <Field label={L.lYrs}>
           <input style={inputStyle} inputMode="numeric" value={form.years} onChange={(e) => set("years", e.target.value)} placeholder="5" />
@@ -2566,7 +2596,7 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             {avg && <span style={{ color: T.amber, fontWeight: 800, fontSize: 14.5, marginLeft: 8 }}>★ {avg} ({reviews.length})</span>}
           </div>
           <div style={{ fontSize: 14, color: T.inkSoft }}>
-            {aide.city}{aide.age ? ` · ${L.ageLbl} ${aide.age}` : ""}{aide.years ? ` · ${aide.years} ${L.yrsExp}` : ""}{aide.rate ? ` · $${aide.rate}/hr` : ""}
+            {aide.city}{aide.age ? ` · ${L.ageLbl} ${ageBandLabel(aide.age, L)}` : ""}{aide.years ? ` · ${aide.years} ${L.yrsExp}` : ""}{aide.rate ? ` · $${aide.rate}/hr` : ""}
           </div>
           {aide.languages && (
             <div style={{ fontSize: 13.5, color: T.primary, fontWeight: 600 }}>{L.speaks} {aide.languages}</div>
