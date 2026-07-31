@@ -124,6 +124,28 @@ function isZipWithinRadius(aideZip, searchZip, miles) {
   return haversineMiles(a[0], a[1], s[0], s[1]) <= miles;
 }
 
+// v3.13.2: derive US state from a ZIP (first 3 digits → state) so admin can
+// filter caregivers by state without a schema change. Ranges are the standard
+// USPS SCF prefix allocations.
+const ZIP3_STATE = [
+  [5,5,"NY"],[6,9,"PR"],[10,27,"MA"],[28,29,"RI"],[30,38,"NH"],[39,49,"ME"],[50,59,"VT"],[60,69,"CT"],[70,89,"NJ"],
+  [100,149,"NY"],[150,196,"PA"],[197,199,"DE"],[200,205,"DC"],[206,219,"MD"],[220,246,"VA"],[247,268,"WV"],
+  [270,289,"NC"],[290,299,"SC"],[300,319,"GA"],[320,349,"FL"],[350,369,"AL"],[370,385,"TN"],[386,397,"MS"],
+  [398,399,"GA"],[400,427,"KY"],[430,459,"OH"],[460,479,"IN"],[480,499,"MI"],[500,528,"IA"],[530,549,"WI"],
+  [550,567,"MN"],[570,577,"SD"],[580,588,"ND"],[590,599,"MT"],[600,629,"IL"],[630,658,"MO"],[660,679,"KS"],
+  [680,693,"NE"],[700,714,"LA"],[716,729,"AR"],[730,749,"OK"],[750,799,"TX"],[800,816,"CO"],[820,831,"WY"],
+  [832,838,"ID"],[840,847,"UT"],[850,865,"AZ"],[870,884,"NM"],[885,885,"TX"],[889,898,"NV"],[900,961,"CA"],
+  [967,968,"HI"],[970,979,"OR"],[980,994,"WA"],[995,999,"AK"],
+];
+function zipToState(zip) {
+  const s = String(zip || "").replace(/\D/g, "");
+  if (s.length < 3) return "";
+  const p = parseInt(s.slice(0, 3), 10);
+  for (const [lo, hi, st] of ZIP3_STATE) if (p >= lo && p <= hi) return st;
+  return "";
+}
+const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+
 // v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
 // bound so the family-side Age filter keeps working). ageBandLabel maps a stored
 // numeric age back to its display range.
@@ -1250,7 +1272,12 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.1"; // ← bumped on every code update
+const APP_VERSION = "v3.13.2"; // ← bumped on every code update
+// v3.13.2: Admin — agency list split into Care / Learn / Kids buttons (uses the
+//   agencies.vertical field, now editable in the agency form) and a by-State
+//   filter added to the Caregivers, Agencies, and Members tabs. Caregiver state
+//   is derived from ZIP; agencies/members use a state column.
+//   Run v3132_agency_vertical_state.sql.
 // v3.13.1: home-aide profile age is now a range picker (35–40, 41–45, 46–50,
 //   51–55, 56–60, 61 and above) instead of a typed number. Stored as the band's
 //   lower bound so the family Age filter still works; card shows the range.
@@ -4304,13 +4331,31 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   const [editMemPhone, setEditMemPhone] = useState(""); // v3.12.12
   const [acks, setAcks] = useState([]);
   const [msg, setMsg] = useState("");
-  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" });
+  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" });
   const [agEditId, setAgEditId] = useState(null);
   const [dbPing, setDbPing] = useState(null); // null=checking, number=ms, "error"=down
   const [jobsCount, setJobsCount] = useState(0);
   const [revsCount, setRevsCount] = useState(0);
   const [hiresCount, setHiresCount] = useState(0);
-  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "" };
+  // v3.13.2: admin filters — agency vertical (Care/Learn/Kids) + by-state across tabs
+  const [agVertical, setAgVertical] = useState("care"); // care | learn | kids
+  const [stateFilter, setStateFilter] = useState("all");
+  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" };
+
+  // v3.13.2: state of a row per tab (caregivers derive from ZIP; agencies/members use a state field)
+  const stateOfCaregiver = (r) => zipToState(r.zip);
+  const stateOfRow = (r) => r.state || zipToState(r.zip) || "";
+  // build the state dropdown from whatever states actually appear in the data
+  function StateFilter({ options }) {
+    const list = Array.from(new Set(options.filter(Boolean))).sort();
+    return (
+      <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}
+        style={{ ...inputStyle, maxWidth: 200, padding: "8px 10px", cursor: "pointer" }}>
+        <option value="all">All states</option>
+        {list.map((s) => <option key={s} value={s}>{s}</option>)}
+      </select>
+    );
+  }
 
   async function refresh() {
     setMsg("");
@@ -4448,6 +4493,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       name: a.name || "", phone: a.phone || "", website: a.website || "", areas: a.areas || "",
       blurb: a.blurb || "", contact_name: a.contact_name || "", email: a.email || "",
       monthly_fee: a.monthly_fee != null ? String(a.monthly_fee) : "", paid_until: a.paid_until || "",
+      vertical: a.vertical || "care", state: a.state || "",
     });
     setMsg("");
   }
@@ -4492,8 +4538,15 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       {msg && <p style={{ fontSize: 13.5, fontWeight: 600, color: T.primary, margin: "0 0 10px" }}>{msg}</p>}
 
       {tab === "caregivers" ? (
-        rows.length === 0 ? <p style={{ color: T.inkSoft }}>No caregiver records.</p> :
-        rows.map((r) => (
+        <>
+          <div style={{ marginBottom: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>State:</span>
+            <StateFilter options={rows.map(stateOfCaregiver)} />
+          </div>
+          {(() => {
+            const cg = rows.filter((r) => stateFilter === "all" || stateOfCaregiver(r) === stateFilter);
+            return cg.length === 0 ? <p style={{ color: T.inkSoft }}>No caregiver records for this state.</p> :
+            cg.map((r) => (
           <div key={r.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 8px", borderBottom: `1px solid ${T.line}`, background: r.approved ? "transparent" : "#FCF4E3", borderRadius: 8, marginBottom: 4 }}>
             <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: T.surface, flexShrink: 0 }}>
               {r.photo_url && <img src={r.photo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
@@ -4524,7 +4577,9 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
             </button>
             <button type="button" style={btn("#fff", T.inkSoft, `1.5px solid ${T.line}`)} onClick={() => remove("caregivers", r.id, r.name)}>✕</button>
           </div>
-        ))
+            ));
+          })()}
+        </>
       ) : tab === "status" ? (
         <div>
           {(() => {
@@ -4631,6 +4686,11 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
               </button>
             ))}
           </div>
+          {/* v3.13.2: by-state filter (uses member.state where set) */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, marginRight: 4 }}>STATE</span>
+            <StateFilter options={mems.map(stateOfRow)} />
+          </div>
           {/* Plan-status filter chips */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12.5, fontWeight: 800, color: T.inkSoft, letterSpacing: 1, alignSelf: "center", marginRight: 4 }}>PLAN</span>
@@ -4657,6 +4717,8 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                   if (memRole === "client") { if (m.role && m.role !== "member") return false; }
                   else if (memRole === "aide")   { if (m.role !== "aide")   return false; }
                   else if (memRole === "agency") { if (m.role !== "agency") return false; }
+                  // v3.13.2: by-state filter
+                  if (stateFilter !== "all" && stateOfRow(m) !== stateFilter) return false;
                   // Plan-status filter
                   const until = m.subscribed_until ? new Date(m.subscribed_until).getTime() : 0;
                   if (memFilter === "active") return until > Date.now();
@@ -4910,6 +4972,18 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
           <div style={{ background: T.surface, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${T.line}` }}>
             <div style={{ fontWeight: 800, fontSize: 14.5, color: T.ink, marginBottom: 8 }}>{agEditId ? "✎ Editing agency — save to apply changes" : "Add agency ad (after they've paid)"}</div>
             <input style={{ ...inputStyle, marginBottom: 8 }} placeholder="Agency name *" value={agForm.name} onChange={(e) => setAgForm({ ...agForm, name: e.target.value })} />
+            {/* v3.13.2: category (Care/Learn/Kids) + state */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <select style={{ ...inputStyle, cursor: "pointer" }} value={agForm.vertical} onChange={(e) => setAgForm({ ...agForm, vertical: e.target.value })}>
+                <option value="care">Kakatong Care</option>
+                <option value="learn">Kakatong Learn</option>
+                <option value="kids">Kakatong Kids</option>
+              </select>
+              <select style={{ ...inputStyle, cursor: "pointer" }} value={agForm.state} onChange={(e) => setAgForm({ ...agForm, state: e.target.value })}>
+                <option value="">State…</option>
+                {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
               <input style={inputStyle} placeholder="Phone" value={agForm.phone} onChange={(e) => setAgForm({ ...agForm, phone: e.target.value })} />
               <input style={inputStyle} placeholder="Website (https://…)" value={agForm.website} onChange={(e) => setAgForm({ ...agForm, website: e.target.value })} />
@@ -4931,7 +5005,20 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
               )}
             </div>
           </div>
-          {ags.map((a) => {
+          {/* v3.13.2: category (Care / Learn / Kids) + state filter for the agency list */}
+          <div style={{ display: "flex", gap: 8, margin: "6px 0 12px", flexWrap: "wrap", alignItems: "center" }}>
+            {[["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"]].map(([id, label]) => (
+              <button key={id} type="button" onClick={() => setAgVertical(id)}
+                style={btn(agVertical === id ? T.primary : "#fff", agVertical === id ? "#fff" : T.ink, `1.5px solid ${agVertical === id ? T.primary : T.line}`)}>
+                {label} ({ags.filter((a) => (a.vertical || "care") === id).length})
+              </button>
+            ))}
+            <span style={{ marginLeft: 8, fontSize: 12.5, fontWeight: 800, color: T.inkSoft }}>STATE</span>
+            <StateFilter options={ags.filter((a) => (a.vertical || "care") === agVertical).map(stateOfRow)} />
+          </div>
+          {ags
+            .filter((a) => (a.vertical || "care") === agVertical && (stateFilter === "all" || stateOfRow(a) === stateFilter))
+            .map((a) => {
             const today = new Date().toISOString().slice(0, 10);
             const expired = a.paid_until && a.paid_until < today;
             const renew = () => {
