@@ -159,6 +159,16 @@ function ageBandLabel(age, L) {
   return String(age); // legacy exact age outside the bands
 }
 
+// v3.13.4: turn any email address inside a string into a clickable mailto link.
+function linkifyEmails(text) {
+  const re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+  return String(text || "").split(new RegExp("(" + re.source + ")", "g")).map((p, i) =>
+    re.test(p) && p.indexOf("@") > -1 && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(p)
+      ? <a key={i} href={"mailto:" + p} style={{ color: T.primary, fontWeight: 700 }}>{p}</a>
+      : p
+  );
+}
+
 // ---------- Translations (EN / 中文 / Español) ----------
 const STRINGS = {
   en: {
@@ -1272,9 +1282,14 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.3"; // ← bumped on every code update
+const APP_VERSION = "v3.13.5"; // ← bumped on every code update
+// v3.13.5: agency lists (admin + public) now sort alphabetically by name.
 // v3.13.3: Admin agency list adds a "🗂 All" button so you can see every
 //   category for a state at once (Care/Learn/Kids still filter individually).
+// v3.13.4: email touch-ups — on-screen addresses (support@ / info@ / privacy@)
+//   are now clickable mailto links (legal pages, advertise line, agency-not-found),
+//   and the footer shows a Contact line (support@ + info@). No email is SENT by
+//   the app yet — that comes with the payment backend (bill@ for receipts, etc.).
 // v3.13.2: Admin — agency list split into Care / Learn / Kids buttons (uses the
 //   agencies.vertical field, now editable in the agency form) and a by-State
 //   filter added to the Caregivers, Agencies, and Members tabs. Caregiver state
@@ -2005,7 +2020,9 @@ const loadAgencies = async (category) => {
     const vertical = (category === "learn" || category === "kids") ? category : "care";
     const rows = await sbSelect("agencies", `&active=eq.true&vertical=eq.${vertical}`);
     const today = new Date().toISOString().slice(0, 10);
-    return rows.filter((a) => !a.paid_until || a.paid_until >= today);
+    return rows
+      .filter((a) => !a.paid_until || a.paid_until >= today)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
   } catch (e) { return []; }
 };
 
@@ -4059,7 +4076,7 @@ function AgencyProfileView({ account, onBack }) {
         <p style={{ color: T.inkSoft }}>Loading…</p>
       ) : notFound ? (
         <div style={{ padding: "18px 20px", background: "#FFF8E7", borderRadius: 12, border: `2px solid ${T.amber}`, color: "#6B5A2A" }}>
-          {L.agencyProfileNotFound}
+          {linkifyEmails(L.agencyProfileNotFound)}
         </div>
       ) : (
         <>
@@ -5020,6 +5037,8 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
           </div>
           {ags
             .filter((a) => (agVertical === "all" || (a.vertical || "care") === agVertical) && (stateFilter === "all" || stateOfRow(a) === stateFilter))
+            .slice()
+            .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }))
             .map((a) => {
             const today = new Date().toISOString().slice(0, 10);
             const expired = a.paid_until && a.paid_until < today;
@@ -5116,7 +5135,7 @@ function LegalPage({ kind, onBack }) {
       {doc.sections.map(([heading, body]) => (
         <div key={heading} style={{ marginBottom: 18 }}>
           <h3 style={{ margin: "0 0 6px", fontSize: 17, color: T.ink }}>{heading}</h3>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: T.inkSoft }}>{body}</p>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: T.inkSoft }}>{linkifyEmails(body)}</p>
         </div>
       ))}
     </div>
@@ -6466,7 +6485,7 @@ export default function App() {
                   </div>
                   );
                 })}
-                <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{L.advertiseLine}</p>
+                <p style={{ fontSize: 13, color: T.inkSoft, marginTop: 16, lineHeight: 1.5 }}>{linkifyEmails(L.advertiseLine)}</p>
               </>
             ) : (
             <>
@@ -6706,7 +6725,14 @@ export default function App() {
             )}
           </button>
         </div>
-        <p style={{ margin: "8px 0 0", fontSize: 12.5, color: T.inkSoft }}>
+        {/* v3.13.4: general contact — clickable mailto links */}
+        <p style={{ margin: "10px 0 0", fontSize: 12.5, color: T.inkSoft }}>
+          {L.contactLbl}{" "}
+          <a href="mailto:support@kakatong.app" style={{ color: T.primary, fontWeight: 700 }}>support@kakatong.app</a>
+          {" · "}
+          <a href="mailto:info@kakatong.app" style={{ color: T.primary, fontWeight: 700 }}>info@kakatong.app</a>
+        </p>
+        <p style={{ margin: "6px 0 0", fontSize: 12.5, color: T.inkSoft }}>
           {L.fCopy} · {APP_VERSION}
         </p>
       </footer>
