@@ -409,8 +409,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 Unlock agency contact",
     agencyClaim: "Are you this agency? Claim your listing",
     agencyRemoval: "Request removal",
-    agencySearchPh: "Search agencies by ZIP, city, or state",
-    agencyNoMatch: "No agencies match your search.",
+    agencySearchPh: "Search by ZIP, city, or state",
+    agencyNoMatch: "No results match your search.",
     agencyDashTitle: "Agency Reports",
     agencyDashSub: "Real activity from families looking for care — the last 30 days.",
     hotAides: "Hot aides — last 30 days",
@@ -672,8 +672,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 解鎖機構聯絡資訊",
     agencyClaim: "這是您的機構嗎？認領您的資訊",
     agencyRemoval: "要求移除",
-    agencySearchPh: "以郵遞區號、城市或州名搜尋機構",
-    agencyNoMatch: "沒有符合搜尋的機構。",
+    agencySearchPh: "以郵遞區號、城市或州名搜尋",
+    agencyNoMatch: "沒有符合搜尋的結果。",
     agencyDashTitle: "機構報告",
     agencyDashSub: "尋找照護的家庭 — 過去 30 天的真實活動數據。",
     hotAides: "熱門家政員 — 過去 30 天",
@@ -935,8 +935,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 解锁机构联络资讯",
     agencyClaim: "这是您的机构吗？认领您的资讯",
     agencyRemoval: "请求移除",
-    agencySearchPh: "以邮递区号、城市或州名搜索机构",
-    agencyNoMatch: "没有符合搜索的机构。",
+    agencySearchPh: "以邮递区号、城市或州名搜索",
+    agencyNoMatch: "没有符合搜索的结果。",
     agencyDashTitle: "机构报告",
     agencyDashSub: "寻找照护的家庭 — 过去 30 天的真实活动数据。",
     hotAides: "热门家政员 — 过去 30 天",
@@ -1197,8 +1197,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 Desbloquear contacto de agencia",
     agencyClaim: "¿Es esta su agencia? Reclame su ficha",
     agencyRemoval: "Solicitar retiro",
-    agencySearchPh: "Busque agencias por código postal, ciudad o estado",
-    agencyNoMatch: "Ninguna agencia coincide con su búsqueda.",
+    agencySearchPh: "Busque por código postal, ciudad o estado",
+    agencyNoMatch: "Ningún resultado coincide con su búsqueda.",
     agencyDashTitle: "Informes de agencia",
     agencyDashSub: "Actividad real de familias buscando cuidado — últimos 30 días.",
     hotAides: "Cuidadores populares — últimos 30 días",
@@ -1307,7 +1307,11 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.9"; // ← bumped on every code update
+const APP_VERSION = "v3.13.11"; // ← bumped on every code update
+// v3.13.11: providers search (ZIP/city/state + radius) now reads correctly for
+//           Kakatong Learn & Kids too — search labels made vertical-neutral.
+// v3.13.10: agency search gains the same ZIP radius selector (Exact/1/5/10 mi) as
+//           the aide search; agency ZIP is read from its `areas` text.
 // v3.13.9: search now accepts ZIP / city / state (incl. full state names) on the
 //          aide directory; added a ZIP/city/state search bar to the public Agencies tab.
 // v3.13.8: removed Edit/Delete controls from the public aide directory card —
@@ -5569,6 +5573,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [agencySearch, setAgencySearch] = useState(""); // v3.13.9: public agency search by zip/city/state
+  const [agencyRadius, setAgencyRadius] = useState(0);   // v3.13.10: 0 = exact; 1/5/10 miles from ZIP
   const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
@@ -5935,10 +5940,18 @@ export default function App() {
   // Agencies keep their location as text in `areas` (e.g. "Brooklyn, NY 11204")
   // plus a `state` code — so match against both, and resolve full state names.
   const filteredAgencies = agencies.filter((ag) => {
-    const q = agencySearch.trim().toLowerCase();
+    const q = agencySearch.trim();
     if (!q) return true;
+    // Agencies keep their ZIP inside the `areas` text (e.g. "Brooklyn, NY 11204").
+    const agZip = (String(ag.areas || "").match(/\b(\d{5})\b/) || [])[1] || ag.zip || "";
+    const isZipQuery = /^\d{5}$/.test(q);
+    if (isZipQuery && agencyRadius > 0) {
+      // Radius mode: agency ZIP within `agencyRadius` miles of the searched ZIP.
+      return isZipWithinRadius(agZip, q, agencyRadius);
+    }
+    const qLower = q.toLowerCase();
     const hay = `${ag.areas || ""} ${ag.state || ""}`.toLowerCase();
-    if (hay.includes(q)) return true;
+    if (hay.includes(qLower)) return true;
     const stateCode = queryToStateCode(q);
     if (stateCode && ((ag.state || "").toUpperCase() === stateCode || hay.includes(stateCode.toLowerCase()))) return true;
     return false;
@@ -6478,8 +6491,33 @@ export default function App() {
                     value={agencySearch}
                     onChange={(e) => setAgencySearch(e.target.value)}
                     placeholder={L.agencySearchPh}
-                    style={{ ...inputStyle, marginBottom: 12 }}
+                    style={{ ...inputStyle, marginBottom: 10 }}
                   />
+                )}
+                {/* v3.13.10 — ZIP radius selector for agencies (same as the aide search) */}
+                {agencies.length > 0 && /^\d{5}$/.test(agencySearch.trim()) && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>{L.radiusLbl}</span>
+                    {[[0, L.radiusExact], [1, "1 mi"], [5, "5 mi"], [10, "10 mi"]].map(([mi, label]) => {
+                      const active = agencyRadius === mi;
+                      return (
+                        <button
+                          key={mi}
+                          type="button"
+                          onClick={() => setAgencyRadius(mi)}
+                          style={{
+                            padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                            border: `1.5px solid ${active ? T.primary : T.line}`,
+                            background: active ? T.primary : "#fff",
+                            color: active ? "#fff" : T.ink,
+                            cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
                 {agencies.length === 0 ? (
                   <div style={{ textAlign: "center", marginTop: 40 }}>
