@@ -185,18 +185,59 @@ function learnSubcatLabel(slug, lang) {
 function allLabel(lang) {
   return lang === "zh" ? "全部" : lang === "zhCN" ? "全部" : lang === "es" ? "Todos" : "All";
 }
+// Keyword hit: ASCII keywords match on word boundaries (so "art" doesn't match
+// "martial"); CJK keywords use substring (no word boundaries in Chinese).
+function kwHit(hay, kw) {
+  if (/^[\x00-\x7f]+$/.test(kw)) {
+    const safe = kw.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return safe ? new RegExp("\\b" + safe + "\\b", "i").test(hay) : false;
+  }
+  return hay.includes(kw);
+}
 function matchLearnSubcat(ag, slug) {
   if (!slug || slug === "all") return true;
   const sub = String(ag.subcategory || "").toLowerCase();
   if (sub === slug) return true;
   const hay = `${ag.subcategory || ""} ${ag.blurb || ""} ${ag.name || ""}`.toLowerCase();
-  return (SUBCAT_KEYWORDS[slug] || []).some((k) => hay.includes(k));
+  return (SUBCAT_KEYWORDS[slug] || []).some((k) => kwHit(hay, k));
 }
 function matchTestPrepTag(ag, tag) {
   if (!tag || tag === "all") return true;
   const hay = `${ag.blurb || ""} ${ag.name || ""} ${ag.subcategory || ""}`;
   const safe = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp("\\b" + safe + "\\b", "i").test(hay);
+}
+
+// v3.13.13: Kakatong Kids (K-8) subcategories (localized).
+const KIDS_SUBCATS = [
+  { slug: "music",               en: "Music",               zh: "音樂",     zhCN: "音乐",     es: "Música" },
+  { slug: "swim",                en: "Swim",                zh: "游泳",     zhCN: "游泳",     es: "Natación" },
+  { slug: "martial_arts",        en: "Martial Arts",        zh: "武術",     zhCN: "武术",     es: "Artes Marciales" },
+  { slug: "dance",               en: "Dance",               zh: "舞蹈",     zhCN: "舞蹈",     es: "Danza" },
+  { slug: "art",                 en: "Art",                 zh: "美術",     zhCN: "美术",     es: "Arte" },
+  { slug: "elementary_learning", en: "Elementary Learning", zh: "小學輔導", zhCN: "小学辅导", es: "Aprendizaje Primario" },
+  { slug: "chess",               en: "Chess",               zh: "西洋棋",   zhCN: "国际象棋", es: "Ajedrez" },
+];
+const KIDS_KEYWORDS = {
+  music:               ["music", "piano", "violin", "guitar", "cello", "vocal", "band", "instrument", "conservatory", "音樂", "音乐", "鋼琴", "钢琴"],
+  swim:                ["swim", "pool", "aquatic", "游泳"],
+  martial_arts:        ["martial", "taekwondo", "karate", "kung fu", "judo", "jiu jitsu", "jiu-jitsu", "muay thai", "mma", "tkd", "武術", "武术", "跆拳道", "功夫"],
+  dance:               ["dance", "ballet", "choreograph", "舞蹈", "舞"],
+  art:                 ["art", "drawing", "painting", "portfolio", "sketch", "美術", "美术", "繪畫", "绘画", "畫室"],
+  elementary_learning: ["elementary", "afterschool", "after school", "enrichment", "homework", "小學", "小学"],
+  chess:               ["chess", "西洋棋", "國際象棋", "国际象棋", "象棋"],
+};
+function kidsSubcatLabel(slug, lang) {
+  const s = KIDS_SUBCATS.find((x) => x.slug === slug);
+  return s ? (s[lang] || s.en) : slug;
+}
+function matchKidsSubcat(ag, slug) {
+  if (!slug || slug === "all") return true;
+  const sub = String(ag.subcategory || "").toLowerCase();
+  if (sub === slug) return true;
+  if (slug === "swim" && sub === "swimming") return true; // legacy slug
+  const hay = `${ag.subcategory || ""} ${ag.blurb || ""} ${ag.name || ""}`.toLowerCase();
+  return (KIDS_KEYWORDS[slug] || []).some((k) => kwHit(hay, k));
 }
 
 // v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
@@ -1351,7 +1392,10 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.12"; // ← bumped on every code update
+const APP_VERSION = "v3.13.13"; // ← bumped on every code update
+// v3.13.13: Kakatong Kids (K-8) subcategory filter (Music · Swim · Martial Arts ·
+//           Dance · Art · Elementary Learning · Chess) + Kids subcategory selector
+//           in the admin form.
 // v3.13.12: Kakatong Learn subcategory filter (Test Prep · Math · Science · English &
 //           Writing · College Admissions · Chinese Language · Coding & STEM) with a
 //           Test-Prep tag sub-filter (SHSAT/SAT/ACT/AP/Regents/PSAT/ISEE/SSAT), plus a
@@ -5070,11 +5114,11 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                 {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
-            {/* v3.13.12: Learn subcategory (only relevant for Kakatong Learn providers) */}
-            {agForm.vertical === "learn" && (
+            {/* v3.13.12/13: subcategory selector for Kakatong Learn & Kids providers */}
+            {(agForm.vertical === "learn" || agForm.vertical === "kids") && (
               <select style={{ ...inputStyle, cursor: "pointer", marginBottom: 8 }} value={agForm.subcategory} onChange={(e) => setAgForm({ ...agForm, subcategory: e.target.value })}>
-                <option value="">Learn subcategory…</option>
-                {LEARN_SUBCATS.map((s) => <option key={s.slug} value={s.slug}>{s.en}</option>)}
+                <option value="">{agForm.vertical === "kids" ? "Kids subcategory…" : "Learn subcategory…"}</option>
+                {(agForm.vertical === "kids" ? KIDS_SUBCATS : LEARN_SUBCATS).map((s) => <option key={s.slug} value={s.slug}>{s.en}</option>)}
               </select>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
@@ -5632,6 +5676,7 @@ export default function App() {
   const [agencyRadius, setAgencyRadius] = useState(0);   // v3.13.10: 0 = exact; 1/5/10 miles from ZIP
   const [learnSubcat, setLearnSubcat] = useState("all"); // v3.13.12: Kakatong Learn subcategory filter
   const [tpTag, setTpTag] = useState("all");             // v3.13.12: Test-Prep tag sub-filter
+  const [kidsSubcat, setKidsSubcat] = useState("all");   // v3.13.13: Kakatong Kids subcategory filter
   const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
@@ -5670,8 +5715,8 @@ export default function App() {
     if (effectiveTab !== tab) setTab(effectiveTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveTab]);
-  // v3.13.12: reset the Learn subcategory filter whenever the vertical changes.
-  useEffect(() => { setLearnSubcat("all"); setTpTag("all"); }, [category]);
+  // v3.13.12/13: reset the Learn & Kids subcategory filters when the vertical changes.
+  useEffect(() => { setLearnSubcat("all"); setTpTag("all"); setKidsSubcat("all"); }, [category]);
   const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
@@ -6023,6 +6068,8 @@ export default function App() {
       if (!matchLearnSubcat(ag, learnSubcat)) return false;
       if (learnSubcat === "test_prep" && !matchTestPrepTag(ag, tpTag)) return false;
     }
+    // ---- Kakatong Kids subcategory filter ----
+    if (category === "kids" && !matchKidsSubcat(ag, kidsSubcat)) return false;
     return true;
   });
 
@@ -6635,6 +6682,31 @@ export default function App() {
                         })}
                       </div>
                     )}
+                  </div>
+                )}
+                {/* v3.13.13 — Kakatong Kids subcategory filter */}
+                {category === "kids" && agencies.length > 0 && (
+                  <div style={{ marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {[{ slug: "all", label: allLabel(LANG_CURRENT.lang) }].concat(
+                      KIDS_SUBCATS.map((s) => ({ slug: s.slug, label: kidsSubcatLabel(s.slug, LANG_CURRENT.lang) }))
+                    ).map(({ slug, label }) => {
+                      const active = kidsSubcat === slug;
+                      return (
+                        <button
+                          key={slug}
+                          type="button"
+                          onClick={() => setKidsSubcat(slug)}
+                          style={{
+                            padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                            border: `1.5px solid ${active ? T.primary : T.line}`,
+                            background: active ? T.primary : "#fff",
+                            color: active ? "#fff" : T.ink, cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
                 {agencies.length === 0 ? (
