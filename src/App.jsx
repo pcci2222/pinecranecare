@@ -155,6 +155,50 @@ function queryToStateCode(q) {
   return STATE_NAMES[t] || "";
 }
 
+// v3.13.12: Kakatong Learn subcategories (localized) + Test-Prep tags.
+const LEARN_SUBCATS = [
+  { slug: "test_prep",          en: "Test Prep",          zh: "應試準備",    zhCN: "应试准备",    es: "Preparación de exámenes" },
+  { slug: "math",               en: "Math",               zh: "數學",        zhCN: "数学",        es: "Matemáticas" },
+  { slug: "science",            en: "Science",            zh: "科學",        zhCN: "科学",        es: "Ciencias" },
+  { slug: "english_writing",    en: "English & Writing",  zh: "英文與寫作",  zhCN: "英文与写作",  es: "Inglés y Redacción" },
+  { slug: "college_admissions", en: "College Admissions", zh: "大學升學",    zhCN: "大学升学",    es: "Admisiones Universitarias" },
+  { slug: "chinese_language",   en: "Chinese Language",   zh: "中文",        zhCN: "中文",        es: "Idioma Chino" },
+  { slug: "coding_stem",        en: "Coding & STEM",      zh: "編程與 STEM", zhCN: "编程与 STEM", es: "Programación y STEM" },
+];
+const TEST_PREP_TAGS = ["SHSAT", "SAT", "ACT", "AP", "Regents", "PSAT", "ISEE", "SSAT"];
+// Keyword fallback so existing providers (older slugs or only described in their
+// blurb) still land under the right new subcategory. Curated to avoid short tokens
+// that would false-positive (e.g. "act" inside "practice").
+const SUBCAT_KEYWORDS = {
+  test_prep:          ["test prep", "test_prep", "shsat", "sat prep", " sat ", "regents", "psat", "isee", "ssat", "應試", "应试", "標化"],
+  math:               ["math", "kumon", "mathnasium", "奥数", "奧數", "數學", "数学"],
+  science:            ["science", "physics", "chemistry", "biology", "物理", "化學", "化学"],
+  english_writing:    ["english", "writing", "reading", "esl", " ela", "寫作", "写作", "英文"],
+  college_admissions: ["college", "admission", "counsel", "placement", "升学", "升學"],
+  chinese_language:   ["chinese", "mandarin", "中文", "chinese_language", "華語", "华语", "普通話", "普通话"],
+  coding_stem:        ["coding", "robot", "stem", "programming", "编程", "編程", "computer"],
+};
+function learnSubcatLabel(slug, lang) {
+  const sc = LEARN_SUBCATS.find((s) => s.slug === slug);
+  return sc ? (sc[lang] || sc.en) : slug;
+}
+function allLabel(lang) {
+  return lang === "zh" ? "全部" : lang === "zhCN" ? "全部" : lang === "es" ? "Todos" : "All";
+}
+function matchLearnSubcat(ag, slug) {
+  if (!slug || slug === "all") return true;
+  const sub = String(ag.subcategory || "").toLowerCase();
+  if (sub === slug) return true;
+  const hay = `${ag.subcategory || ""} ${ag.blurb || ""} ${ag.name || ""}`.toLowerCase();
+  return (SUBCAT_KEYWORDS[slug] || []).some((k) => hay.includes(k));
+}
+function matchTestPrepTag(ag, tag) {
+  if (!tag || tag === "all") return true;
+  const hay = `${ag.blurb || ""} ${ag.name || ""} ${ag.subcategory || ""}`;
+  const safe = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp("\\b" + safe + "\\b", "i").test(hay);
+}
+
 // v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
 // bound so the family-side Age filter keeps working). ageBandLabel maps a stored
 // numeric age back to its display range.
@@ -1307,7 +1351,11 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.11"; // ← bumped on every code update
+const APP_VERSION = "v3.13.12"; // ← bumped on every code update
+// v3.13.12: Kakatong Learn subcategory filter (Test Prep · Math · Science · English &
+//           Writing · College Admissions · Chinese Language · Coding & STEM) with a
+//           Test-Prep tag sub-filter (SHSAT/SAT/ACT/AP/Regents/PSAT/ISEE/SSAT), plus a
+//           subcategory selector in the admin agency form.
 // v3.13.11: providers search (ZIP/city/state + radius) now reads correctly for
 //           Kakatong Learn & Kids too — search labels made vertical-neutral.
 // v3.13.10: agency search gains the same ZIP radius selector (Exact/1/5/10 mi) as
@@ -4368,7 +4416,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   const [editMemPhone, setEditMemPhone] = useState(""); // v3.12.12
   const [acks, setAcks] = useState([]);
   const [msg, setMsg] = useState("");
-  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" });
+  const [agForm, setAgForm] = useState({ name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "", subcategory: "" });
   const [agEditId, setAgEditId] = useState(null);
   const [dbPing, setDbPing] = useState(null); // null=checking, number=ms, "error"=down
   const [jobsCount, setJobsCount] = useState(0);
@@ -4377,7 +4425,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
   // v3.13.2: admin filters — agency vertical (Care/Learn/Kids) + by-state across tabs
   const [agVertical, setAgVertical] = useState("care"); // care | learn | kids
   const [stateFilter, setStateFilter] = useState("all");
-  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "" };
+  const blankAgForm = { name: "", phone: "", website: "", areas: "", blurb: "", contact_name: "", email: "", monthly_fee: "", paid_until: "", vertical: "care", state: "", subcategory: "" };
 
   // v3.13.2: state of a row per tab (caregivers derive from ZIP; agencies/members use a state field)
   const stateOfCaregiver = (r) => zipToState(r.zip);
@@ -4451,6 +4499,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       ...agForm,
       monthly_fee: agForm.monthly_fee ? Number(agForm.monthly_fee) : null,
       paid_until: agForm.paid_until || null,
+      subcategory: agForm.subcategory || null,
     };
     try {
       if (agEditId) {
@@ -4530,7 +4579,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
       name: a.name || "", phone: a.phone || "", website: a.website || "", areas: a.areas || "",
       blurb: a.blurb || "", contact_name: a.contact_name || "", email: a.email || "",
       monthly_fee: a.monthly_fee != null ? String(a.monthly_fee) : "", paid_until: a.paid_until || "",
-      vertical: a.vertical || "care", state: a.state || "",
+      vertical: a.vertical || "care", state: a.state || "", subcategory: a.subcategory || "",
     });
     setMsg("");
   }
@@ -5021,6 +5070,13 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                 {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+            {/* v3.13.12: Learn subcategory (only relevant for Kakatong Learn providers) */}
+            {agForm.vertical === "learn" && (
+              <select style={{ ...inputStyle, cursor: "pointer", marginBottom: 8 }} value={agForm.subcategory} onChange={(e) => setAgForm({ ...agForm, subcategory: e.target.value })}>
+                <option value="">Learn subcategory…</option>
+                {LEARN_SUBCATS.map((s) => <option key={s.slug} value={s.slug}>{s.en}</option>)}
+              </select>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
               <input style={inputStyle} placeholder="Phone" value={agForm.phone} onChange={(e) => setAgForm({ ...agForm, phone: e.target.value })} />
               <input style={inputStyle} placeholder="Website (https://…)" value={agForm.website} onChange={(e) => setAgForm({ ...agForm, website: e.target.value })} />
@@ -5574,6 +5630,8 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [agencySearch, setAgencySearch] = useState(""); // v3.13.9: public agency search by zip/city/state
   const [agencyRadius, setAgencyRadius] = useState(0);   // v3.13.10: 0 = exact; 1/5/10 miles from ZIP
+  const [learnSubcat, setLearnSubcat] = useState("all"); // v3.13.12: Kakatong Learn subcategory filter
+  const [tpTag, setTpTag] = useState("all");             // v3.13.12: Test-Prep tag sub-filter
   const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
@@ -5612,6 +5670,8 @@ export default function App() {
     if (effectiveTab !== tab) setTab(effectiveTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveTab]);
+  // v3.13.12: reset the Learn subcategory filter whenever the vertical changes.
+  useEffect(() => { setLearnSubcat("all"); setTpTag("all"); }, [category]);
   const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
@@ -5940,21 +6000,30 @@ export default function App() {
   // Agencies keep their location as text in `areas` (e.g. "Brooklyn, NY 11204")
   // plus a `state` code — so match against both, and resolve full state names.
   const filteredAgencies = agencies.filter((ag) => {
+    // ---- location match: ZIP / city / state / radius ----
     const q = agencySearch.trim();
-    if (!q) return true;
-    // Agencies keep their ZIP inside the `areas` text (e.g. "Brooklyn, NY 11204").
-    const agZip = (String(ag.areas || "").match(/\b(\d{5})\b/) || [])[1] || ag.zip || "";
-    const isZipQuery = /^\d{5}$/.test(q);
-    if (isZipQuery && agencyRadius > 0) {
-      // Radius mode: agency ZIP within `agencyRadius` miles of the searched ZIP.
-      return isZipWithinRadius(agZip, q, agencyRadius);
+    let locOk = true;
+    if (q) {
+      // Agencies keep their ZIP inside the `areas` text (e.g. "Brooklyn, NY 11204").
+      const agZip = (String(ag.areas || "").match(/\b(\d{5})\b/) || [])[1] || ag.zip || "";
+      const isZipQuery = /^\d{5}$/.test(q);
+      if (isZipQuery && agencyRadius > 0) {
+        locOk = isZipWithinRadius(agZip, q, agencyRadius);
+      } else {
+        const qLower = q.toLowerCase();
+        const hay = `${ag.areas || ""} ${ag.state || ""}`.toLowerCase();
+        const stateCode = queryToStateCode(q);
+        locOk = hay.includes(qLower)
+             || (!!stateCode && ((ag.state || "").toUpperCase() === stateCode || hay.includes(stateCode.toLowerCase())));
+      }
     }
-    const qLower = q.toLowerCase();
-    const hay = `${ag.areas || ""} ${ag.state || ""}`.toLowerCase();
-    if (hay.includes(qLower)) return true;
-    const stateCode = queryToStateCode(q);
-    if (stateCode && ((ag.state || "").toUpperCase() === stateCode || hay.includes(stateCode.toLowerCase()))) return true;
-    return false;
+    if (!locOk) return false;
+    // ---- Kakatong Learn subcategory + Test-Prep tag filter ----
+    if (category === "learn") {
+      if (!matchLearnSubcat(ag, learnSubcat)) return false;
+      if (learnSubcat === "test_prep" && !matchTestPrepTag(ag, tpTag)) return false;
+    }
+    return true;
   });
 
   const filtered = aides.filter((a) => {
@@ -6517,6 +6586,55 @@ export default function App() {
                         </button>
                       );
                     })}
+                  </div>
+                )}
+                {/* v3.13.12 — Kakatong Learn subcategory filter (+ Test-Prep tag sub-filter) */}
+                {category === "learn" && agencies.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {[{ slug: "all", label: allLabel(LANG_CURRENT.lang) }].concat(
+                        LEARN_SUBCATS.map((s) => ({ slug: s.slug, label: learnSubcatLabel(s.slug, LANG_CURRENT.lang) }))
+                      ).map(({ slug, label }) => {
+                        const active = learnSubcat === slug;
+                        return (
+                          <button
+                            key={slug}
+                            type="button"
+                            onClick={() => { setLearnSubcat(slug); setTpTag("all"); }}
+                            style={{
+                              padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                              border: `1.5px solid ${active ? T.primary : T.line}`,
+                              background: active ? T.primary : "#fff",
+                              color: active ? "#fff" : T.ink, cursor: "pointer", fontFamily: "inherit",
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {learnSubcat === "test_prep" && (
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                        {["all"].concat(TEST_PREP_TAGS).map((tag) => {
+                          const active = tpTag === tag;
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => setTpTag(tag)}
+                              style={{
+                                padding: "5px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 700,
+                                border: `1px solid ${active ? T.amber : T.line}`,
+                                background: active ? T.amber : "#fff",
+                                color: active ? "#3A2A08" : T.inkSoft, cursor: "pointer", fontFamily: "inherit",
+                              }}
+                            >
+                              {tag === "all" ? allLabel(LANG_CURRENT.lang) : tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
                 {agencies.length === 0 ? (
