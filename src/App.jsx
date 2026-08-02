@@ -240,6 +240,35 @@ function matchKidsSubcat(ag, slug) {
   return (KIDS_KEYWORDS[slug] || []).some((k) => kwHit(hay, k));
 }
 
+// v3.13.14: Kakatong Professional (adult training) subcategories (localized).
+const PRO_SUBCATS = [
+  { slug: "real_estate", en: "Real Estate",         zh: "房地產",     zhCN: "房地产",     es: "Bienes Raíces" },
+  { slug: "healthcare",  en: "Healthcare / HHA",    zh: "醫護培訓",   zhCN: "医护培训",   es: "Salud (HHA)" },
+  { slug: "driving",     en: "Driving School",      zh: "駕駛學校",   zhCN: "驾驶学校",   es: "Escuela de Manejo" },
+  { slug: "coding_tech", en: "Coding & Tech",       zh: "程式與科技", zhCN: "编程与科技", es: "Programación y Tecnología" },
+  { slug: "citizenship", en: "Citizenship / N-400", zh: "入籍輔導",   zhCN: "入籍辅导",   es: "Ciudadanía" },
+  { slug: "insurance",   en: "Insurance License",   zh: "保險執照",   zhCN: "保险执照",   es: "Licencia de Seguros" },
+];
+const PRO_KEYWORDS = {
+  real_estate: ["real estate", "realty", "房地產", "房地产", "地產", "地产"],
+  healthcare:  ["hha", "home health aide", "cna", "nursing", "phlebotomy", "medical assistant", "醫護", "医护", "護理", "护理"],
+  driving:     ["driving", "driver", "driving school", "駕駛", "驾驶"],
+  coding_tech: ["coding", "bootcamp", "software", "programming", "data science", "编程", "編程", "科技"],
+  citizenship: ["citizenship", "n-400", "naturalization", "入籍", "公民"],
+  insurance:   ["insurance", "保險", "保险"],
+};
+function proSubcatLabel(slug, lang) {
+  const s = PRO_SUBCATS.find((x) => x.slug === slug);
+  return s ? (s[lang] || s.en) : slug;
+}
+function matchProSubcat(ag, slug) {
+  if (!slug || slug === "all") return true;
+  const sub = String(ag.subcategory || "").toLowerCase();
+  if (sub === slug) return true;
+  const hay = `${ag.subcategory || ""} ${ag.blurb || ""} ${ag.name || ""}`.toLowerCase();
+  return (PRO_KEYWORDS[slug] || []).some((k) => kwHit(hay, k));
+}
+
 // v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
 // bound so the family-side Age filter keeps working). ageBandLabel maps a stored
 // numeric age back to its display range.
@@ -379,7 +408,9 @@ const STRINGS = {
     learnPartnersSub: "Verified tutoring centers, test prep, Chinese language schools, and coding classes — trusted providers for your family's learning journey.",
     kidsPartnersTitle: "Kakatong Kids Providers",
     kidsPartnersSub: "Verified music, swim, martial arts, dance, and art programs — trusted providers for kids' activities and enrichment.",
-    learnTabLabel: "Providers", kidsTabLabel: "Providers",
+    proPartnersTitle: "Kakatong Professional Providers",
+    proPartnersSub: "Verified adult training — real estate, healthcare (HHA), driving, coding, citizenship, and insurance-license schools for your next career step.",
+    learnTabLabel: "Providers", kidsTabLabel: "Providers", proTabLabel: "Providers",
     sponsoredTag: "Sponsored", partnerCall: "Call", partnerSite: "Website",
     postFeeTitle: "Care request posting fee",
     postFeeNote: "One-time $9.99 fee per posting. Demo checkout — no real payment is collected in this prototype; the live version uses Stripe's secure payment page.",
@@ -473,6 +504,8 @@ const STRINGS = {
     landingLearnItems: ["Academic tutoring & test prep", "Music theory & language", "College application coaching"],
     landingKidsTag: "Fun, growth, and confidence — after school and weekends.",
     landingKidsItems: ["Piano, violin & dance", "Swim & sports coaching", "Art, drawing & martial arts"],
+    landingProTag: "Licensed adult training for your next career step.",
+    landingProItems: ["Real estate & insurance licensing", "Healthcare (HHA) & driving schools", "Coding, tech & citizenship prep"],
     landingBrowse: "Browse",
     howItWorksTitle: "How Kakatong works",
     qrShareTitle: "Share Kakatong 家家通",
@@ -643,7 +676,9 @@ const STRINGS = {
     learnPartnersSub: "經過驗證的補習班、升學考試準備、中文學校及程式設計課程 — 值得信賴的學習夥伴。",
     kidsPartnersTitle: "Kakatong Kids 兒童夥伴",
     kidsPartnersSub: "經過驗證的音樂、游泳、武術、舞蹈及藝術課程 — 值得信賴的兒童活動夥伴。",
-    learnTabLabel: "夥伴", kidsTabLabel: "夥伴",
+    proPartnersTitle: "Kakatong Professional 專業夥伴",
+    proPartnersSub: "經過驗證的成人培訓 — 房地產、醫護 (HHA)、駕駛、程式設計、入籍及保險執照學校，助您邁向下一個職涯階段。",
+    learnTabLabel: "夥伴", kidsTabLabel: "夥伴", proTabLabel: "夥伴",
     sponsoredTag: "贊助", partnerCall: "致電", partnerSite: "網站",
     postFeeTitle: "徵求發布費",
     postFeeNote: "每則徵求一次性收費 $9.99。示範結帳 — 原型不會實際收費；正式版將使用 Stripe 安全付款頁面。",
@@ -736,6 +771,8 @@ const STRINGS = {
     landingLearnItems: ["學科補習、升學考試準備", "音樂理論、語言學習", "大學申請輔導"],
     landingKidsTag: "課後、週末 — 快樂學習，健康成長。",
     landingKidsItems: ["鋼琴、小提琴、舞蹈", "游泳、運動教練", "美術、繪畫、武術"],
+    landingProTag: "持牌成人培訓，助您邁向下一個職涯階段。",
+    landingProItems: ["房地產、保險執照", "醫護 (HHA)、駕駛學校", "程式設計、科技、入籍準備"],
     landingBrowse: "瀏覽",
     howItWorksTitle: "家家通如何運作",
     qrShareTitle: "分享家家通 Kakatong",
@@ -906,7 +943,9 @@ const STRINGS = {
     learnPartnersSub: "经过验证的补习班、升学考试准备、中文学校及程式设计课程 — 值得信赖的学习伙伴。",
     kidsPartnersTitle: "Kakatong Kids 儿童伙伴",
     kidsPartnersSub: "经过验证的音乐、游泳、武术、舞蹈及艺术课程 — 值得信赖的儿童活动伙伴。",
-    learnTabLabel: "伙伴", kidsTabLabel: "伙伴",
+    proPartnersTitle: "Kakatong Professional 专业伙伴",
+    proPartnersSub: "经过验证的成人培训 — 房地产、医护 (HHA)、驾驶、编程、入籍及保险执照学校，助您迈向下一个职涯阶段。",
+    learnTabLabel: "伙伴", kidsTabLabel: "伙伴", proTabLabel: "伙伴",
     sponsoredTag: "赞助", partnerCall: "致电", partnerSite: "网站",
     postFeeTitle: "征求发布费",
     postFeeNote: "每则征求一次性收费 $9.99。示范结帐 — 原型不会实际收费；正式版将使用 Stripe 安全付款页面。",
@@ -999,6 +1038,8 @@ const STRINGS = {
     landingLearnItems: ["学科补习、升学考试准备", "音乐理论、语言学习", "大学申请辅导"],
     landingKidsTag: "课后、周末 — 快乐学习，健康成长。",
     landingKidsItems: ["钢琴、小提琴、舞蹈", "游泳、运动教练", "美术、绘画、武术"],
+    landingProTag: "持牌成人培训，助您迈向下一个职涯阶段。",
+    landingProItems: ["房地产、保险执照", "医护 (HHA)、驾驶学校", "编程、科技、入籍准备"],
     landingBrowse: "浏览",
     howItWorksTitle: "家家通如何运作",
     qrShareTitle: "分享家家通 Kakatong",
@@ -1168,7 +1209,9 @@ const STRINGS = {
     learnPartnersSub: "Centros de tutoría verificados, preparación para exámenes, escuelas de idiomas chinos y clases de programación.",
     kidsPartnersTitle: "Proveedores de Kakatong Kids",
     kidsPartnersSub: "Programas verificados de música, natación, artes marciales, danza y arte para niños.",
-    learnTabLabel: "Proveedores", kidsTabLabel: "Proveedores",
+    proPartnersTitle: "Proveedores de Kakatong Professional",
+    proPartnersSub: "Capacitación verificada para adultos: bienes raíces, salud (HHA), manejo, programación, ciudadanía y licencias de seguros.",
+    learnTabLabel: "Proveedores", kidsTabLabel: "Proveedores", proTabLabel: "Proveedores",
     sponsoredTag: "Patrocinado", partnerCall: "Llamar", partnerSite: "Sitio web",
     postFeeTitle: "Tarifa por publicar solicitud",
     postFeeNote: "Pago único de $9.99 por publicación. Pago de demostración — este prototipo no cobra; la versión real usará la página segura de Stripe.",
@@ -1261,6 +1304,8 @@ const STRINGS = {
     landingLearnItems: ["Tutoría académica y preparación de exámenes", "Teoría musical e idiomas", "Asesoría universitaria"],
     landingKidsTag: "Diversión, crecimiento y confianza — después de clases y fines de semana.",
     landingKidsItems: ["Piano, violín y danza", "Natación y entrenamiento deportivo", "Arte, dibujo y artes marciales"],
+    landingProTag: "Capacitación licenciada para adultos hacia su próximo paso profesional.",
+    landingProItems: ["Bienes raíces y licencias de seguros", "Salud (HHA) y escuelas de manejo", "Programación, tecnología y ciudadanía"],
     landingBrowse: "Explorar",
     howItWorksTitle: "Cómo funciona Kakatong",
     qrShareTitle: "Comparte Kakatong 家家通",
@@ -1392,7 +1437,11 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.13"; // ← bumped on every code update
+const APP_VERSION = "v3.13.14"; // ← bumped on every code update
+// v3.13.14: NEW 4th vertical — Kakatong Professional (adult training). Landing card,
+//           provider view, ZIP/city/state search, 6 subcategories (Real Estate ·
+//           Healthcare/HHA · Driving · Coding & Tech · Citizenship · Insurance),
+//           admin vertical + subcategory selectors, and the admin 💼 Pro filter.
 // v3.13.13: Kakatong Kids (K-8) subcategory filter (Music · Swim · Martial Arts ·
 //           Dance · Art · Elementary Learning · Chess) + Kids subcategory selector
 //           in the admin form.
@@ -2146,7 +2195,7 @@ const loadHires = async () => {
 const loadAgencies = async (category) => {
   try {
     // v3.12: filter agencies by vertical to match landing page category selection
-    const vertical = (category === "learn" || category === "kids") ? category : "care";
+    const vertical = (category === "learn" || category === "kids" || category === "pro") ? category : "care";
     const rows = await sbSelect("agencies", `&active=eq.true&vertical=eq.${vertical}`);
     const today = new Date().toISOString().slice(0, 10);
     return rows
@@ -5108,6 +5157,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
                 <option value="care">Kakatong Care</option>
                 <option value="learn">Kakatong Learn</option>
                 <option value="kids">Kakatong Kids</option>
+                <option value="pro">Kakatong Professional</option>
               </select>
               <select style={{ ...inputStyle, cursor: "pointer" }} value={agForm.state} onChange={(e) => setAgForm({ ...agForm, state: e.target.value })}>
                 <option value="">State…</option>
@@ -5115,10 +5165,10 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
               </select>
             </div>
             {/* v3.13.12/13: subcategory selector for Kakatong Learn & Kids providers */}
-            {(agForm.vertical === "learn" || agForm.vertical === "kids") && (
+            {(agForm.vertical === "learn" || agForm.vertical === "kids" || agForm.vertical === "pro") && (
               <select style={{ ...inputStyle, cursor: "pointer", marginBottom: 8 }} value={agForm.subcategory} onChange={(e) => setAgForm({ ...agForm, subcategory: e.target.value })}>
-                <option value="">{agForm.vertical === "kids" ? "Kids subcategory…" : "Learn subcategory…"}</option>
-                {(agForm.vertical === "kids" ? KIDS_SUBCATS : LEARN_SUBCATS).map((s) => <option key={s.slug} value={s.slug}>{s.en}</option>)}
+                <option value="">{agForm.vertical === "kids" ? "Kids subcategory…" : agForm.vertical === "pro" ? "Professional subcategory…" : "Learn subcategory…"}</option>
+                {(agForm.vertical === "kids" ? KIDS_SUBCATS : agForm.vertical === "pro" ? PRO_SUBCATS : LEARN_SUBCATS).map((s) => <option key={s.slug} value={s.slug}>{s.en}</option>)}
               </select>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
@@ -5144,7 +5194,7 @@ function AdminView({ onBack, onDataChanged, onEditCaregiver }) {
           </div>
           {/* v3.13.2: category (Care / Learn / Kids) + state filter for the agency list */}
           <div style={{ display: "flex", gap: 8, margin: "6px 0 12px", flexWrap: "wrap", alignItems: "center" }}>
-            {[["all", "🗂 All"], ["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"]].map(([id, label]) => (
+            {[["all", "🗂 All"], ["care", "🏡 Care"], ["learn", "📚 Learn"], ["kids", "🎨 Kids"], ["pro", "💼 Pro"]].map(([id, label]) => (
               <button key={id} type="button" onClick={() => setAgVertical(id)}
                 style={btn(agVertical === id ? T.primary : "#fff", agVertical === id ? "#fff" : T.ink, `1.5px solid ${agVertical === id ? T.primary : T.line}`)}>
                 {label} ({id === "all" ? ags.length : ags.filter((a) => (a.vertical || "care") === id).length})
@@ -5405,6 +5455,18 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
       zhLabel: "兒童",
       tag: L.landingKidsTag,
       items: L.landingKidsItems,
+    },
+    {
+      id: "pro",
+      emoji: "💼",
+      color: "#6B5B95",
+      dark: "#544877",
+      soft: "#F0EDF6",
+      image: "https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=1600&h=1000&fit=crop&dpr=2",
+      en: "Kakatong Professional",
+      zhLabel: "專業",
+      tag: L.landingProTag,
+      items: L.landingProItems,
     },
   ];
 
@@ -5677,6 +5739,7 @@ export default function App() {
   const [learnSubcat, setLearnSubcat] = useState("all"); // v3.13.12: Kakatong Learn subcategory filter
   const [tpTag, setTpTag] = useState("all");             // v3.13.12: Test-Prep tag sub-filter
   const [kidsSubcat, setKidsSubcat] = useState("all");   // v3.13.13: Kakatong Kids subcategory filter
+  const [proSubcat, setProSubcat] = useState("all");     // v3.13.14: Kakatong Professional subcategory filter
   const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
@@ -5706,7 +5769,7 @@ export default function App() {
   // v3.8.5 — aides can't see the aides directory (own competitors); pick a valid tab
   // v3.12 — Learn/Kids verticals only show providers (no home-aides / job-postings)
   const isAideRole = account?.role === "aide";
-  const isLearnOrKids = category === "learn" || category === "kids";
+  const isLearnOrKids = category === "learn" || category === "kids" || category === "pro"; // provider-only verticals
   const visibleTabIds = isLearnOrKids
     ? ["agencies"]
     : (isAideRole ? ["jobs", "agencies"] : ["aides", "jobs", "agencies"]);
@@ -5715,8 +5778,8 @@ export default function App() {
     if (effectiveTab !== tab) setTab(effectiveTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveTab]);
-  // v3.13.12/13: reset the Learn & Kids subcategory filters when the vertical changes.
-  useEffect(() => { setLearnSubcat("all"); setTpTag("all"); setKidsSubcat("all"); }, [category]);
+  // v3.13.12/13/14: reset the Learn/Kids/Pro subcategory filters when the vertical changes.
+  useEffect(() => { setLearnSubcat("all"); setTpTag("all"); setKidsSubcat("all"); setProSubcat("all"); }, [category]);
   const [lastSearchId, setLastSearchId] = useState(null);   // tracking: search_query id
 
   useEffect(() => {
@@ -6070,6 +6133,8 @@ export default function App() {
     }
     // ---- Kakatong Kids subcategory filter ----
     if (category === "kids" && !matchKidsSubcat(ag, kidsSubcat)) return false;
+    // ---- Kakatong Professional subcategory filter ----
+    if (category === "pro" && !matchProSubcat(ag, proSubcat)) return false;
     return true;
   });
 
@@ -6500,7 +6565,8 @@ export default function App() {
                 <span style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>
                   {category === "care" ? "Kakatong Care · 照護" :
                    category === "learn" ? "Kakatong Learn · 學習" :
-                   category === "kids" ? "Kakatong Kids · 兒童" : ""}
+                   category === "kids" ? "Kakatong Kids · 兒童" :
+                   category === "pro" ? "Kakatong Professional · 專業" : ""}
                 </span>
               </div>
             )}
@@ -6509,6 +6575,7 @@ export default function App() {
               {visibleTabIds.map((id) => {
                 const agencyLabel = category === "learn" ? "🎓 " + (L.learnTabLabel || "Providers")
                                     : category === "kids" ? "🎨 " + (L.kidsTabLabel || "Providers")
+                                    : category === "pro" ? "💼 " + (L.proTabLabel || "Providers")
                                     : L.tabAgencies;
                 const label = id === "aides" ? L.tabAides : id === "jobs" ? L.tabJobs : agencyLabel;
                 return (
@@ -6594,11 +6661,13 @@ export default function App() {
                 <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink }}>
                   {category === "learn" ? L.learnPartnersTitle
                    : category === "kids" ? L.kidsPartnersTitle
+                   : category === "pro" ? L.proPartnersTitle
                    : L.partnersTitle}
                 </h2>
                 <p style={{ margin: "0 0 14px", fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5 }}>
                   {category === "learn" ? L.learnPartnersSub
                    : category === "kids" ? L.kidsPartnersSub
+                   : category === "pro" ? L.proPartnersSub
                    : L.partnersSub}
                 </p>
                 {agencies.length > 0 && (
@@ -6696,6 +6765,31 @@ export default function App() {
                           key={slug}
                           type="button"
                           onClick={() => setKidsSubcat(slug)}
+                          style={{
+                            padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                            border: `1.5px solid ${active ? T.primary : T.line}`,
+                            background: active ? T.primary : "#fff",
+                            color: active ? "#fff" : T.ink, cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* v3.13.14 — Kakatong Professional subcategory filter */}
+                {category === "pro" && agencies.length > 0 && (
+                  <div style={{ marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {[{ slug: "all", label: allLabel(LANG_CURRENT.lang) }].concat(
+                      PRO_SUBCATS.map((s) => ({ slug: s.slug, label: proSubcatLabel(s.slug, LANG_CURRENT.lang) }))
+                    ).map(({ slug, label }) => {
+                      const active = proSubcat === slug;
+                      return (
+                        <button
+                          key={slug}
+                          type="button"
+                          onClick={() => setProSubcat(slug)}
                           style={{
                             padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 700,
                             border: `1.5px solid ${active ? T.primary : T.line}`,
