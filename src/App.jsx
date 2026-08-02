@@ -145,6 +145,15 @@ function zipToState(zip) {
   return "";
 }
 const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+// v3.13.9: let the search box accept a full or abbreviated state name.
+const STATE_NAMES = { "alabama":"AL","alaska":"AK","arizona":"AZ","arkansas":"AR","california":"CA","colorado":"CO","connecticut":"CT","delaware":"DE","district of columbia":"DC","washington dc":"DC","washington d.c.":"DC","florida":"FL","georgia":"GA","hawaii":"HI","idaho":"ID","illinois":"IL","indiana":"IN","iowa":"IA","kansas":"KS","kentucky":"KY","louisiana":"LA","maine":"ME","maryland":"MD","massachusetts":"MA","michigan":"MI","minnesota":"MN","mississippi":"MS","missouri":"MO","montana":"MT","nebraska":"NE","nevada":"NV","new hampshire":"NH","new jersey":"NJ","new mexico":"NM","new york":"NY","north carolina":"NC","north dakota":"ND","ohio":"OH","oklahoma":"OK","oregon":"OR","pennsylvania":"PA","rhode island":"RI","south carolina":"SC","south dakota":"SD","tennessee":"TN","texas":"TX","utah":"UT","vermont":"VT","virginia":"VA","washington":"WA","west virginia":"WV","wisconsin":"WI","wyoming":"WY" };
+// Resolve a free-text query to a 2-letter state code, or "" if it isn't a state.
+function queryToStateCode(q) {
+  const t = String(q || "").trim().toLowerCase();
+  if (!t) return "";
+  if (t.length === 2 && US_STATES.includes(t.toUpperCase())) return t.toUpperCase();
+  return STATE_NAMES[t] || "";
+}
 
 // v3.13.1: home-aide age is picked as a 5-year band (stored as the band's lower
 // bound so the family-side Age filter keeps working). ageBandLabel maps a stored
@@ -180,7 +189,7 @@ const STRINGS = {
     browseFree: "Browsing is free.", membersContact: "Members can contact any aide directly.",
     seePlans: "See membership plans", memberActive: "Member — expires",
     findTitle: "Find the right caregiver for your loved one",
-    findSub: "Search by ZIP code, then narrow by services, rate, and age.",
+    findSub: "Search by ZIP code, city, or state — then narrow by services, rate, and age.",
     searchPh: "Enter ZIP code where care is needed (e.g. 11354)",
     radiusLbl: "Within:", radiusExact: "Exact ZIP",
     maxRate: "Max $/hr", ageFrom: "Age from", ageTo: "Age to",
@@ -400,6 +409,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 Unlock agency contact",
     agencyClaim: "Are you this agency? Claim your listing",
     agencyRemoval: "Request removal",
+    agencySearchPh: "Search agencies by ZIP, city, or state",
+    agencyNoMatch: "No agencies match your search.",
     agencyDashTitle: "Agency Reports",
     agencyDashSub: "Real activity from families looking for care — the last 30 days.",
     hotAides: "Hot aides — last 30 days",
@@ -442,7 +453,7 @@ const STRINGS = {
     browseFree: "瀏覽完全免費。", membersContact: "會員可直接聯繫任何看護。",
     seePlans: "查看會員方案", memberActive: "會員 — 到期日",
     findTitle: "為您的家人找到合適的看護",
-    findSub: "先輸入郵遞區號，再依服務、時薪與年齡篩選。",
+    findSub: "以郵遞區號、城市或州名搜尋，再依服務、時薪與年齡篩選。",
     searchPh: "輸入需要照護地區的郵遞區號（例：11354）",
     radiusLbl: "範圍：", radiusExact: "同郵區",
     maxRate: "時薪上限", ageFrom: "年齡從", ageTo: "至",
@@ -661,6 +672,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 解鎖機構聯絡資訊",
     agencyClaim: "這是您的機構嗎？認領您的資訊",
     agencyRemoval: "要求移除",
+    agencySearchPh: "以郵遞區號、城市或州名搜尋機構",
+    agencyNoMatch: "沒有符合搜尋的機構。",
     agencyDashTitle: "機構報告",
     agencyDashSub: "尋找照護的家庭 — 過去 30 天的真實活動數據。",
     hotAides: "熱門家政員 — 過去 30 天",
@@ -703,7 +716,7 @@ const STRINGS = {
     browseFree: "浏览完全免费。", membersContact: "会员可直接联系任何看护。",
     seePlans: "查看会员方案", memberActive: "会员 — 到期日",
     findTitle: "为您的家人找到合适的看护",
-    findSub: "先输入邮递区号，再依服务、时薪与年龄筛选。",
+    findSub: "以邮递区号、城市或州名搜索，再依服务、时薪与年龄筛选。",
     searchPh: "输入需要照护地区的邮递区号（例：11354）",
     radiusLbl: "范围：", radiusExact: "同邮区",
     maxRate: "时薪上限", ageFrom: "年龄从", ageTo: "至",
@@ -922,6 +935,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 解锁机构联络资讯",
     agencyClaim: "这是您的机构吗？认领您的资讯",
     agencyRemoval: "请求移除",
+    agencySearchPh: "以邮递区号、城市或州名搜索机构",
+    agencyNoMatch: "没有符合搜索的机构。",
     agencyDashTitle: "机构报告",
     agencyDashSub: "寻找照护的家庭 — 过去 30 天的真实活动数据。",
     hotAides: "热门家政员 — 过去 30 天",
@@ -964,7 +979,7 @@ const STRINGS = {
     browseFree: "Navegar es gratis.", membersContact: "Los miembros pueden contactar a cualquier cuidador.",
     seePlans: "Ver planes de membresía", memberActive: "Miembro — vence",
     findTitle: "Encuentre el cuidador ideal para su ser querido",
-    findSub: "Busque por código postal y filtre por servicios, tarifa y edad.",
+    findSub: "Busque por código postal, ciudad o estado; filtre por servicios, tarifa y edad.",
     searchPh: "Ingrese el código postal donde se necesita cuidado (ej. 11354)",
     radiusLbl: "Dentro de:", radiusExact: "CP exacto",
     maxRate: "Máx $/hora", ageFrom: "Edad desde", ageTo: "hasta",
@@ -1182,6 +1197,8 @@ const STRINGS = {
     agencyUnlockBtn: "🔒 Desbloquear contacto de agencia",
     agencyClaim: "¿Es esta su agencia? Reclame su ficha",
     agencyRemoval: "Solicitar retiro",
+    agencySearchPh: "Busque agencias por código postal, ciudad o estado",
+    agencyNoMatch: "Ninguna agencia coincide con su búsqueda.",
     agencyDashTitle: "Informes de agencia",
     agencyDashSub: "Actividad real de familias buscando cuidado — últimos 30 días.",
     hotAides: "Cuidadores populares — últimos 30 días",
@@ -1290,7 +1307,12 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.7"; // ← bumped on every code update
+const APP_VERSION = "v3.13.9"; // ← bumped on every code update
+// v3.13.9: search now accepts ZIP / city / state (incl. full state names) on the
+//          aide directory; added a ZIP/city/state search bar to the public Agencies tab.
+// v3.13.8: removed Edit/Delete controls from the public aide directory card —
+//          clients can no longer edit/delete aide listings; aides use "My Profile",
+//          admins use the Admin panel. Closes the no-PIN silent-edit exposure.
 // v3.13.7: legal-protection controls on every agency card — "Claim your listing"
 //          (hidden once claimed_at is set) + "Request removal" mailto (spec 4b/4c).
 // v3.13.6: admin agency list now shows website + flags rows missing a phone.
@@ -2840,28 +2862,9 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
         >
           {subscribed ? (expanded ? L.showLess : L.viewProfile) : "🔒 " + L.viewProfile}
         </button>
-        <button
-          type="button"
-          onClick={() => requestAction("edit")}
-          title="Edit profile (owner only)"
-          style={{
-            padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`,
-            background: "#fff", color: T.inkSoft, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-          }}
-        >
-          {L.editBtn}
-        </button>
-        <button
-          type="button"
-          onClick={() => requestAction("delete")}
-          title="Remove profile (owner only)"
-          style={{
-            padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${T.line}`,
-            background: "#fff", color: T.inkSoft, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-          }}
-        >
-          ✕
-        </button>
+        {/* v3.13.8: Edit/Delete removed from the public directory card. A browsing
+            client must never be able to edit or delete an aide's listing. Aides edit
+            their own profile via "My Profile"; admins manage via the Admin panel. */}
       </div>
 
       {pinAction && (
@@ -5565,6 +5568,7 @@ export default function App() {
   const [hires, setHires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [agencySearch, setAgencySearch] = useState(""); // v3.13.9: public agency search by zip/city/state
   const [radius, setRadius] = useState(0); // v3.9: 0 = exact match; 1, 5, 10 = miles from ZIP
   const [serviceFilter, setServiceFilter] = useState("");
   const [maxRate, setMaxRate] = useState("");
@@ -5927,6 +5931,19 @@ export default function App() {
     showToast(L.tProfileRem);
   }
 
+  // v3.13.9: public agency search by ZIP / city / state.
+  // Agencies keep their location as text in `areas` (e.g. "Brooklyn, NY 11204")
+  // plus a `state` code — so match against both, and resolve full state names.
+  const filteredAgencies = agencies.filter((ag) => {
+    const q = agencySearch.trim().toLowerCase();
+    if (!q) return true;
+    const hay = `${ag.areas || ""} ${ag.state || ""}`.toLowerCase();
+    if (hay.includes(q)) return true;
+    const stateCode = queryToStateCode(q);
+    if (stateCode && ((ag.state || "").toUpperCase() === stateCode || hay.includes(stateCode.toLowerCase()))) return true;
+    return false;
+  });
+
   const filtered = aides.filter((a) => {
     const q = search.trim();
     const qLower = q.toLowerCase();
@@ -5938,7 +5955,10 @@ export default function App() {
       // Radius mode: only aides whose ZIP is within `radius` miles of search ZIP
       matchQ = isZipWithinRadius(a.zip, q, radius);
     } else {
-      matchQ = a.zip?.startsWith(q) || a.city?.toLowerCase().includes(qLower);
+      const stateCode = queryToStateCode(q);
+      matchQ = a.zip?.startsWith(q)
+            || a.city?.toLowerCase().includes(qLower)
+            || (!!stateCode && zipToState(a.zip) === stateCode);
     }
     const matchS = !serviceFilter || a.services?.includes(serviceFilter);
     const rate = Number(a.rate);
@@ -6452,12 +6472,26 @@ export default function App() {
                    : category === "kids" ? L.kidsPartnersSub
                    : L.partnersSub}
                 </p>
+                {agencies.length > 0 && (
+                  <input
+                    type="text"
+                    value={agencySearch}
+                    onChange={(e) => setAgencySearch(e.target.value)}
+                    placeholder={L.agencySearchPh}
+                    style={{ ...inputStyle, marginBottom: 12 }}
+                  />
+                )}
                 {agencies.length === 0 ? (
                   <div style={{ textAlign: "center", marginTop: 40 }}>
                     <div style={{ fontSize: 44 }}>🏛️</div>
                     <p style={{ color: T.inkSoft, fontSize: 15, margin: "10px 0 0" }}>{L.noAgencies}</p>
                   </div>
-                ) : agencies.map((ag) => {
+                ) : filteredAgencies.length === 0 ? (
+                  <div style={{ textAlign: "center", marginTop: 28 }}>
+                    <div style={{ fontSize: 40 }}>🔍</div>
+                    <p style={{ color: T.inkSoft, fontSize: 15, margin: "10px 0 0" }}>{L.agencyNoMatch}</p>
+                  </div>
+                ) : filteredAgencies.map((ag) => {
                   const canSee = subscribed || isAidePro;
                   return (
                   <div key={ag.id} style={{ background: "#F3F7F5", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 10 }}>
