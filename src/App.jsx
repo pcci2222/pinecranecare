@@ -398,6 +398,8 @@ const STRINGS = {
     agencyLocked: "Verified home-care agency",
     agencyLockedSub: "Contact info visible to members and Aide Pro users.",
     agencyUnlockBtn: "🔒 Unlock agency contact",
+    agencyClaim: "Are you this agency? Claim your listing",
+    agencyRemoval: "Request removal",
     agencyDashTitle: "Agency Reports",
     agencyDashSub: "Real activity from families looking for care — the last 30 days.",
     hotAides: "Hot aides — last 30 days",
@@ -657,6 +659,8 @@ const STRINGS = {
     agencyLocked: "已認證居家照護機構",
     agencyLockedSub: "會員與家政員 Pro 可查看聯絡方式。",
     agencyUnlockBtn: "🔒 解鎖機構聯絡資訊",
+    agencyClaim: "這是您的機構嗎？認領您的資訊",
+    agencyRemoval: "要求移除",
     agencyDashTitle: "機構報告",
     agencyDashSub: "尋找照護的家庭 — 過去 30 天的真實活動數據。",
     hotAides: "熱門家政員 — 過去 30 天",
@@ -916,6 +920,8 @@ const STRINGS = {
     agencyLocked: "已认证居家照护机构",
     agencyLockedSub: "会员与家政员 Pro 可查看联络方式。",
     agencyUnlockBtn: "🔒 解锁机构联络资讯",
+    agencyClaim: "这是您的机构吗？认领您的资讯",
+    agencyRemoval: "请求移除",
     agencyDashTitle: "机构报告",
     agencyDashSub: "寻找照护的家庭 — 过去 30 天的真实活动数据。",
     hotAides: "热门家政员 — 过去 30 天",
@@ -1174,6 +1180,8 @@ const STRINGS = {
     agencyLocked: "Agencia de cuidado verificada",
     agencyLockedSub: "Información de contacto visible para miembros y usuarios Aide Pro.",
     agencyUnlockBtn: "🔒 Desbloquear contacto de agencia",
+    agencyClaim: "¿Es esta su agencia? Reclame su ficha",
+    agencyRemoval: "Solicitar retiro",
     agencyDashTitle: "Informes de agencia",
     agencyDashSub: "Actividad real de familias buscando cuidado — últimos 30 días.",
     hotAides: "Cuidadores populares — últimos 30 días",
@@ -1282,7 +1290,9 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.6"; // ← bumped on every code update
+const APP_VERSION = "v3.13.7"; // ← bumped on every code update
+// v3.13.7: legal-protection controls on every agency card — "Claim your listing"
+//          (hidden once claimed_at is set) + "Request removal" mailto (spec 4b/4c).
 // v3.13.6: admin agency list now shows website + flags rows missing a phone.
 // v3.13.5: agency lists (admin + public) now sort alphabetically by name.
 // v3.13.3: Admin agency list adds a "🗂 All" button so you can see every
@@ -6487,6 +6497,23 @@ export default function App() {
                           </button>
                         </div>
                       )}
+                    </div>
+                    {/* v3.13.7: legal-protection controls — every agency can claim or request removal (spec 4b/4c) */}
+                    <div style={{ display: "flex", gap: 14, marginTop: 10, alignItems: "center", flexWrap: "wrap", borderTop: `1px solid ${T.line}`, paddingTop: 8 }}>
+                      {!ag.claimed_at && (
+                        <a
+                          href={`mailto:support@kakatong.app?subject=${encodeURIComponent("Claim listing: " + (ag.name || ""))}&body=${encodeURIComponent("I represent " + (ag.name || "this business") + " and would like to claim this listing so I can manage our information. Please verify my affiliation.")}`}
+                          style={{ fontSize: 12.5, fontWeight: 700, color: T.primary, textDecoration: "none" }}
+                        >
+                          🏷️ {L.agencyClaim}
+                        </a>
+                      )}
+                      <a
+                        href={`mailto:support@kakatong.app?subject=${encodeURIComponent("Remove listing: " + (ag.name || ""))}`}
+                        style={{ fontSize: 12.5, color: T.inkSoft, textDecoration: "underline" }}
+                      >
+                        {L.agencyRemoval}
+                      </a>
                     </div>
                   </div>
                   );
