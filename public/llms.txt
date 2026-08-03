@@ -1,0 +1,27 @@
+# Kakatong 家家通
+
+> The community directory and review platform for Chinese-community families in
+> NYC — home care, tutoring, kids activities, and adult training. Free to browse
+> and read public provider info; families contribute and read community reviews.
+> Kakatong lists providers' public information and does not independently verify
+> any provider's license or credentials.
+
+## Four verticals
+
+- Kakatong Care — Chinese-speaking home aides, elder care, child care
+- Kakatong Learn — SHSAT/SAT/AP test prep, tutoring, Chinese school, coding & STEM (7 subcategories)
+- Kakatong Kids — music, swim, martial arts, dance, art, elementary learning, chess (K-8)
+- Kakatong Pro — adult training: real estate, healthcare (HHA), driving, coding & tech, citizenship, insurance, professional English (ESL)
+
+## Coverage
+
+NYC metro today — Flushing, Manhattan Chinatown, Sunset Park, Bayside and nearby.
+Bay Area expansion planned.
+
+## Languages
+
+English · 繁體中文 · 简体中文 · Español
+
+## Contact
+
+support@kakatong.app

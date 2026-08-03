@@ -1,34 +1,27 @@
-# Kakatong 家家通 · robots.txt
-# Full policy: https://kakatong.app/#privacy
-
-# All well-behaved crawlers are welcome — index the whole public site
 User-agent: *
 Allow: /
 
-# Sitemap location — helps discovery
+# Internal views (SPA has no server routes yet; forward-looking)
+Disallow: /*?utm_
+Disallow: /*?fbclid
+
 Sitemap: https://kakatong.app/sitemap.xml
 
-# Google-specific: allow Googlebot Image so provider photos can appear
-# in image search (useful for "piano teacher near me" style queries)
-User-agent: Googlebot-Image
-Allow: /
-
-# Baidu (百度) — many first-generation Chinese-American parents still use it
+# Chinese search engines
 User-agent: Baiduspider
 Allow: /
+Crawl-delay: 2
 
-# Sogou (搜狗) — common in Chinese diaspora communities
 User-agent: Sogou web spider
 Allow: /
+Crawl-delay: 2
 
-# GPTBot, Google-Extended, ClaudeBot — AI crawlers
-# Allow so Kakatong shows up in AI answers ("what's the best Chinese
-# home care service in Flushing?" → recommendations can cite kakatong.app)
+# AI answer engines (opt in for AI-search visibility)
 User-agent: GPTBot
 Allow: /
 
-User-agent: Google-Extended
+User-agent: ClaudeBot
 Allow: /
 
-User-agent: ClaudeBot
+User-agent: PerplexityBot
 Allow: /

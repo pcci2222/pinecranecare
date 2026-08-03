@@ -1,43 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-
-  <!-- Main landing page — highest priority -->
-  <url>
-    <loc>https://kakatong.app/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://kakatong.app/" />
-    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://kakatong.app/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://kakatong.app/" />
-  </url>
-
-  <!-- Legal pages -->
-  <url>
-    <loc>https://kakatong.app/#faq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://kakatong.app/#privacy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://kakatong.app/#terms</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!--
-    NOTE: because Kakatong is a single-page React app, Google currently sees
-    only one real URL (the root). To rank for vertical-specific queries like
-    "piano lesson Flushing" or "SHSAT tutoring Bayside", each vertical needs
-    its OWN real URL — e.g., /care, /learn, /kids — served by the SPA but
-    presented to Google as distinct pages with distinct meta tags.
-
-    That is a code change (React Router + Vercel rewrites), not just a
-    config change. Recommended for a future SEO push once the base is live.
-  -->
-
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://kakatong.app/</loc><lastmod>2026-08-03</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://kakatong.app/care</loc><lastmod>2026-08-03</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kakatong.app/learn</loc><lastmod>2026-08-03</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kakatong.app/kids</loc><lastmod>2026-08-03</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kakatong.app/pro</loc><lastmod>2026-08-03</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://kakatong.app/care/flushing</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/care/manhattan-chinatown</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/care/sunset-park</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/care/bayside</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/care/elmhurst</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/learn/flushing</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/learn/bayside</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/kids/flushing</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/pro/flushing</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://kakatong.app/learn/test-prep</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/learn/chinese-language</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/kids/music</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/kids/martial-arts</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/pro/real-estate</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/pro/driving</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://kakatong.app/pro/healthcare</loc><lastmod>2026-08-03</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
