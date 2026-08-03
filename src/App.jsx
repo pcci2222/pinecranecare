@@ -248,6 +248,7 @@ const PRO_SUBCATS = [
   { slug: "coding_tech", en: "Coding & Tech",       zh: "程式與科技", zhCN: "编程与科技", es: "Programación y Tecnología" },
   { slug: "citizenship", en: "Citizenship / N-400", zh: "入籍輔導",   zhCN: "入籍辅导",   es: "Ciudadanía" },
   { slug: "insurance",   en: "Insurance License",   zh: "保險執照",   zhCN: "保险执照",   es: "Licencia de Seguros" },
+  { slug: "professional_english", en: "Professional English (ESL)", zh: "專業英語 (ESL)", zhCN: "专业英语 (ESL)", es: "Inglés Profesional (ESL)" },
 ];
 const PRO_KEYWORDS = {
   real_estate: ["real estate", "realty", "房地產", "房地产", "地產", "地产"],
@@ -256,6 +257,7 @@ const PRO_KEYWORDS = {
   coding_tech: ["coding", "bootcamp", "software", "programming", "data science", "编程", "編程", "科技"],
   citizenship: ["citizenship", "n-400", "naturalization", "入籍", "公民"],
   insurance:   ["insurance", "保險", "保险"],
+  professional_english: ["esl", "english as a second language", "professional english", "adult english"],
 };
 function proSubcatLabel(slug, lang) {
   const s = PRO_SUBCATS.find((x) => x.slug === slug);
@@ -1437,7 +1439,8 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.15"; // ← bumped on every code update
+const APP_VERSION = "v3.13.16"; // ← bumped on every code update
+// v3.13.16: added 7th Kakatong Pro subcategory — Professional English (ESL).
 // v3.13.15: removed the "Verified" badge and all verification claims across the app
 //           (Yelp/Google model — free directory of publicly-listed providers + reviews).
 //           Legal disclaimer updated to "no verification" language.
