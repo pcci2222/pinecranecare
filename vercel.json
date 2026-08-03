@@ -1,8 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/care",
+      "destination": "/care.html"
+    },
     {
       "source": "/care/bayside",
       "destination": "/care-bayside.html"
@@ -22,6 +25,10 @@
     {
       "source": "/care/sunset-park",
       "destination": "/care-sunset-park.html"
+    },
+    {
+      "source": "/kids",
+      "destination": "/kids.html"
     },
     {
       "source": "/kids/art",
@@ -62,6 +69,10 @@
     {
       "source": "/kids/swim",
       "destination": "/kids-swim.html"
+    },
+    {
+      "source": "/learn",
+      "destination": "/learn.html"
     },
     {
       "source": "/learn/bayside",
@@ -110,6 +121,10 @@
     {
       "source": "/learn/test-prep/flushing",
       "destination": "/learn-test-prep-flushing.html"
+    },
+    {
+      "source": "/pro",
+      "destination": "/pro.html"
     },
     {
       "source": "/pro/citizenship",
