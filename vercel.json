@@ -2,6 +2,156 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/care/bayside",
+      "destination": "/care-bayside.html"
+    },
+    {
+      "source": "/care/elmhurst",
+      "destination": "/care-elmhurst.html"
+    },
+    {
+      "source": "/care/flushing",
+      "destination": "/care-flushing.html"
+    },
+    {
+      "source": "/care/manhattan-chinatown",
+      "destination": "/care-manhattan-chinatown.html"
+    },
+    {
+      "source": "/care/sunset-park",
+      "destination": "/care-sunset-park.html"
+    },
+    {
+      "source": "/kids/art",
+      "destination": "/kids-art.html"
+    },
+    {
+      "source": "/kids/bayside",
+      "destination": "/kids-bayside.html"
+    },
+    {
+      "source": "/kids/chess",
+      "destination": "/kids-chess.html"
+    },
+    {
+      "source": "/kids/dance",
+      "destination": "/kids-dance.html"
+    },
+    {
+      "source": "/kids/elementary-learning",
+      "destination": "/kids-elementary-learning.html"
+    },
+    {
+      "source": "/kids/flushing",
+      "destination": "/kids-flushing.html"
+    },
+    {
+      "source": "/kids/martial-arts",
+      "destination": "/kids-martial-arts.html"
+    },
+    {
+      "source": "/kids/music",
+      "destination": "/kids-music.html"
+    },
+    {
+      "source": "/kids/music/flushing",
+      "destination": "/kids-music-flushing.html"
+    },
+    {
+      "source": "/kids/swim",
+      "destination": "/kids-swim.html"
+    },
+    {
+      "source": "/learn/bayside",
+      "destination": "/learn-bayside.html"
+    },
+    {
+      "source": "/learn/chinese-language",
+      "destination": "/learn-chinese-language.html"
+    },
+    {
+      "source": "/learn/coding-and-stem",
+      "destination": "/learn-coding-and-stem.html"
+    },
+    {
+      "source": "/learn/college-admissions",
+      "destination": "/learn-college-admissions.html"
+    },
+    {
+      "source": "/learn/elmhurst",
+      "destination": "/learn-elmhurst.html"
+    },
+    {
+      "source": "/learn/english-and-writing",
+      "destination": "/learn-english-and-writing.html"
+    },
+    {
+      "source": "/learn/flushing",
+      "destination": "/learn-flushing.html"
+    },
+    {
+      "source": "/learn/math",
+      "destination": "/learn-math.html"
+    },
+    {
+      "source": "/learn/science",
+      "destination": "/learn-science.html"
+    },
+    {
+      "source": "/learn/test-prep",
+      "destination": "/learn-test-prep.html"
+    },
+    {
+      "source": "/learn/test-prep/bayside",
+      "destination": "/learn-test-prep-bayside.html"
+    },
+    {
+      "source": "/learn/test-prep/flushing",
+      "destination": "/learn-test-prep-flushing.html"
+    },
+    {
+      "source": "/pro/citizenship",
+      "destination": "/pro-citizenship.html"
+    },
+    {
+      "source": "/pro/coding-and-tech",
+      "destination": "/pro-coding-and-tech.html"
+    },
+    {
+      "source": "/pro/driving",
+      "destination": "/pro-driving.html"
+    },
+    {
+      "source": "/pro/driving/flushing",
+      "destination": "/pro-driving-flushing.html"
+    },
+    {
+      "source": "/pro/flushing",
+      "destination": "/pro-flushing.html"
+    },
+    {
+      "source": "/pro/healthcare",
+      "destination": "/pro-healthcare.html"
+    },
+    {
+      "source": "/pro/insurance",
+      "destination": "/pro-insurance.html"
+    },
+    {
+      "source": "/pro/manhattan-chinatown",
+      "destination": "/pro-manhattan-chinatown.html"
+    },
+    {
+      "source": "/pro/professional-english",
+      "destination": "/pro-professional-english.html"
+    },
+    {
+      "source": "/pro/real-estate",
+      "destination": "/pro-real-estate.html"
+    }
+  ],
   "headers": [
     {
       "source": "/sitemap.xml",
