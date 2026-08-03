@@ -552,6 +552,7 @@ const STRINGS = {
     tHired: "🎉 Congratulations on your match! You can leave a review anytime.",
     hiredBadge: "✓ Hired via Kakatong",
     reviews: "Reviews", writeReview: "Write a review",
+    reviewLocked: "Unlock to read what families wrote.", reviewUnlockBtn: "🔓 Unlock reviews",
     commentPh: "How was the service? Punctuality, care quality, communication…",
     submitReview: "Submit review", noReviews: "No reviews yet.",
     errReview: "Please select a star rating and enter your name.",
@@ -819,6 +820,7 @@ const STRINGS = {
     tHired: "🎉 恭喜配對成功！歡迎隨時留下評價。",
     hiredBadge: "✓ 透過家家通聘用",
     reviews: "評價", writeReview: "撰寫評價",
+    reviewLocked: "解鎖以閱讀家庭的評價內容。", reviewUnlockBtn: "🔓 解鎖評價",
     commentPh: "服務如何？守時、照護品質、溝通…",
     submitReview: "送出評價", noReviews: "目前還沒有評價。",
     errReview: "請選擇星等並填寫稱呼。",
@@ -1086,6 +1088,7 @@ const STRINGS = {
     tHired: "🎉 恭喜配对成功！欢迎随时留下评价。",
     hiredBadge: "✓ 透过家家通聘用",
     reviews: "评价", writeReview: "撰写评价",
+    reviewLocked: "解锁以阅读家庭的评价内容。", reviewUnlockBtn: "🔓 解锁评价",
     commentPh: "服务如何？守时、照护品质、沟通…",
     submitReview: "送出评价", noReviews: "目前还没有评价。",
     errReview: "请选择星等并填写称呼。",
@@ -1352,6 +1355,7 @@ const STRINGS = {
     tHired: "🎉 ¡Felicidades por su elección! Puede dejar una reseña cuando quiera.",
     hiredBadge: "✓ Contratado vía Kakatong",
     reviews: "Reseñas", writeReview: "Escribir una reseña",
+    reviewLocked: "Desbloquee para leer las reseñas de las familias.", reviewUnlockBtn: "🔓 Desbloquear reseñas",
     commentPh: "¿Cómo fue el servicio? Puntualidad, calidad, comunicación…",
     submitReview: "Enviar reseña", noReviews: "Aún no hay reseñas.",
     errReview: "Seleccione una calificación e ingrese su nombre.",
@@ -1439,7 +1443,10 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.16"; // ← bumped on every code update
+const APP_VERSION = "v3.13.18"; // ← bumped on every code update
+// v3.13.18: reviews on home aides AND all companies/agencies — Yelp model
+//   (open write for any signed-in member; star avg + count free; review text paid/gated).
+// v3.13.17: in-app SEO — dynamic <title>/meta/<html lang> + Organization/WebSite JSON-LD.
 // v3.13.16: added 7th Kakatong Pro subcategory — Professional English (ESL).
 // v3.13.15: removed the "Verified" badge and all verification claims across the app
 //           (Yelp/Google model — free directory of publicly-listed providers + reviews).
@@ -2685,6 +2692,94 @@ function LegalDisclaimerModal({ open, onAgree, onCancel }) {
   );
 }
 
+// v3.13.18: shared review widget for BOTH aides and companies/agencies.
+// Model: open write (any signed-in user), paid read (star avg + count are free;
+// individual review text is gated behind read access = membership).
+function ReviewBlock({ reviews = [], onAddReview, canRead, isSignedIn, onNeedAccess, reviewerName = "" }) {
+  const { L } = useLang();
+  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [name, setName] = useState(reviewerName || "");
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const count = reviews.length;
+  const avg = count ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / count).toFixed(1) : null;
+
+  async function submit() {
+    if (!rating || !name.trim()) { setErr(L.errReview); return; }
+    setBusy(true); setErr("");
+    try {
+      await onAddReview({ name: name.trim(), rating, comment: comment.trim() });
+      setRating(0); setComment(""); setFormOpen(false); setOpen(true);
+    } catch (e) { setErr("Save failed — please try again"); }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{ marginTop: 10, borderTop: `1px solid ${T.line}`, paddingTop: 8 }}>
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontWeight: 800, fontSize: 14, color: T.ink }}>
+        {avg
+          ? <span>★ <span style={{ color: T.amber }}>{avg}</span> · {count} {L.reviews}</span>
+          : <span style={{ color: T.inkSoft, fontWeight: 700 }}>{L.reviews} · {L.noReviews}</span>}
+        <span style={{ color: T.inkSoft, marginLeft: 6, fontSize: 12 }}>{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 8 }}>
+          {count > 0 && (canRead ? (
+            reviews.map((r) => (
+              <div key={r.id} style={{ padding: "10px 12px", background: T.surface, borderRadius: 10, marginBottom: 8 }}>
+                <div style={{ fontSize: 13.5 }}>
+                  <span style={{ color: T.amber, letterSpacing: 1 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                  {"  "}<strong style={{ color: T.ink }}>{r.reviewer_name}</strong>
+                  {"  "}<span style={{ color: T.inkSoft, fontSize: 12.5 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString() : ""}</span>
+                </div>
+                {r.comment && <p style={{ margin: "6px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.45 }}>{r.comment}</p>}
+              </div>
+            ))
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#FCF4E3", border: `1px solid ${T.amber}`, borderRadius: 10, flexWrap: "wrap", marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: T.ink }}>🔒 {L.reviewLocked}</span>
+              <button type="button" onClick={onNeedAccess}
+                style={{ padding: "7px 12px", borderRadius: 10, border: "none", background: T.amber, color: "#3A2A08", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                {L.reviewUnlockBtn}
+              </button>
+            </div>
+          ))}
+
+          {formOpen ? (
+            <div style={{ background: T.surface, borderRadius: 10, padding: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} type="button" onClick={() => { setRating(n); setErr(""); }}
+                    style={{ background: "none", border: "none", fontSize: 26, cursor: "pointer", color: n <= rating ? T.amber : T.line, padding: "0 2px" }}>★</button>
+                ))}
+              </div>
+              <input style={{ ...inputStyle, marginBottom: 8 }} placeholder={L.lYourName} value={name} onChange={(e) => setName(e.target.value)} />
+              <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical", marginBottom: 8 }} placeholder={L.commentPh} value={comment} onChange={(e) => setComment(e.target.value)} />
+              {err && <p style={{ color: T.danger, fontSize: 13, fontWeight: 600, margin: "0 0 8px" }}>{err}</p>}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" disabled={busy} onClick={submit}
+                  style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{busy ? L.saving : L.submitReview}</button>
+                <button type="button" onClick={() => setFormOpen(false)}
+                  style={{ padding: "9px 14px", borderRadius: 10, border: `1.5px solid ${T.line}`, background: "#fff", color: T.inkSoft, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{L.cancel}</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => (isSignedIn ? setFormOpen(true) : onNeedAccess())}
+              style={{ marginTop: 4, padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+              {isSignedIn ? "✍ " + L.writeReview : "🔒 " + L.writeReview}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, onNeedMembership, onNeedContacts, onConsumeReveal, reviews = [], onAddReview, hires = [], onHire, hireDefault = "", searchQueryId = null, memberSession = null }) {
   // v3.13.0: membership still gates general features; contact reveals are metered.
   const subscribed = isMember;
@@ -2919,58 +3014,6 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             )
           )}
 
-          {/* Reviews */}
-          <div style={{ marginTop: 14, borderTop: `1px solid ${T.line}`, paddingTop: 12 }}>
-            <div style={{ fontWeight: 800, fontSize: 15, color: T.ink, marginBottom: 8 }}>
-              {L.reviews}{avg && <span style={{ color: T.amber, marginLeft: 8 }}>★ {avg} · {reviews.length}</span>}
-            </div>
-            {reviews.length === 0 && (
-              <p style={{ margin: "0 0 8px", fontSize: 13.5, color: T.inkSoft }}>{L.noReviews}</p>
-            )}
-            {reviews.map((r) => (
-              <div key={r.id} style={{ padding: "10px 12px", background: T.surface, borderRadius: 10, marginBottom: 8 }}>
-                <div style={{ fontSize: 13.5 }}>
-                  <span style={{ color: T.amber, letterSpacing: 1 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
-                  {"  "}<strong style={{ color: T.ink }}>{r.reviewer_name}</strong>
-                  {hires.some((h) => h.client_name && r.reviewer_name && h.client_name.trim().toLowerCase() === r.reviewer_name.trim().toLowerCase()) && (
-                    <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: T.primary, border: `1px solid ${T.primary}`, borderRadius: 999, padding: "1px 7px" }}>{L.hiredBadge}</span>
-                  )}
-                  {"  "}<span style={{ color: T.inkSoft, fontSize: 12.5 }}>{new Date(r.created_at).toLocaleDateString()}</span>
-                </div>
-                {r.comment && <p style={{ margin: "6px 0 0", fontSize: 14, color: T.ink, lineHeight: 1.45 }}>{r.comment}</p>}
-              </div>
-            ))}
-            {revOpen && subscribed ? (
-              <div style={{ marginTop: 8 }}>
-                <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button key={n} type="button" onClick={() => { setRevRating(n); setRevError(""); }}
-                      style={{ background: "none", border: "none", fontSize: 28, cursor: "pointer", color: n <= revRating ? T.amber : T.line, padding: "0 2px" }}>
-                      ★
-                    </button>
-                  ))}
-                </div>
-                <input style={{ ...inputStyle, marginBottom: 8 }} placeholder={L.lYourName} value={revName} onChange={(e) => setRevName(e.target.value)} />
-                <textarea style={{ ...inputStyle, minHeight: 70, resize: "vertical", marginBottom: 8 }} placeholder={L.commentPh} value={revComment} onChange={(e) => setRevComment(e.target.value)} />
-                {revError && <p style={{ color: T.danger, fontSize: 13.5, fontWeight: 600, margin: "0 0 8px" }}>{revError}</p>}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" disabled={revBusy} onClick={submitReview}
-                    style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14.5, cursor: "pointer", fontFamily: "inherit" }}>
-                    {revBusy ? L.saving : L.submitReview}
-                  </button>
-                  <button type="button" onClick={() => setRevOpen(false)}
-                    style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${T.line}`, background: "#fff", color: T.inkSoft, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
-                    {L.cancel}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button type="button" onClick={() => (subscribed ? setRevOpen(true) : onNeedMembership())}
-                style={{ marginTop: 4, padding: "10px 16px", borderRadius: 10, border: `1.5px solid ${T.primary}`, background: "#fff", color: T.primary, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
-                {subscribed ? L.writeReview : "🔒 " + L.writeReview}
-              </button>
-            )}
-          </div>
         </div>
       )}
 
@@ -3017,6 +3060,18 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
             client must never be able to edit or delete an aide's listing. Aides edit
             their own profile via "My Profile"; admins manage via the Admin panel. */}
       </div>
+
+      {/* v3.13.18: Open-write / paid-read reviews (Yelp model). Star avg + count are
+          free; individual review text is gated behind membership; any signed-in
+          member may write for free. */}
+      <ReviewBlock
+        reviews={reviews}
+        onAddReview={(rev) => onAddReview(aide.id, rev)}
+        canRead={subscribed}
+        isSignedIn={!!memberSession}
+        onNeedAccess={onNeedMembership}
+        reviewerName={memberSession?.display_name || hireDefault || ""}
+      />
 
       {pinAction && (
         <div style={{ marginTop: 10, padding: 12, background: T.surface, borderRadius: 10, border: `1px solid ${T.line}` }}>
@@ -5702,6 +5757,46 @@ function HomeLandingView({ onPickCategory, onSignIn, isSignedIn }) {
 }
 
 // ---------- Main app ----------
+// v3.13.17: lightweight in-app SEO. Sets <title>, meta description, <html lang>,
+// Open Graph tags, and Organization/WebSite JSON-LD at runtime (Google executes JS,
+// so it reads these). Full per-URL SEO (/care/flushing ...) still needs the routing build.
+function kkHtmlLang(l){ return {en:"en", zh:"zh-Hant", zhCN:"zh-Hans", es:"es"}[l] || "en"; }
+function kkUpsertMeta(attr, key, content){
+  if (typeof document === "undefined") return;
+  let el = document.head.querySelector('meta[' + attr + '="' + key + '"]');
+  if (!el){ el = document.createElement("meta"); el.setAttribute(attr, key); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+function kkUpsertJsonLd(id, obj){
+  if (typeof document === "undefined") return;
+  let el = document.getElementById(id);
+  if (!el){ el = document.createElement("script"); el.type = "application/ld+json"; el.id = id; document.head.appendChild(el); }
+  el.textContent = JSON.stringify(obj);
+}
+function applyKakatongSEO(view, category, lang){
+  if (typeof document === "undefined") return;
+  const SITE = "https://kakatong.app";
+  const l = ["en","zh","zhCN","es"].includes(lang) ? lang : "en";
+  const homeTitle = { en:"Kakatong 家家通 — Chinese-Community Care, Learn, Kids & Pro Services · NYC", zh:"家家通 Kakatong — 紐約華人照護、學習、兒童、進修服務平台", zhCN:"家家通 Kakatong — 纽约华人照护、学习、儿童、进修服务平台", es:"Kakatong 家家通 — Servicios para familias chino-americanas · NYC" };
+  const homeDesc = { en:"Community directory of Chinese-speaking home aides, tutors, kids activities, and adult training in NYC, with reviews from Chinese-community families.", zh:"紐約華人家庭的照護、補習、兒童活動與成人進修社區目錄，附華人家庭評價。", zhCN:"纽约华人家庭的照护、补习、儿童活动与成人进修社区目录，附华人家庭评价。", es:"Directorio comunitario de cuidadores, tutores, actividades infantiles y formación para adultos que hablan chino en NYC." };
+  const vName = { care:{en:"Kakatong Care",zh:"家家通照護",zhCN:"家家通照护",es:"Kakatong Care"}, learn:{en:"Kakatong Learn",zh:"家家通學習",zhCN:"家家通学习",es:"Kakatong Learn"}, kids:{en:"Kakatong Kids",zh:"家家通兒童",zhCN:"家家通儿童",es:"Kakatong Kids"}, pro:{en:"Kakatong Professional",zh:"家家通進修",zhCN:"家家通进修",es:"Kakatong Professional"} };
+  const vTag = { care:{en:"Chinese-speaking home aides, elder care, and child care in NYC.",zh:"紐約華人居家看護、長者照護、兒童照顧。",zhCN:"纽约华人居家看护、长者照护、儿童照顾。",es:"Cuidadores, cuidado de ancianos y niños que hablan chino en NYC."}, learn:{en:"SHSAT, SAT and AP tutoring, Chinese school, coding & STEM for Chinese families in NYC.",zh:"紐約華人家庭 SHSAT、SAT、AP 補習、中文學校、程式與 STEM。",zhCN:"纽约华人家庭 SHSAT、SAT、AP 补习、中文学校、编程与 STEM。",es:"Tutoría SHSAT/SAT/AP, escuela china y programación para familias chinas en NYC."}, kids:{en:"Music, swim, martial arts, dance, art, and chess for K-8 kids in NYC.",zh:"紐約華人 K-8 兒童音樂、游泳、武術、舞蹈、美術、棋藝。",zhCN:"纽约华人 K-8 儿童音乐、游泳、武术、舞蹈、美术、棋艺。",es:"Música, natación, artes marciales, danza, arte y ajedrez para niños K-8 en NYC."}, pro:{en:"Chinese-community adult training: real estate, HHA, driving, coding, citizenship, insurance, ESL.",zh:"華人成人培訓：房地產、家庭護理員、駕駛、程式、公民入籍、保險、英文。",zhCN:"华人成人培训：房地产、家庭护理员、驾驶、编程、公民入籍、保险、英文。",es:"Formación para adultos: bienes raíces, HHA, manejo, programación, ciudadanía, seguros, ESL."} };
+  let title, desc;
+  if (view === "directory" && vName[category]){ title = vName[category][l] + " · Kakatong 家家通"; desc = vTag[category][l]; }
+  else { title = homeTitle[l]; desc = homeDesc[l]; }
+  document.documentElement.lang = kkHtmlLang(l);
+  document.title = title;
+  kkUpsertMeta("name","description",desc);
+  kkUpsertMeta("property","og:title",title);
+  kkUpsertMeta("property","og:description",desc);
+  kkUpsertMeta("property","og:type","website");
+  kkUpsertMeta("property","og:url",SITE);
+  kkUpsertMeta("property","og:image",SITE + "/og-image.png");
+  kkUpsertMeta("name","twitter:card","summary_large_image");
+  kkUpsertJsonLd("kk-ld-org", { "@context":"https://schema.org","@type":"Organization","name":"Kakatong 家家通","url":SITE,"logo":SITE + "/og-image.png","email":"support@kakatong.app","areaServed":["New York City"],"description":homeDesc.en, "contactPoint":{"@type":"ContactPoint","email":"support@kakatong.app","availableLanguage":["English","Chinese","Cantonese","Mandarin","Spanish"]} });
+  kkUpsertJsonLd("kk-ld-website", { "@context":"https://schema.org","@type":"WebSite","url":SITE,"name":"Kakatong 家家通","inLanguage":["en","zh-Hant","zh-Hans","es"] });
+}
+
 export default function App() {
   const [lang, setLangState] = useState(() => {
     try {
@@ -5729,6 +5824,8 @@ export default function App() {
   LANG_CURRENT = { lang, L, ts };
   const [view, setView] = useState("home"); // home | directory | register | postjob | plans | privacy | terms | backup
   const [category, setCategory] = useState(null); // v3.10: care | learn | kids — set from home landing
+  // v3.13.17: keep <title>/meta/JSON-LD in sync with the current view + language.
+  useEffect(() => { applyKakatongSEO(view, category, lang); }, [view, category, lang]);
   const [tab, setTab] = useState("aides"); // aides | jobs
   const [editing, setEditing] = useState(null); // aide record being edited, or null
   const [jobEditing, setJobEditing] = useState(null); // job record being edited, or null
@@ -5886,6 +5983,19 @@ export default function App() {
   async function addReview(caregiverId, rev) {
     const saved = await sbInsert("reviews", {
       caregiver_id: caregiverId,
+      reviewer_name: rev.name,
+      rating: rev.rating,
+      comment: rev.comment || null,
+    });
+    setReviews((list) => [saved, ...list]);
+    showToast(L.tReview);
+  }
+
+  // v3.13.18: reviews for agencies/companies (Care agencies, Learn, Kids, Pro).
+  // Same reviews table, keyed on agency_id instead of caregiver_id.
+  async function addAgencyReview(agencyId, rev) {
+    const saved = await sbInsert("reviews", {
+      agency_id: agencyId,
       reviewer_name: rev.name,
       rating: rev.rating,
       comment: rev.comment || null,
@@ -6877,6 +6987,15 @@ export default function App() {
                         {L.agencyRemoval}
                       </a>
                     </div>
+                    {/* v3.13.18: reviews on companies/agencies — open write, paid read */}
+                    <ReviewBlock
+                      reviews={reviews.filter((r) => r.agency_id === ag.id)}
+                      onAddReview={(rev) => addAgencyReview(ag.id, rev)}
+                      canRead={canSee}
+                      isSignedIn={!!account}
+                      onNeedAccess={() => { setView("plans"); window.scrollTo(0, 0); }}
+                      reviewerName={account?.name || ""}
+                    />
                   </div>
                   );
                 })}
