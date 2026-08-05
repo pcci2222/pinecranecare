@@ -395,6 +395,7 @@ const STRINGS = {
     referBanner: "❤️ Refer this website to friends and family — help more families find trusted care.",
     referShareBtn: "Share", referCopied: "Link copied ✓",
     marqueeAide: "🎉 First 100 home aide joiners get FREE membership! · Join now and get listed.",
+    bannerFree: "🎉 Free to Join and Free to Use",
     langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     suName: "Single Unlock", suPrice: "$4.99", suPer: " one-time",
     suBlurb: "Not ready for a membership? Unlock this one caregiver's full profile and contact info.",
@@ -664,6 +665,7 @@ const STRINGS = {
     referBanner: "❤️ 把本網站推薦給親友 — 幫助更多家庭找到可信賴的照護。",
     referShareBtn: "分享", referCopied: "連結已複製 ✓",
     marqueeAide: "🎉 前 100 位加入的家政員享免費會員！· 立即加入並上架。",
+    bannerFree: "🎉 免費加入，免費使用",
     langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     suName: "單次解鎖", suPrice: "$4.99", suPer: " 一次性",
     suBlurb: "還不想加入會員？單次解鎖這位照護者的完整檔案與聯絡方式。",
@@ -932,6 +934,7 @@ const STRINGS = {
     referBanner: "❤️ 把本网站推荐给亲友 — 帮助更多家庭找到可信赖的照护。",
     referShareBtn: "分享", referCopied: "连结已复制 ✓",
     marqueeAide: "🎉 前 100 位加入的家政员享免费会员！· 立即加入并上架。",
+    bannerFree: "🎉 免费加入，免费使用",
     langEnglish: "English", langZhTW: "繁体中文", langZhCN: "简体中文", langEs: "Español",
     suName: "单次解锁", suPrice: "$4.99", suPer: " 一次性",
     suBlurb: "还不想加入会员？单次解锁这位照护者的完整档案与联络方式。",
@@ -1196,6 +1199,7 @@ const STRINGS = {
     referBanner: "❤️ Recomiende este sitio a amigos y familia — ayude a más familias a encontrar cuidado.",
     referShareBtn: "Compartir", referCopied: "Enlace copiado ✓",
     marqueeAide: "🎉 ¡Los primeros 100 auxiliares reciben membresía GRATIS! · Únase ahora.",
+    bannerFree: "🎉 Gratis para unirse y gratis para usar",
     langEnglish: "English", langZhTW: "繁體中文", langZhCN: "简体中文", langEs: "Español",
     benefit2: "Reemplazo gratuito si su cuidador deja de estar disponible",
     benefit3: "Publique solicitudes — deje que los cuidadores lo contacten",
@@ -1443,7 +1447,12 @@ function compressImage(file, maxSize = 420) {
 }
 
 // ---------- Supabase (permanent database) ----------
-const APP_VERSION = "v3.13.18"; // ← bumped on every code update
+const APP_VERSION = "v3.13.19"; // ← bumped on every code update
+// v3.13.19: FREE MODE — temporarily disabled ALL payment/paywalls to grow market share.
+//   Everything is free to join & free to use: contact info, reviews, and job contacts are
+//   fully open; payment/upgrade buttons are hidden. Flip FREE_MODE back to false to restore
+//   the paid Yelp model (membership, contact packs, review paywall) with no other changes.
+const FREE_MODE = true;
 // v3.13.18: reviews on home aides AND all companies/agencies — Yelp model
 //   (open write for any signed-in member; star avg + count free; review text paid/gated).
 // v3.13.17: in-app SEO — dynamic <title>/meta/<html lang> + Organization/WebSite JSON-LD.
@@ -2951,7 +2960,14 @@ function AideCard({ aide, onDelete, onEdit, isMember, isUnlocked, credits = 0, o
           )}
           {aide.bio && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{aide.bio}</p>}
           {/* v3.13.0: metered contact reveals ($9.99 per 3), gated by membership */}
-          {!isMember ? (
+          {/* v3.13.19: FREE MODE — contact info shown to everyone, no paywall */}
+          {FREE_MODE ? (
+            <p style={{ margin: 0 }}>
+              <strong>{L.contactLbl}</strong>{" "}
+              <a href={"tel:" + aide.phone} style={{ color: T.primary, fontWeight: 700 }}>{aide.phone}</a>
+              {aide.email ? <> · <a href={"mailto:" + aide.email} style={{ color: T.primary }}>{aide.email}</a></> : null}
+            </p>
+          ) : !isMember ? (
             <div style={{ padding: 12, background: T.surface, borderRadius: 10, border: `1px dashed ${T.line}` }}>
               <p style={{ margin: "0 0 8px", fontSize: 14, color: T.ink }}>🔒 {L.lockedNeedMember}</p>
               <button type="button"
@@ -3444,7 +3460,8 @@ function JobCard({ job, onDelete, onEdit, aidePro, onAideProSignup, account }) {
       {expanded && (
         <div style={{ marginTop: 12, fontSize: 14.5, color: T.ink }}>
           {job.details && <p style={{ margin: "0 0 8px", color: T.inkSoft }}>{job.details}</p>}
-          {aidePro ? (
+          {/* v3.13.19: FREE MODE — family contact shown to everyone, no Aide Pro paywall */}
+          {(FREE_MODE || aidePro) ? (
             <p style={{ margin: 0 }}>
               <strong>{L.contactPerson} {job.name}:</strong>{" "}
               <a href={"tel:" + job.phone} style={{ color: T.primary, fontWeight: 700 }}>{job.phone}</a>
@@ -3570,7 +3587,8 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
         {L.myAccountTitle}
       </h1>
 
-      {/* Membership status card */}
+      {/* Membership status card — v3.13.19: hidden while FREE MODE is on */}
+      {!FREE_MODE && (
       <div style={{
         padding: "18px 20px",
         borderRadius: 12,
@@ -3622,6 +3640,7 @@ function MyAccountView({ account, client, onBack, onSaveProfile, onUpgradePlan, 
           </>
         )}
       </div>
+      )}
 
       {/* Usage stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
@@ -5853,7 +5872,9 @@ export default function App() {
   const [account, setAccount] = useState(null); // { id, email, name }
   const [authNext, setAuthNext] = useState(null); // resume action after sign-in
   const [signupRole, setSignupRole] = useState(null); // v3.12.25: role pre-picked from a landing button, locks the signup role
-  const subscribed = !!(client && client.subscribedUntil > Date.now()); // v3.13.0: annual member
+  const paidMember = !!(client && client.subscribedUntil > Date.now()); // v3.13.0: annual member
+  // v3.13.19: FREE MODE unlocks all gated content for everyone (paywalls off).
+  const subscribed = FREE_MODE || paidMember;
   const unlockedIds = client?.unlocks || [];
   const contactCredits = client?.contactCredits || 0; // v3.13.0: remaining contact reveals
   const [payIntent, setPayIntent] = useState("membership"); // v3.13.0: "membership" | "contacts"
@@ -6305,10 +6326,12 @@ export default function App() {
       {/* v3.13.0: marquee keyframes (inline styles can't declare @keyframes) */}
       <style>{`@keyframes kkMarquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }`}</style>
 
-      {/* v3.13.0 (#4): scrolling promo — first 100 aides get free membership */}
+      {/* v3.13.0 (#4): scrolling promo. v3.13.19: FREE MODE shows "Free to Join and Free to Use". */}
       <div style={{ background: T.amber, overflow: "hidden", whiteSpace: "nowrap" }}>
         <div style={{ display: "inline-block", padding: "7px 0", color: "#3A2A08", fontSize: 13.5, fontWeight: 800, animation: "kkMarquee 18s linear infinite" }}>
-          {L.marqueeAide}　·　{L.marqueeAide}
+          {FREE_MODE
+            ? <>{L.bannerFree}　·　{L.bannerFree}　·　{L.bannerFree}　·　{L.bannerFree}</>
+            : <>{L.marqueeAide}　·　{L.marqueeAide}</>}
         </div>
       </div>
 
@@ -6993,7 +7016,7 @@ export default function App() {
                       onAddReview={(rev) => addAgencyReview(ag.id, rev)}
                       canRead={canSee}
                       isSignedIn={!!account}
-                      onNeedAccess={() => { setView("plans"); window.scrollTo(0, 0); }}
+                      onNeedAccess={() => { if (FREE_MODE) { setSignupRole(null); setView("signin"); } else { setView("plans"); } window.scrollTo(0, 0); }}
                       reviewerName={account?.name || ""}
                     />
                   </div>
@@ -7003,8 +7026,8 @@ export default function App() {
               </>
             ) : (
             <>
-            {/* Membership status */}
-            {subscribed ? (
+            {/* Membership status — v3.13.19: hidden while FREE MODE is on */}
+            {!FREE_MODE && (subscribed ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "#EFF6F3", border: `1px solid ${T.primary}`, borderRadius: 12, marginBottom: 14 }}>
                 <span style={{ fontSize: 18 }}>✅</span>
                 <span style={{ fontSize: 14, color: T.ink }}>
@@ -7059,7 +7082,7 @@ export default function App() {
                   {L.seePlans}
                 </button>
               </div>
-            )}
+            ))}
 
             {/* Client search + filters */}
             <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 22, color: T.ink }}>
@@ -7157,7 +7180,7 @@ export default function App() {
                     isMember={subscribed}
                     isUnlocked={unlockedIds.includes(a.id)}
                     credits={contactCredits}
-                    onNeedMembership={() => { setPayIntent("membership"); setView("plans"); window.scrollTo(0, 0); }}
+                    onNeedMembership={() => { if (FREE_MODE) { setSignupRole(null); setView("signin"); } else { setPayIntent("membership"); setView("plans"); } window.scrollTo(0, 0); }}
                     onNeedContacts={() => { setPayIntent("contacts"); setView("plans"); window.scrollTo(0, 0); }}
                     onConsumeReveal={consumeReveal}
                     reviews={reviews.filter((r) => r.caregiver_id === a.id)}
